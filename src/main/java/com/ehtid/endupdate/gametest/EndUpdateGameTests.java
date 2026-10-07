@@ -148,6 +148,8 @@ public final class EndUpdateGameTests {
                     "Wave 2 should contain 6 trial mobs, found " + mobs.size());
             helper.assertTrue(mobs.stream().allMatch(m -> m instanceof EndSkeleton || m instanceof EndCreeper),
                     "Wave 2 should only use End Skeletons and End Creepers");
+            helper.assertTrue(mobs.stream().allMatch(m -> horizontalDistanceSqr(m, corePos) > 100.0D),
+                    "Wave 2 should enter from the side chambers");
             discard(mobs);
         });
 
@@ -155,6 +157,10 @@ public final class EndUpdateGameTests {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 8,
                     "Wave 3 should contain 8 trial mobs, found " + mobs.size());
+            boolean hasArenaSpawn = mobs.stream().anyMatch(m -> horizontalDistanceSqr(m, corePos) < 100.0D);
+            boolean hasChamberSpawn = mobs.stream().anyMatch(m -> horizontalDistanceSqr(m, corePos) > 144.0D);
+            helper.assertTrue(hasArenaSpawn && hasChamberSpawn,
+                    "Wave 3 should mix central-arena and side-chamber spawns");
             discard(mobs);
         });
 
@@ -176,6 +182,12 @@ public final class EndUpdateGameTests {
                     && data.getInt(TRIAL_Y) == corePos.getY()
                     && data.getInt(TRIAL_Z) == corePos.getZ();
         });
+    }
+
+    private static double horizontalDistanceSqr(Mob mob, BlockPos pos) {
+        double dx = mob.getX() - (pos.getX() + 0.5D);
+        double dz = mob.getZ() - (pos.getZ() + 0.5D);
+        return dx * dx + dz * dz;
     }
 
     private static void discard(List<Mob> mobs) {
