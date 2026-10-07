@@ -1,0 +1,40 @@
+name: Materialize Textures
+
+on:
+  push:
+    paths:
+      - "ci_assets/textures.tar.gz.b64"
+      - ".github/workflows/materialize-textures.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  textures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore PNG textures
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "89c0b7f839f43d16da866a6448f033f3c9309adfad7ac0807a55ebb100850844  ci_assets/textures.tar.gz.b64" | sha256sum -c -
+          base64 --decode ci_assets/textures.tar.gz.b64 > textures.tar.gz
+          echo "a6e93dea4436731249d10d78d56c0f25cb16fa409c1cc6b058c4a926f8516239  textures.tar.gz" | sha256sum -c -
+          tar -xzf textures.tar.gz
+          rm textures.tar.gz
+      - name: Commit textures
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main/resources/assets/endupdate/textures
+          if git diff --cached --quiet; then
+            echo "No texture changes."
+            exit 0
+          fi
+          git commit -m "Restore End Update textures"
+          git push
