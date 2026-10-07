@@ -1,0 +1,60 @@
+name: Materialize Source Tree
+
+on:
+  push:
+    paths:
+      - ".github/workflows/materialize-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore verified source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ci_payload_v2/part*.b64 > endupdate-src.b64
+          echo "a0fa49b9a54fa291765db858b0539254fcb08e9ce2047f5c053d1de7a3bc993f  endupdate-src.b64" | sha256sum -c -
+          base64 --decode endupdate-src.b64 > endupdate-src.tar.gz
+          echo "a44fefb894497f1f82d6fc7f1780e2d4f793b327679dbd632c637891099da07d  endupdate-src.tar.gz" | sha256sum -c -
+          mkdir -p _materialized
+          tar -xzf endupdate-src.tar.gz -C _materialized
+
+      - name: Copy source into repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s dotglob nullglob
+          for entry in _materialized/*; do
+            name="$(basename "$entry")"
+            case "$name" in
+              .git|.github|ci_payload|ci_payload_v2|build|run|.gradle) continue ;;
+            esac
+            rm -rf "./$name"
+            cp -a "$entry" "./$name"
+          done
+          rm -rf _materialized endupdate-src.b64 endupdate-src.tar.gz
+          git status --short
+
+      - name: Commit materialized source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Materialize EndUpdate source tree"
+          git push
