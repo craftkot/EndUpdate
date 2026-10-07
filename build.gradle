@@ -28,6 +28,9 @@ minecraft {
         }
         client {}
         server { args '--nogui' }
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', 'endupdate'
+        }
     }
 }
 
