@@ -193,8 +193,8 @@ jobs:
 
           # The custom instant effect must actually move a living entity.
           r.cmd(
-              'execute in minecraft:the_end run summon minecraft:cow 525 66 525 '
-              '{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["ci_tp_target"]}'
+              'execute in minecraft:the_end run summon minecraft:armor_stand 525 66 525 '
+              '{NoGravity:1b,Invisible:1b,Invulnerable:1b,Tags:["ci_tp_target"]}'
           )
           before = parse_pos(r.cmd(
               "execute in minecraft:the_end run data get entity @e[tag=ci_tp_target,limit=1] Pos"
