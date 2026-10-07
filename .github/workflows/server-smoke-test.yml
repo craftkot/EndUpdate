@@ -197,10 +197,10 @@ jobs:
               '{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["ci_tp_target"]}'
           )
           before = parse_pos(r.cmd(
-              "execute in minecraft:the_end positioned 525 66 525 run data get entity @e[type=minecraft:cow,distance=..24,limit=1] Pos"
+              "execute in minecraft:the_end run data get entity @e[tag=ci_tp_target,limit=1] Pos"
           ))
           r.cmd(
-              "execute in minecraft:the_end positioned 525 66 525 run effect give @e[type=minecraft:cow,distance=..24,limit=1] "
+              "execute in minecraft:the_end run effect give @e[tag=ci_tp_target,limit=1] "
               "endupdate:chorus_teleport 1 0 true"
           )
           time.sleep(1)
