@@ -175,10 +175,17 @@ jobs:
 
           # Block tag loaded from the datapack.
           r.cmd("execute in minecraft:the_end run setblock 510 66 500 endupdate:chorus_planks")
-          tag_check = r.cmd(
-              "execute in minecraft:the_end if block 510 66 500 #minecraft:planks run say ENDUPDATE_PLANK_TAG_OK"
+          r.cmd("execute in minecraft:the_end run setblock 511 66 500 minecraft:air")
+          r.cmd(
+              "execute in minecraft:the_end if block 510 66 500 #minecraft:planks "
+              "run setblock 511 66 500 minecraft:diamond_block"
           )
-          require("ENDUPDATE_PLANK_TAG_OK" in tag_check, f"chorus_planks is not in minecraft:planks: {tag_check}")
+          tag_check = r.cmd(
+              "execute in minecraft:the_end run fill 511 66 500 511 66 500 "
+              "minecraft:air replace minecraft:diamond_block"
+          )
+          require("Successfully filled 1 block" in tag_check,
+                  f"chorus_planks is not in minecraft:planks: {tag_check}")
 
           # Loot table must deserialize and produce loot.
           loot = r.cmd("execute in minecraft:the_end run loot spawn 505 66 500 loot endupdate:chests/end_trial_reward")
