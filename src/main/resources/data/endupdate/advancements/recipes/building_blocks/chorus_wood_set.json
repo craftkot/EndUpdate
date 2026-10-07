@@ -1,0 +1,40 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_chorus_fruit": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:chorus_fruit"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_chorus_fruit"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "endupdate:chorus_stem",
+      "endupdate:chorus_planks",
+      "endupdate:chorus_mosaic",
+      "endupdate:chorus_stairs",
+      "endupdate:chorus_slab",
+      "endupdate:chorus_mosaic_stairs",
+      "endupdate:chorus_mosaic_slab",
+      "endupdate:chorus_fence",
+      "endupdate:chorus_fence_gate",
+      "endupdate:chorus_door",
+      "endupdate:chorus_trapdoor",
+      "endupdate:chorus_pressure_plate",
+      "endupdate:chorus_button"
+    ]
+  },
+  "sends_telemetry_event": false
+}

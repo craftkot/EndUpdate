@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "endupdate:block/end_trial_core"
+    }
+  }
+}

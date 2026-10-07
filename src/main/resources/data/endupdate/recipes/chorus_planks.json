@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "endupdate:chorus_stem"
+    }
+  ],
+  "result": {
+    "item": "endupdate:chorus_planks",
+    "count": 2
+  }
+}

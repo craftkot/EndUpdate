@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "endupdate:chorus_planks"
+    }
+  },
+  "result": {
+    "item": "endupdate:chorus_trapdoor",
+    "count": 2
+  }
+}

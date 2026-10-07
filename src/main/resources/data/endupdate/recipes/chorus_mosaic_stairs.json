@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "M  ",
+    "MM ",
+    "MMM"
+  ],
+  "key": {
+    "M": {
+      "item": "endupdate:chorus_mosaic"
+    }
+  },
+  "result": {
+    "item": "endupdate:chorus_mosaic_stairs",
+    "count": 4
+  }
+}

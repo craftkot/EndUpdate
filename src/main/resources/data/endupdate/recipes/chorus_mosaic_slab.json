@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "MMM"
+  ],
+  "key": {
+    "M": {
+      "item": "endupdate:chorus_mosaic"
+    }
+  },
+  "result": {
+    "item": "endupdate:chorus_mosaic_slab",
+    "count": 6
+  }
+}

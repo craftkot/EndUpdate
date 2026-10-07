@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="endupdate"
+version="${mod_version}"
+displayName="End Update"
+authors="EHTID"
+description='''
+Expands the End with chorus construction blocks, End Stone tool recipes,
+teleportation brewing, End mob variants and a custom End Trial dungeon.
+'''
+
+[[dependencies.endupdate]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.10,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.endupdate]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"

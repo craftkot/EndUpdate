@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "endupdate:chorus_stem",
+    "endupdate:chorus_planks",
+    "endupdate:chorus_mosaic",
+    "endupdate:chorus_stairs",
+    "endupdate:chorus_slab",
+    "endupdate:chorus_mosaic_stairs",
+    "endupdate:chorus_mosaic_slab",
+    "endupdate:chorus_fence",
+    "endupdate:chorus_fence_gate",
+    "endupdate:chorus_door",
+    "endupdate:chorus_trapdoor",
+    "endupdate:chorus_pressure_plate",
+    "endupdate:chorus_button"
+  ]
+}
