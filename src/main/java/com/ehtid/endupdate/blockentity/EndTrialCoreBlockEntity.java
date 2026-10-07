@@ -116,12 +116,19 @@ public class EndTrialCoreBlockEntity extends BlockEntity {
         int extraForParty = Math.min(4, Math.max(0, playerCount - 1) * 2);
         int count = 2 + waveNumber * 2 + extraForParty;
         for (int i = 0; i < count; i++) {
-            EntityType<? extends Mob> type = switch ((i + waveNumber + level.random.nextInt(4)) & 3) {
-                case 0 -> ModEntities.END_ZOMBIE.get();
-                case 1 -> ModEntities.END_SKELETON.get();
-                case 2 -> ModEntities.END_CREEPER.get();
-                default -> ModEntities.END_SPIDER.get();
-            };
+            EntityType<? extends Mob> type;
+            if (waveNumber == 1) {
+                type = (i & 1) == 0 ? ModEntities.END_ZOMBIE.get() : ModEntities.END_SPIDER.get();
+            } else if (waveNumber == 2) {
+                type = i % 3 == 0 ? ModEntities.END_CREEPER.get() : ModEntities.END_SKELETON.get();
+            } else {
+                type = switch ((i + level.random.nextInt(4)) & 3) {
+                    case 0 -> ModEntities.END_ZOMBIE.get();
+                    case 1 -> ModEntities.END_SKELETON.get();
+                    case 2 -> ModEntities.END_CREEPER.get();
+                    default -> ModEntities.END_SPIDER.get();
+                };
+            }
 
             Mob mob = type.create(level);
             if (mob == null) continue;
