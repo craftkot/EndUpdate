@@ -161,12 +161,12 @@ jobs:
           )
           for idx, (entity, tag) in enumerate(mobs):
               resp = r.cmd(
-                  f'execute in minecraft:the_end run summon endupdate:{entity} {488 + idx * 2} 66 500 '
+                  f'execute in minecraft:the_end run summon endupdate:{entity} {494 + idx} 66 494 '
                   f'{{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["{tag}"]}}'
               )
               require("summoned" in resp.lower(), f"Could not summon {entity}: {resp}")
               attr = r.cmd(
-                  f"execute in minecraft:the_end run attribute @e[tag={tag},limit=1] minecraft:generic.max_health get"
+                  f"execute in minecraft:the_end positioned 500 66 500 run attribute @e[type=endupdate:{entity},distance=..32,limit=1] minecraft:generic.max_health get"
               )
               require(re.search(r"\d", attr) is not None, f"Attribute lookup failed for {entity}: {attr}")
 
