@@ -80,7 +80,7 @@ public final class EndUpdateGameTests {
         player.setInvulnerable(true);
         // Keep the player inside the 24-block activation radius but far enough that mobs do not
         // naturally reach the fake player before each wave assertion.
-        player.teleportTo(corePos.getX() + 20.5D, corePos.getY() + 4.0D, corePos.getZ() + 0.5D);
+        player.setPos(corePos.getX() + 20.5D, corePos.getY() + 4.0D, corePos.getZ() + 0.5D);
 
         helper.runAtTickTime(65L, () -> {
             List<Mob> mobs = trialMobs(level, corePos);
