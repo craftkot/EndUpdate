@@ -2,7 +2,9 @@ package com.ehtid.endupdate.gametest;
 
 import com.ehtid.endupdate.EndUpdateMod;
 import com.ehtid.endupdate.blockentity.EndTrialCoreBlockEntity;
+import com.ehtid.endupdate.entity.EndCreeper;
 import com.ehtid.endupdate.entity.EndSkeleton;
+import com.ehtid.endupdate.entity.EndSpider;
 import com.ehtid.endupdate.entity.EndZombie;
 import com.ehtid.endupdate.entity.EnderArrowEntity;
 import com.ehtid.endupdate.registry.ModBlocks;
@@ -135,6 +137,8 @@ public final class EndUpdateGameTests {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 4,
                     "Wave 1 should contain 4 trial mobs, found " + mobs.size());
+            helper.assertTrue(mobs.stream().allMatch(m -> m instanceof EndZombie || m instanceof EndSpider),
+                    "Wave 1 should only use End Zombies and End Spiders");
             discard(mobs);
         });
 
@@ -142,6 +146,8 @@ public final class EndUpdateGameTests {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 6,
                     "Wave 2 should contain 6 trial mobs, found " + mobs.size());
+            helper.assertTrue(mobs.stream().allMatch(m -> m instanceof EndSkeleton || m instanceof EndCreeper),
+                    "Wave 2 should only use End Skeletons and End Creepers");
             discard(mobs);
         });
 
