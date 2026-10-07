@@ -36,7 +36,7 @@ public final class EndUpdateGameTests {
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void teleportEffectMovesEntity(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos center = helper.absolutePos(BlockPos.ZERO).above();
+        BlockPos center = helper.absolutePos(new BlockPos(24, 2, 24));
 
         // Give chorus-style teleportation a deterministic safe landing area.
         for (int x = -10; x <= 10; x++) {
@@ -65,7 +65,7 @@ public final class EndUpdateGameTests {
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void requestedMobTeleportBehaviors(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos center = helper.absolutePos(BlockPos.ZERO).above();
+        BlockPos center = helper.absolutePos(new BlockPos(24, 2, 24));
 
         for (int x = -12; x <= 12; x++) {
             for (int z = -12; z <= 12; z++) {
@@ -108,7 +108,7 @@ public final class EndUpdateGameTests {
     @GameTest(template = "empty", timeoutTicks = 320)
     public static void trialCoreRunsThreeWavesAndRewards(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos corePos = helper.absolutePos(BlockPos.ZERO).offset(0, 2, 0);
+        BlockPos corePos = helper.absolutePos(new BlockPos(24, 2, 24));
 
         // Wide floor for every randomized spawn point and for the mock player.
         for (int x = -12; x <= 24; x++) {
