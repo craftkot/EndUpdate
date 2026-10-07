@@ -144,7 +144,7 @@ jobs:
           r.cmd("difficulty normal")
 
           # A forced, flat End platform makes the custom feature test deterministic.
-          r.cmd("execute in minecraft:the_end run forceload add 480 480 520 520")
+          r.cmd("execute in minecraft:the_end run forceload add 470 470 540 540")
           r.cmd("execute in minecraft:the_end run fill 470 64 470 530 64 530 minecraft:end_stone")
           r.cmd("execute in minecraft:the_end run fill 470 65 470 530 72 530 minecraft:air")
 
@@ -193,14 +193,14 @@ jobs:
 
           # The custom instant effect must actually move a living entity.
           r.cmd(
-              'execute in minecraft:the_end run summon minecraft:cow 515 66 500 '
+              'execute in minecraft:the_end run summon minecraft:cow 525 66 525 '
               '{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["ci_tp_target"]}'
           )
           before = parse_pos(r.cmd(
-              "execute in minecraft:the_end positioned 515 66 500 run data get entity @e[type=minecraft:cow,distance=..24,limit=1] Pos"
+              "execute in minecraft:the_end positioned 525 66 525 run data get entity @e[type=minecraft:cow,distance=..24,limit=1] Pos"
           ))
           r.cmd(
-              "execute in minecraft:the_end positioned 515 66 500 run effect give @e[type=minecraft:cow,distance=..24,limit=1] "
+              "execute in minecraft:the_end positioned 525 66 525 run effect give @e[type=minecraft:cow,distance=..24,limit=1] "
               "endupdate:chorus_teleport 1 0 true"
           )
           time.sleep(1)
