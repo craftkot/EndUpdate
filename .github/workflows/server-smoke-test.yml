@@ -1,4 +1,4 @@
-name: Dedicated Server Smoke Test
+name: Dedicated Server Integration Test
 
 on:
   push:
@@ -6,26 +6,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  server-smoke-test:
+  server-integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Restore source snapshot
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat ci_payload_v2/part*.b64 > endupdate-src.b64
-          echo "a0fa49b9a54fa291765db858b0539254fcb08e9ce2047f5c053d1de7a3bc993f  endupdate-src.b64" | sha256sum -c -
-          base64 --decode endupdate-src.b64 > endupdate-src.tar.gz
-          echo "a44fefb894497f1f82d6fc7f1780e2d4f793b327679dbd632c637891099da07d  endupdate-src.tar.gz" | sha256sum -c -
-          mkdir -p work
-          tar -xzf endupdate-src.tar.gz -C work
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -38,21 +27,33 @@ jobs:
         with:
           gradle-version: '8.1.1'
 
+      - name: Static resource audit
+        run: python3 tools/static_audit.py
+
       - name: Compile first
-        working-directory: work
         run: gradle --no-daemon build --stacktrace
 
-      - name: Accept test-server EULA
-        run: |
-          mkdir -p work/run
-          echo 'eula=true' > work/run/eula.txt
-
-      - name: Boot Forge dedicated server
+      - name: Configure test server
         shell: bash
-        working-directory: work
+        run: |
+          mkdir -p run
+          echo 'eula=true' > run/eula.txt
+          cat > run/server.properties <<'EOF'
+          online-mode=false
+          enable-rcon=true
+          rcon.password=endupdate-ci
+          rcon.port=25575
+          max-players=1
+          view-distance=4
+          simulation-distance=4
+          spawn-protection=0
+          EOF
+
+      - name: Boot server and run gameplay probes
+        shell: bash
         run: |
           set -euo pipefail
-          LOG="$GITHUB_WORKSPACE/server-smoke.log"
+          LOG="$GITHUB_WORKSPACE/server-integration.log"
           gradle --no-daemon runServer >"$LOG" 2>&1 &
           PID=$!
 
@@ -62,29 +63,168 @@ jobs:
           }
           trap cleanup EXIT
 
-          for i in $(seq 1 300); do
+          for i in $(seq 1 360); do
             if grep -Eq 'Done \([0-9.]+s\)!' "$LOG"; then
-              echo 'Dedicated server reached the ready state.'
-              exit 0
+              echo 'Dedicated server reached ready state.'
+              break
             fi
             if ! kill -0 "$PID" 2>/dev/null; then
-              echo 'Server exited before reaching the ready state.'
-              tail -n 250 "$LOG" || true
+              echo 'Server exited before reaching ready state.'
+              tail -n 300 "$LOG" || true
+              exit 1
+            fi
+            if [ "$i" -eq 360 ]; then
+              echo 'Server startup timed out.'
+              tail -n 300 "$LOG" || true
               exit 1
             fi
             sleep 1
           done
 
-          echo 'Server did not reach the ready state within 300 seconds.'
-          tail -n 250 "$LOG" || true
-          exit 1
+          python3 <<'PY'
+          import socket, struct, re, time, sys
 
-      - name: Upload smoke-test logs
+          HOST = "127.0.0.1"
+          PORT = 25575
+          PASSWORD = "endupdate-ci"
+
+          class Rcon:
+              def __init__(self):
+                  self.sock = socket.create_connection((HOST, PORT), timeout=10)
+                  self.req = 10
+                  self._send(3, PASSWORD)
+                  rid, typ, body = self._recv()
+                  if rid == -1:
+                      raise RuntimeError("RCON authentication failed")
+
+              def _send(self, typ, body):
+                  self.req += 1
+                  data = body.encode("utf-8") + b"\x00\x00"
+                  packet = struct.pack("<iii", 8 + len(data), self.req, typ) + data
+                  self.sock.sendall(packet)
+                  return self.req
+
+              def _recv_exact(self, n):
+                  out = b""
+                  while len(out) < n:
+                      chunk = self.sock.recv(n - len(out))
+                      if not chunk:
+                          raise RuntimeError("RCON connection closed")
+                      out += chunk
+                  return out
+
+              def _recv(self):
+                  length = struct.unpack("<i", self._recv_exact(4))[0]
+                  payload = self._recv_exact(length)
+                  rid, typ = struct.unpack("<ii", payload[:8])
+                  return rid, typ, payload[8:-2].decode("utf-8", errors="replace")
+
+              def cmd(self, command):
+                  self._send(2, command)
+                  _, _, body = self._recv()
+                  print(f"> {command}\n{body}")
+                  low = body.lower()
+                  bad = ("unknown or incomplete command", "incorrect argument", "failed to execute")
+                  if any(x in low for x in bad):
+                      raise AssertionError(f"Command failed: {command}: {body}")
+                  return body
+
+          def require(cond, message):
+              if not cond:
+                  raise AssertionError(message)
+
+          def parse_pos(text):
+              m = re.search(r"\[\s*(-?\d+(?:\.\d+)?)[dDfF]?,\s*(-?\d+(?:\.\d+)?)[dDfF]?,\s*(-?\d+(?:\.\d+)?)[dDfF]?\s*\]", text)
+              if not m:
+                  raise AssertionError(f"Could not parse entity position from: {text}")
+              return tuple(float(x) for x in m.groups())
+
+          r = Rcon()
+
+          # A forced, flat End platform makes the custom feature test deterministic.
+          r.cmd("execute in minecraft:the_end run forceload add 480 480 520 520")
+          r.cmd("execute in minecraft:the_end run fill 470 64 470 530 64 530 minecraft:end_stone")
+          r.cmd("execute in minecraft:the_end run fill 470 65 470 530 72 530 minecraft:air")
+
+          placed = r.cmd("execute in minecraft:the_end run place feature endupdate:end_trial_dungeon 500 65 500")
+          require("failed" not in placed.lower(), f"End Trial feature placement failed: {placed}")
+
+          core = r.cmd("execute in minecraft:the_end run data get block 500 67 500")
+          require("Phase" in core and "Wave" in core, f"Trial Core block entity did not load: {core}")
+
+          # Runtime entity registration and attribute construction.
+          mobs = (
+              ("end_zombie", "ci_end_zombie"),
+              ("end_skeleton", "ci_end_skeleton"),
+              ("end_creeper", "ci_end_creeper"),
+              ("end_spider", "ci_end_spider"),
+          )
+          for idx, (entity, tag) in enumerate(mobs):
+              resp = r.cmd(
+                  f'execute in minecraft:the_end run summon endupdate:{entity} {488 + idx * 2} 66 500 '
+                  f'{{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["{tag}"]}}'
+              )
+              require("summoned" in resp.lower(), f"Could not summon {entity}: {resp}")
+              attr = r.cmd(
+                  f"execute in minecraft:the_end run attribute @e[tag={tag},limit=1] minecraft:generic.max_health get"
+              )
+              require(re.search(r"\d", attr) is not None, f"Attribute lookup failed for {entity}: {attr}")
+
+          projectile = r.cmd("execute in minecraft:the_end run summon endupdate:ender_arrow 500 70 500")
+          require("summoned" in projectile.lower(), f"Ender arrow entity did not construct: {projectile}")
+
+          # Block tag loaded from the datapack.
+          r.cmd("execute in minecraft:the_end run setblock 510 66 500 endupdate:chorus_planks")
+          tag_check = r.cmd(
+              "execute in minecraft:the_end if block 510 66 500 #minecraft:planks run say ENDUPDATE_PLANK_TAG_OK"
+          )
+          require("ENDUPDATE_PLANK_TAG_OK" in tag_check, f"chorus_planks is not in minecraft:planks: {tag_check}")
+
+          # Loot table must deserialize and produce loot.
+          loot = r.cmd("execute in minecraft:the_end run loot spawn 505 66 500 loot endupdate:chests/end_trial_reward")
+          require("dropped" in loot.lower(), f"Trial reward loot table failed: {loot}")
+
+          # The custom instant effect must actually move a living entity.
+          r.cmd(
+              'execute in minecraft:the_end run summon minecraft:zombie 515 66 500 '
+              '{NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["ci_tp_target"]}'
+          )
+          before = parse_pos(r.cmd(
+              "execute in minecraft:the_end run data get entity @e[tag=ci_tp_target,limit=1] Pos"
+          ))
+          r.cmd(
+              "execute in minecraft:the_end run effect give @e[tag=ci_tp_target,limit=1] "
+              "endupdate:chorus_teleport 1 0 true"
+          )
+          time.sleep(1)
+          after = parse_pos(r.cmd(
+              "execute in minecraft:the_end run data get entity @e[tag=ci_tp_target,limit=1] Pos"
+          ))
+          moved = sum((a - b) ** 2 for a, b in zip(after, before)) > 0.25
+          require(moved, f"Teleportation effect did not move the entity: before={before}, after={after}")
+
+          # Real brewing stand test: Thick Potion + chorus fruit -> custom teleportation potion.
+          r.cmd("execute in minecraft:the_end run setblock 520 66 500 minecraft:brewing_stand")
+          r.cmd(
+              'execute in minecraft:the_end run item replace block 520 66 500 container.0 '
+              'with minecraft:potion{Potion:"minecraft:thick"}'
+          )
+          r.cmd("execute in minecraft:the_end run item replace block 520 66 500 container.3 with minecraft:chorus_fruit")
+          r.cmd("execute in minecraft:the_end run item replace block 520 66 500 container.4 with minecraft:blaze_powder")
+          print("Waiting for brewing cycle...")
+          time.sleep(23)
+          brewed = r.cmd("execute in minecraft:the_end run data get block 520 66 500 Items")
+          require("endupdate:teleportation" in brewed, f"Teleportation brewing recipe failed: {brewed}")
+
+          print("ENDUPDATE GAMEPLAY INTEGRATION TESTS PASSED")
+          PY
+
+      - name: Upload integration logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dedicated-server-smoke-logs
+          name: dedicated-server-integration-logs
           path: |
-            server-smoke.log
-            work/run/logs/**
+            server-integration.log
+            run/logs/**
           if-no-files-found: ignore
