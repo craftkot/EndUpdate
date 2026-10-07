@@ -1,0 +1,44 @@
+name: Forge GameTests
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  gametest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.1.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.1.1'
+
+      - name: Compile
+        run: gradle --no-daemon build --stacktrace
+
+      - name: Run Forge GameTests
+        run: gradle --no-daemon runGameTestServer --stacktrace
+
+      - name: Upload GameTest logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-gametest-logs
+          path: |
+            run/logs/**
+            run/gametestresults/**
+          if-no-files-found: ignore
