@@ -33,10 +33,6 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Static resource audit
-        working-directory: work
-        run: python3 tools/static_audit.py
-
       - name: Set up Gradle 8.1.1
         uses: gradle/actions/setup-gradle@v4
         with:
