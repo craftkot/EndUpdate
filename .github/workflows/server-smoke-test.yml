@@ -40,6 +40,7 @@ jobs:
           echo 'eula=true' > run/eula.txt
           cat > run/server.properties <<'EOF'
           online-mode=false
+          difficulty=normal
           enable-rcon=true
           rcon.password=endupdate-ci
           rcon.port=25575
@@ -140,6 +141,7 @@ jobs:
               return tuple(float(x) for x in m.groups())
 
           r = Rcon()
+          r.cmd("difficulty normal")
 
           # A forced, flat End platform makes the custom feature test deterministic.
           r.cmd("execute in minecraft:the_end run forceload add 480 480 520 520")
