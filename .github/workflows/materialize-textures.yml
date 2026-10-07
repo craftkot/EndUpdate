@@ -3,7 +3,6 @@ name: Materialize Textures
 on:
   push:
     paths:
-      - "ci_assets/textures.tar.gz.b64"
       - ".github/workflows/materialize-textures.yml"
   workflow_dispatch:
 
@@ -20,11 +19,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "89c0b7f839f43d16da866a6448f033f3c9309adfad7ac0807a55ebb100850844  ci_assets/textures.tar.gz.b64" | sha256sum -c -
-          base64 --decode ci_assets/textures.tar.gz.b64 > textures.tar.gz
-          echo "a6e93dea4436731249d10d78d56c0f25cb16fa409c1cc6b058c4a926f8516239  textures.tar.gz" | sha256sum -c -
+          cat ci_assets/textures.part*.b64 > textures.tar.gz.b64
+          echo "7b61f643aa3510eb833ebc1a66114585879589b57ffec4bb1d0cf774945b1215  textures.tar.gz.b64" | sha256sum -c -
+          base64 --decode textures.tar.gz.b64 > textures.tar.gz
+          echo "0ec52612649e3203f7dd2dc71a8b0015edc5d3f58ff898da1bcc3ee1b7c79232  textures.tar.gz" | sha256sum -c -
           tar -xzf textures.tar.gz
-          rm textures.tar.gz
+          rm textures.tar.gz textures.tar.gz.b64
       - name: Commit textures
         shell: bash
         run: |
