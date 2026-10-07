@@ -20,7 +20,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat ci_payload/part*.b64 | base64 --decode > endupdate-src.tar.gz
+          cat ci_payload_v2/part*.b64 > endupdate-src.b64
+          echo "a0fa49b9a54fa291765db858b0539254fcb08e9ce2047f5c053d1de7a3bc993f  endupdate-src.b64" | sha256sum -c -
+          base64 --decode endupdate-src.b64 > endupdate-src.tar.gz
+          echo "a44fefb894497f1f82d6fc7f1780e2d4f793b327679dbd632c637891099da07d  endupdate-src.tar.gz" | sha256sum -c -
           mkdir -p work
           tar -xzf endupdate-src.tar.gz -C work
           echo "Source restored:"
