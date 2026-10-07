@@ -16,19 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore source snapshot
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat ci_payload_v2/part*.b64 > endupdate-src.b64
-          echo "a0fa49b9a54fa291765db858b0539254fcb08e9ce2047f5c053d1de7a3bc993f  endupdate-src.b64" | sha256sum -c -
-          base64 --decode endupdate-src.b64 > endupdate-src.tar.gz
-          echo "a44fefb894497f1f82d6fc7f1780e2d4f793b327679dbd632c637891099da07d  endupdate-src.tar.gz" | sha256sum -c -
-          mkdir -p work
-          tar -xzf endupdate-src.tar.gz -C work
-          echo "Source restored:"
-          find work -maxdepth 3 -type f | sort | head -100
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -40,8 +27,10 @@ jobs:
         with:
           gradle-version: '8.1.1'
 
+      - name: Static resource audit
+        run: python3 tools/static_audit.py
+
       - name: Compile Forge mod
-        working-directory: work
         run: gradle --no-daemon clean build --stacktrace
 
       - name: Upload built jar
@@ -49,5 +38,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: endupdate-forge-1.20.1
-          path: work/build/libs/*.jar
+          path: build/libs/*.jar
           if-no-files-found: error
