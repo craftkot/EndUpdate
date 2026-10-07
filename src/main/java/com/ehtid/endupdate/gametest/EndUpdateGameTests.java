@@ -8,10 +8,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -76,11 +76,12 @@ public final class EndUpdateGameTests {
         helper.assertTrue(level.getBlockEntity(corePos) instanceof EndTrialCoreBlockEntity,
                 "Trial Core block entity was not created");
 
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        Player player = helper.makeMockPlayer();
         player.setInvulnerable(true);
         // Keep the player inside the 24-block activation radius but far enough that mobs do not
         // naturally reach the fake player before each wave assertion.
         player.setPos(corePos.getX() + 20.5D, corePos.getY() + 4.0D, corePos.getZ() + 0.5D);
+        level.addFreshEntity(player);
 
         helper.runAtTickTime(65L, () -> {
             List<Mob> mobs = trialMobs(level, corePos);
