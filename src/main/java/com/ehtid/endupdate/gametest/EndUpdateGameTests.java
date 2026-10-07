@@ -2,8 +2,12 @@ package com.ehtid.endupdate.gametest;
 
 import com.ehtid.endupdate.EndUpdateMod;
 import com.ehtid.endupdate.blockentity.EndTrialCoreBlockEntity;
+import com.ehtid.endupdate.entity.EndSkeleton;
+import com.ehtid.endupdate.entity.EndZombie;
+import com.ehtid.endupdate.entity.EnderArrowEntity;
 import com.ehtid.endupdate.registry.ModBlocks;
 import com.ehtid.endupdate.registry.ModEffects;
+import com.ehtid.endupdate.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -14,6 +18,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -54,6 +59,49 @@ public final class EndUpdateGameTests {
 
         helper.assertTrue(before.distanceToSqr(target.position()) > 0.25D,
                 "Chorus teleport effect did not move the target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void requestedMobTeleportBehaviors(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos center = helper.absolutePos(BlockPos.ZERO).above();
+
+        for (int x = -12; x <= 12; x++) {
+            for (int z = -12; z <= 12; z++) {
+                level.setBlock(center.offset(x, -1, z), Blocks.END_STONE.defaultBlockState(), 3);
+                level.setBlock(center.offset(x, 0, z), Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(center.offset(x, 1, z), Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+
+        EndSkeleton attacker = ModEntities.END_SKELETON.get().create(level);
+        EndZombie zombie = ModEntities.END_ZOMBIE.get().create(level);
+        LivingEntity arrowTarget = EntityType.COW.create(level);
+        helper.assertTrue(attacker != null && zombie != null && arrowTarget != null,
+                "Failed to create mob-behavior test entities");
+        if (attacker == null || zombie == null || arrowTarget == null) return;
+
+        attacker.moveTo(center.getX() + 1.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
+        zombie.moveTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
+        arrowTarget.moveTo(center.getX() + 7.5D, center.getY(), center.getZ() + 0.5D, 0.0F, 0.0F);
+        level.addFreshEntity(attacker);
+        level.addFreshEntity(zombie);
+        level.addFreshEntity(arrowTarget);
+
+        Vec3 zombieBefore = zombie.position();
+        boolean hurt = zombie.hurt(level.damageSources().mobAttack(attacker), 1.0F);
+        helper.assertTrue(hurt, "End Zombie did not accept test damage");
+        helper.assertTrue(zombieBefore.distanceToSqr(zombie.position()) > 0.25D,
+                "End Zombie did not chorus-teleport after an entity hit");
+
+        Vec3 targetBefore = arrowTarget.position();
+        TestEnderArrow arrow = new TestEnderArrow(level, attacker);
+        arrow.hitTarget(arrowTarget);
+        helper.assertTrue(arrowTarget.isAlive(), "Teleport arrow unexpectedly killed the test target");
+        helper.assertTrue(targetBefore.distanceToSqr(arrowTarget.position()) > 0.25D,
+                "End Skeleton teleport arrow did not move its surviving target");
+
         helper.succeed();
     }
 
@@ -127,6 +175,16 @@ public final class EndUpdateGameTests {
     private static void discard(List<Mob> mobs) {
         for (Mob mob : mobs) {
             mob.discard();
+        }
+    }
+
+    private static final class TestEnderArrow extends EnderArrowEntity {
+        private TestEnderArrow(ServerLevel level, LivingEntity shooter) {
+            super(level, shooter);
+        }
+
+        private void hitTarget(LivingEntity target) {
+            super.onHitEntity(new EntityHitResult(target));
         }
     }
 
