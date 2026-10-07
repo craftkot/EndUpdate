@@ -134,14 +134,13 @@ public class EndTrialCoreBlockEntity extends BlockEntity {
             if (mob == null) continue;
             double spawnX;
             double spawnZ;
-            if (waveNumber == 1) {
+            if (waveNumber == 1 || (waveNumber == 3 && (i & 1) == 0)) {
                 double angle = (Math.PI * 2.0D * i / count) + level.random.nextDouble() * 0.4D;
                 double radius = 5.0D + level.random.nextDouble() * 3.0D;
                 spawnX = center.getX() + 0.5D + Math.cos(angle) * radius;
                 spawnZ = center.getZ() + 0.5D + Math.sin(angle) * radius;
             } else {
-                // Later waves make the four side rooms matter: enemies enter from the chambers
-                // instead of every wave appearing in the same circle around the core.
+                // Wave 2 attacks from the four side rooms; the finale mixes chamber and arena spawns.
                 int side = i & 3;
                 int roomX = side == 0 ? 18 : side == 1 ? -18 : 0;
                 int roomZ = side == 2 ? 18 : side == 3 ? -18 : 0;
