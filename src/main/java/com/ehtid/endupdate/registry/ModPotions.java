@@ -17,24 +17,27 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class ModPotions {
-    public static final DeferredRegister<Potion> POTIONS = DeferredRegister.create(ForgeRegistries.POTIONS, EndUpdateMod.MODID);
-    public static final RegistryObject<Potion> TELEPORTATION = POTIONS.register("teleportation",
-            () -> new Potion("teleportation", new MobEffectInstance(ModEffects.CHORUS_TELEPORT.get(), 1)));
+    private static final int TELEPORT_DURATION = 20 * 10;
 
-    public static void register(IEventBus bus) { POTIONS.register(bus); }
+    public static final DeferredRegister<Potion> POTIONS =
+            DeferredRegister.create(ForgeRegistries.POTIONS, EndUpdateMod.MODID);
+
+    public static final RegistryObject<Potion> TELEPORTATION = POTIONS.register("teleportation",
+            () -> new Potion("teleportation",
+                    new MobEffectInstance(ModEffects.CHORUS_TELEPORT.get(), TELEPORT_DURATION)));
+
+    public static void register(IEventBus bus) {
+        POTIONS.register(bus);
+    }
 
     public static void registerBrewing(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // Deliberately starts from Thick Potion instead of Awkward Potion.
             BrewingRecipeRegistry.addRecipe(
                     StrictNBTIngredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.THICK)),
                     Ingredient.of(Items.CHORUS_FRUIT),
                     PotionUtils.setPotion(new ItemStack(Items.POTION), TELEPORTATION.get()));
-
-            // Splash and lingering variants intentionally use vanilla brewing progression:
-            // gunpowder converts the normal potion to splash, dragon breath converts splash to lingering.
-            // The vanilla 8-arrows + lingering-potion recipe then creates tipped teleportation arrows.
         });
     }
+
     private ModPotions() {}
 }
