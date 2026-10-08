@@ -7,19 +7,30 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
 
 public class EndCreeper extends Creeper {
-    private int blinkCooldown;
+    private int blinkCooldown = 30;
 
-    public EndCreeper(EntityType<? extends Creeper> type, Level level) { super(type, level); }
+    public EndCreeper(EntityType<? extends Creeper> type, Level level) {
+        super(type, level);
+    }
 
     @Override
     public void tick() {
         super.tick();
-        if (blinkCooldown > 0) blinkCooldown--;
-        if (!level().isClientSide && blinkCooldown == 0 && getSwellDir() > 0) {
-            LivingEntity target = getTarget();
-            if (target != null && distanceToSqr(target) > 9.0D) {
-                if (TeleportUtil.chorusTeleportNear(this, target, 4.0D, 2.5D, 10)) blinkCooldown = 60;
+        if (level().isClientSide) return;
+
+        if (blinkCooldown > 0) {
+            blinkCooldown--;
+            return;
+        }
+
+        LivingEntity target = getTarget();
+        if (target != null && target.isAlive()) {
+            double radius = getSwellDir() > 0 ? 3.5D : 6.0D;
+            if (TeleportUtil.chorusTeleportNear(this, target, radius, 3.0D, 14)) {
+                blinkCooldown = getSwellDir() > 0 ? 35 : 55 + getRandom().nextInt(31);
             }
+        } else if (getRandom().nextInt(5) == 0 && TeleportUtil.chorusTeleport(this, 5.0D, 3.0D, 8)) {
+            blinkCooldown = 90 + getRandom().nextInt(41);
         }
     }
 }
