@@ -29,10 +29,11 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
 
         buildCentralArena(level, origin);
         buildPerimeter(level, origin);
+        buildGateArches(level, origin);
         buildPylons(level, origin);
         buildCoreDais(level, origin);
+        buildCornerButtresses(level, origin);
 
-        // Four actual rooms with short corridors. Each has a different End-specific combat layout.
         buildCorridor(level, origin, 0, -1);
         buildChamber(level, origin.offset(0, 0, -18), 0, 0, -1, random);
 
@@ -73,12 +74,31 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
             for (int z = -12; z <= 12; z++) {
                 if (Math.abs(x) + Math.abs(z) > 20) continue;
                 BlockPos floor = origin.offset(x, 0, z);
-                BlockState floorState = ((x + z) & 3) == 0
-                        ? Blocks.PURPUR_BLOCK.defaultBlockState()
-                        : Blocks.END_STONE_BRICKS.defaultBlockState();
+
+                int ring = Math.max(Math.abs(x), Math.abs(z));
+                BlockState floorState;
+                if (ring == 11 || ring == 7) {
+                    floorState = Blocks.PURPUR_BLOCK.defaultBlockState();
+                } else if ((x == 0 || z == 0) && ring > 3) {
+                    floorState = ModBlocks.CHORUS_PLANKS.get().defaultBlockState();
+                } else if (((x + z) & 5) == 0) {
+                    floorState = ModBlocks.CHORUS_MOSAIC.get().defaultBlockState();
+                } else {
+                    floorState = Blocks.END_STONE_BRICKS.defaultBlockState();
+                }
+
                 set(level, floor, floorState);
                 supportFloor(level, floor);
-                clearColumn(level, floor, 1, 6);
+                clearColumn(level, floor, 1, 7);
+            }
+        }
+
+        // Small recessed-looking ring around the central pedestal.
+        for (int x = -4; x <= 4; x++) {
+            for (int z = -4; z <= 4; z++) {
+                if (Math.max(Math.abs(x), Math.abs(z)) == 4) {
+                    set(level, origin.offset(x, 1, z), Blocks.PURPUR_SLAB.defaultBlockState());
+                }
             }
         }
     }
@@ -92,13 +112,59 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
         }
     }
 
+    private void buildGateArches(WorldGenLevel level, BlockPos origin) {
+        buildGateArch(level, origin, 0, -10, true);
+        buildGateArch(level, origin, 0, 10, true);
+        buildGateArch(level, origin, -10, 0, false);
+        buildGateArch(level, origin, 10, 0, false);
+    }
+
+    private void buildGateArch(WorldGenLevel level, BlockPos origin, int x, int z, boolean eastWestSpan) {
+        for (int side = -3; side <= 3; side++) {
+            int px = x + (eastWestSpan ? side : 0);
+            int pz = z + (eastWestSpan ? 0 : side);
+            if (Math.abs(side) >= 2) {
+                for (int h = 1; h <= 6; h++) {
+                    set(level, origin.offset(px, h, pz),
+                            h <= 4 ? Blocks.END_STONE_BRICKS.defaultBlockState() : Blocks.PURPUR_PILLAR.defaultBlockState());
+                }
+            } else {
+                set(level, origin.offset(px, 6, pz), Blocks.PURPUR_BLOCK.defaultBlockState());
+            }
+        }
+        set(level, origin.offset(x, 7, z), Blocks.END_ROD.defaultBlockState());
+    }
+
     private void buildPylons(WorldGenLevel level, BlockPos origin) {
         int[][] pylons = {{-7, -7}, {7, -7}, {-7, 7}, {7, 7}};
         for (int[] p : pylons) {
-            for (int h = 1; h <= 6; h++) {
-                set(level, origin.offset(p[0], h, p[1]), Blocks.OBSIDIAN.defaultBlockState());
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (Math.abs(dx) + Math.abs(dz) > 1) continue;
+                    set(level, origin.offset(p[0] + dx, 1, p[1] + dz), Blocks.PURPUR_BLOCK.defaultBlockState());
+                }
             }
-            set(level, origin.offset(p[0], 7, p[1]), Blocks.END_ROD.defaultBlockState());
+            for (int h = 2; h <= 7; h++) {
+                set(level, origin.offset(p[0], h, p[1]),
+                        (h == 4 || h == 7) ? Blocks.PURPUR_PILLAR.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState());
+            }
+            set(level, origin.offset(p[0], 8, p[1]), Blocks.END_ROD.defaultBlockState());
+        }
+    }
+
+    private void buildCornerButtresses(WorldGenLevel level, BlockPos origin) {
+        int[][] corners = {{-10,-10},{10,-10},{-10,10},{10,10}};
+        for (int[] c : corners) {
+            for (int h = 1; h <= 5; h++) {
+                set(level, origin.offset(c[0], h, c[1]),
+                        h == 5 ? Blocks.PURPUR_BLOCK.defaultBlockState() : Blocks.END_STONE_BRICKS.defaultBlockState());
+            }
+            int ix = c[0] > 0 ? -1 : 1;
+            int iz = c[1] > 0 ? -1 : 1;
+            for (int h = 1; h <= 3; h++) {
+                set(level, origin.offset(c[0] + ix, h, c[1]), Blocks.PURPUR_PILLAR.defaultBlockState());
+                set(level, origin.offset(c[0], h, c[1] + iz), Blocks.PURPUR_PILLAR.defaultBlockState());
+            }
         }
     }
 
@@ -111,16 +177,31 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
                 set(level, origin.offset(x, 1, z), state);
             }
         }
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x == 0 && z == 0) continue;
+                set(level, origin.offset(x, 2, z), Blocks.OBSIDIAN.defaultBlockState());
+            }
+        }
         set(level, origin.offset(0, 2, 0), ModBlocks.END_TRIAL_CORE.get().defaultBlockState());
+        set(level, origin.offset(0, 3, 0), Blocks.END_ROD.defaultBlockState());
     }
 
     private void buildWallSegment(WorldGenLevel level, BlockPos base, int along) {
-        if (Math.abs(along) <= 2) return; // four wide entrances lead to the side rooms
-        for (int h = 0; h < 4; h++) {
-            BlockState state = h == 3 && (along & 1) == 0
-                    ? Blocks.PURPUR_PILLAR.defaultBlockState()
-                    : Blocks.END_STONE_BRICKS.defaultBlockState();
+        if (Math.abs(along) <= 2) return;
+        for (int h = 0; h < 5; h++) {
+            BlockState state;
+            if (h == 4) {
+                state = (along & 1) == 0 ? Blocks.PURPUR_BLOCK.defaultBlockState() : Blocks.END_STONE_BRICKS.defaultBlockState();
+            } else if (h == 2 && Math.abs(along) % 3 == 0) {
+                state = Blocks.PURPUR_PILLAR.defaultBlockState();
+            } else {
+                state = Blocks.END_STONE_BRICKS.defaultBlockState();
+            }
             set(level, base.above(h), state);
+        }
+        if (Math.abs(along) % 4 == 0) {
+            set(level, base.above(5), Blocks.PURPUR_SLAB.defaultBlockState());
         }
     }
 
@@ -130,41 +211,71 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
                 int x = dx * distance + (dz != 0 ? side : 0);
                 int z = dz * distance + (dx != 0 ? side : 0);
                 BlockPos floor = origin.offset(x, 0, z);
-                set(level, floor, (side == 0 ? ModBlocks.CHORUS_PLANKS.get() : Blocks.END_STONE_BRICKS).defaultBlockState());
+                BlockState state = side == 0
+                        ? ModBlocks.CHORUS_PLANKS.get().defaultBlockState()
+                        : (Math.abs(side) == 2 ? Blocks.PURPUR_BLOCK : Blocks.END_STONE_BRICKS).defaultBlockState();
+                set(level, floor, state);
                 supportFloor(level, floor);
-                clearColumn(level, floor, 1, 5);
+                clearColumn(level, floor, 1, 6);
+
+                if (Math.abs(side) == 2 && distance % 2 == 0) {
+                    set(level, floor.above(), Blocks.PURPUR_PILLAR.defaultBlockState());
+                    set(level, floor.above(2), Blocks.END_ROD.defaultBlockState());
+                }
             }
         }
     }
 
     private void buildChamber(WorldGenLevel level, BlockPos center, int style, int outwardX, int outwardZ, RandomSource random) {
-        for (int x = -5; x <= 5; x++) {
-            for (int z = -5; z <= 5; z++) {
+        for (int x = -6; x <= 6; x++) {
+            for (int z = -6; z <= 6; z++) {
                 BlockPos floor = center.offset(x, 0, z);
-                BlockState floorState = ((x * x + z * z + style) % 5 == 0)
-                        ? ModBlocks.CHORUS_PLANKS.get().defaultBlockState()
-                        : Blocks.END_STONE_BRICKS.defaultBlockState();
+                int ring = Math.max(Math.abs(x), Math.abs(z));
+                BlockState floorState;
+                if (ring == 5) {
+                    floorState = Blocks.PURPUR_BLOCK.defaultBlockState();
+                } else if (((x * 3 + z * 5 + style) & 7) == 0) {
+                    floorState = ModBlocks.CHORUS_MOSAIC.get().defaultBlockState();
+                } else {
+                    floorState = Blocks.END_STONE_BRICKS.defaultBlockState();
+                }
                 set(level, floor, floorState);
                 supportFloor(level, floor);
-                clearColumn(level, floor, 1, 6);
+                clearColumn(level, floor, 1, 7);
 
-                boolean edge = Math.abs(x) == 5 || Math.abs(z) == 5;
+                boolean edge = Math.abs(x) == 6 || Math.abs(z) == 6;
                 if (!edge || isEntrance(x, z, outwardX, outwardZ)) continue;
-                for (int h = 1; h <= 4; h++) {
-                    BlockState wall = h == 4 && ((x + z) & 1) == 0
+                for (int h = 1; h <= 5; h++) {
+                    BlockState wall = h == 5
                             ? Blocks.PURPUR_BLOCK.defaultBlockState()
-                            : Blocks.END_STONE_BRICKS.defaultBlockState();
+                            : ((h == 3 && ((x + z) & 1) == 0)
+                            ? Blocks.PURPUR_PILLAR.defaultBlockState()
+                            : Blocks.END_STONE_BRICKS.defaultBlockState());
                     set(level, floor.above(h), wall);
                 }
             }
         }
 
-        // Roof rim keeps the room readable while leaving the centre open to the End sky.
-        for (int i = -5; i <= 5; i++) {
-            set(level, center.offset(i, 5, -5), Blocks.PURPUR_SLAB.defaultBlockState());
-            set(level, center.offset(i, 5, 5), Blocks.PURPUR_SLAB.defaultBlockState());
-            set(level, center.offset(-5, 5, i), Blocks.PURPUR_SLAB.defaultBlockState());
-            set(level, center.offset(5, 5, i), Blocks.PURPUR_SLAB.defaultBlockState());
+        // Corner towers and roof beams make each side room feel like a real chamber instead of a box.
+        int[][] corners = {{-6,-6},{6,-6},{-6,6},{6,6}};
+        for (int[] c : corners) {
+            for (int h = 1; h <= 7; h++) {
+                set(level, center.offset(c[0], h, c[1]),
+                        h == 7 ? Blocks.END_ROD.defaultBlockState() : Blocks.PURPUR_PILLAR.defaultBlockState());
+            }
+        }
+
+        for (int i = -6; i <= 6; i++) {
+            BlockState roof = (i & 1) == 0 ? Blocks.PURPUR_SLAB.defaultBlockState() : Blocks.END_STONE_BRICK_SLAB.defaultBlockState();
+            set(level, center.offset(i, 6, -6), roof);
+            set(level, center.offset(i, 6, 6), roof);
+            set(level, center.offset(-6, 6, i), roof);
+            set(level, center.offset(6, 6, i), roof);
+        }
+        for (int i = -4; i <= 4; i++) {
+            if ((i & 1) != 0) continue;
+            set(level, center.offset(i, 6, 0), Blocks.PURPUR_SLAB.defaultBlockState());
+            set(level, center.offset(0, 6, i), Blocks.PURPUR_SLAB.defaultBlockState());
         }
 
         switch (style) {
@@ -176,41 +287,44 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     private boolean isEntrance(int x, int z, int outwardX, int outwardZ) {
-        // The doorway is on the chamber wall facing back toward the central arena.
-        if (outwardX == 1 && x == -5) return Math.abs(z) <= 1;
-        if (outwardX == -1 && x == 5) return Math.abs(z) <= 1;
-        if (outwardZ == 1 && z == -5) return Math.abs(x) <= 1;
-        if (outwardZ == -1 && z == 5) return Math.abs(x) <= 1;
+        if (outwardX == 1 && x == -6) return Math.abs(z) <= 1;
+        if (outwardX == -1 && x == 6) return Math.abs(z) <= 1;
+        if (outwardZ == 1 && z == -6) return Math.abs(x) <= 1;
+        if (outwardZ == -1 && z == 6) return Math.abs(x) <= 1;
         return false;
     }
 
     private void buildChorusPillarRoom(WorldGenLevel level, BlockPos center) {
         int[][] points = {{-3, -3}, {3, -3}, {-3, 3}, {3, 3}};
         for (int[] p : points) {
-            for (int h = 1; h <= 3; h++) {
+            for (int h = 1; h <= 4; h++) {
                 set(level, center.offset(p[0], h, p[1]), ModBlocks.CHORUS_STEM.get().defaultBlockState());
             }
-            set(level, center.offset(p[0], 4, p[1]), Blocks.END_ROD.defaultBlockState());
+            set(level, center.offset(p[0], 5, p[1]), Blocks.END_ROD.defaultBlockState());
         }
-        for (int i = -2; i <= 2; i++) {
+        for (int i = -3; i <= 3; i++) {
+            if (i == 0) continue;
             set(level, center.offset(i, 1, 0), ModBlocks.CHORUS_MOSAIC.get().defaultBlockState());
+            set(level, center.offset(0, 1, i), ModBlocks.CHORUS_MOSAIC.get().defaultBlockState());
         }
     }
 
     private void buildObsidianBlinkRoom(WorldGenLevel level, BlockPos center) {
-        int[][] points = {{0, -3}, {0, 3}, {-3, 0}, {3, 0}};
+        int[][] points = {{0, -4}, {0, 4}, {-4, 0}, {4, 0}};
         for (int[] p : points) {
-            for (int h = 1; h <= 4; h++) {
-                set(level, center.offset(p[0], h, p[1]), Blocks.OBSIDIAN.defaultBlockState());
+            for (int h = 1; h <= 5; h++) {
+                set(level, center.offset(p[0], h, p[1]),
+                        h == 3 ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState());
             }
-            set(level, center.offset(p[0], 5, p[1]), Blocks.END_ROD.defaultBlockState());
+            set(level, center.offset(p[0], 6, p[1]), Blocks.END_ROD.defaultBlockState());
         }
+        set(level, center.above(), Blocks.CRYING_OBSIDIAN.defaultBlockState());
     }
 
     private void buildPurpurStepsRoom(WorldGenLevel level, BlockPos center) {
         for (int ring = 0; ring <= 2; ring++) {
             int y = ring + 1;
-            int radius = 3 - ring;
+            int radius = 4 - ring;
             for (int x = -radius; x <= radius; x++) {
                 set(level, center.offset(x, y, -radius), Blocks.PURPUR_BLOCK.defaultBlockState());
                 set(level, center.offset(x, y, radius), Blocks.PURPUR_BLOCK.defaultBlockState());
@@ -220,6 +334,7 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
                 set(level, center.offset(radius, y, z), Blocks.PURPUR_BLOCK.defaultBlockState());
             }
         }
+        set(level, center.offset(0, 4, 0), Blocks.END_ROD.defaultBlockState());
     }
 
     private void buildCrossfireRoom(WorldGenLevel level, BlockPos center, RandomSource random) {
@@ -227,8 +342,10 @@ public class EndTrialDungeonFeature extends Feature<NoneFeatureConfiguration> {
             int offset = random.nextBoolean() ? 2 : -2;
             set(level, center.offset(i, 1, offset), ModBlocks.CHORUS_MOSAIC.get().defaultBlockState());
             set(level, center.offset(offset, 1, i), Blocks.PURPUR_PILLAR.defaultBlockState());
+            set(level, center.offset(i, 2, offset), Blocks.PURPUR_SLAB.defaultBlockState());
         }
         set(level, center.above(), Blocks.END_ROD.defaultBlockState());
+        set(level, center.offset(0, 2, 0), Blocks.OBSIDIAN.defaultBlockState());
     }
 
     private void supportFloor(WorldGenLevel level, BlockPos floor) {

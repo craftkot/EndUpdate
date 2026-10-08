@@ -18,6 +18,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModPotions {
     private static final int TELEPORT_DURATION = 20 * 10;
+    private static final int LONG_TELEPORT_DURATION = 20 * 30;
 
     public static final DeferredRegister<Potion> POTIONS =
             DeferredRegister.create(ForgeRegistries.POTIONS, EndUpdateMod.MODID);
@@ -26,16 +27,29 @@ public final class ModPotions {
             () -> new Potion("teleportation",
                     new MobEffectInstance(ModEffects.CHORUS_TELEPORT.get(), TELEPORT_DURATION)));
 
+    public static final RegistryObject<Potion> LONG_TELEPORTATION = POTIONS.register("long_teleportation",
+            () -> new Potion("teleportation",
+                    new MobEffectInstance(ModEffects.CHORUS_TELEPORT.get(), LONG_TELEPORT_DURATION)));
+
     public static void register(IEventBus bus) {
         POTIONS.register(bus);
     }
 
     public static void registerBrewing(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
+            ItemStack basePotion = PotionUtils.setPotion(new ItemStack(Items.POTION), TELEPORTATION.get());
+            ItemStack longPotion = PotionUtils.setPotion(new ItemStack(Items.POTION), LONG_TELEPORTATION.get());
+
             BrewingRecipeRegistry.addRecipe(
                     StrictNBTIngredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.THICK)),
                     Ingredient.of(Items.CHORUS_FRUIT),
-                    PotionUtils.setPotion(new ItemStack(Items.POTION), TELEPORTATION.get()));
+                    basePotion.copy());
+
+            // Vanilla-style duration upgrade: Redstone extends the teleport effect from 10s to 30s.
+            BrewingRecipeRegistry.addRecipe(
+                    StrictNBTIngredient.of(basePotion),
+                    Ingredient.of(Items.REDSTONE),
+                    longPotion);
         });
     }
 
