@@ -110,6 +110,7 @@ public final class EndUpdateGameTests {
     @GameTest(template = "empty", timeoutTicks = 320)
     public static void trialCoreRunsThreeWavesAndRewards(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        level.setDayTime(18000L); // Keep undead trial mobs from burning during the headless arena test.
         BlockPos corePos = helper.absolutePos(new BlockPos(24, 2, 24));
 
         // Wide floor for every randomized spawn point and for the mock player.
@@ -133,7 +134,7 @@ public final class EndUpdateGameTests {
         player.setPos(corePos.getX() + 20.5D, corePos.getY() + 4.0D, corePos.getZ() + 0.5D);
         level.addFreshEntity(player);
 
-        helper.runAtTickTime(65L, () -> {
+        helper.runAtTickTime(45L, () -> {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 4,
                     "Wave 1 should contain 4 trial mobs, found " + mobs.size());
@@ -142,7 +143,7 @@ public final class EndUpdateGameTests {
             discard(mobs);
         });
 
-        helper.runAtTickTime(125L, () -> {
+        helper.runAtTickTime(105L, () -> {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 6,
                     "Wave 2 should contain 6 trial mobs, found " + mobs.size());
@@ -153,7 +154,7 @@ public final class EndUpdateGameTests {
             discard(mobs);
         });
 
-        helper.runAtTickTime(190L, () -> {
+        helper.runAtTickTime(165L, () -> {
             List<Mob> mobs = trialMobs(level, corePos);
             helper.assertTrue(mobs.size() == 8,
                     "Wave 3 should contain 8 trial mobs, found " + mobs.size());
@@ -164,7 +165,7 @@ public final class EndUpdateGameTests {
             discard(mobs);
         });
 
-        helper.runAtTickTime(250L, () -> {
+        helper.runAtTickTime(225L, () -> {
             helper.assertTrue(level.getBlockState(corePos.above()).is(Blocks.CHEST),
                     "Trial Core did not create the reward chest after wave 3");
             helper.assertTrue(trialMobs(level, corePos).isEmpty(),
