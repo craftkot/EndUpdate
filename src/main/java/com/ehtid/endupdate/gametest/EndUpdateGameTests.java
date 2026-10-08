@@ -57,7 +57,7 @@ public final class EndUpdateGameTests {
         level.addFreshEntity(target);
         Vec3 before = target.position();
 
-        ModEffects.CHORUS_TELEPORT.get().applyInstantenousEffect(null, null, target, 0, 1.0D);
+        ModEffects.CHORUS_TELEPORT.get().applyEffectTick(target, 0);
 
         helper.assertTrue(before.distanceToSqr(target.position()) > 0.25D,
                 "Chorus teleport effect did not move the target");
