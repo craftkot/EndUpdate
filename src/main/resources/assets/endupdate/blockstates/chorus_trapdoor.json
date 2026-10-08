@@ -1,40 +1,32 @@
 {
   "variants": {
     "facing=north,half=bottom,open=false,powered=false": {
-      "model": "endupdate:block/chorus_trapdoor_bottom",
-      "y": 0
+      "model": "endupdate:block/chorus_trapdoor_bottom"
     },
     "facing=north,half=bottom,open=false,powered=true": {
-      "model": "endupdate:block/chorus_trapdoor_bottom",
-      "y": 0
+      "model": "endupdate:block/chorus_trapdoor_bottom"
     },
     "facing=north,half=bottom,open=true,powered=false": {
-      "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 0,
-      "x": 90
+      "model": "endupdate:block/chorus_trapdoor_open"
     },
     "facing=north,half=bottom,open=true,powered=true": {
-      "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 0,
-      "x": 90
+      "model": "endupdate:block/chorus_trapdoor_open"
     },
     "facing=north,half=top,open=false,powered=false": {
-      "model": "endupdate:block/chorus_trapdoor_top",
-      "y": 0
+      "model": "endupdate:block/chorus_trapdoor_top"
     },
     "facing=north,half=top,open=false,powered=true": {
-      "model": "endupdate:block/chorus_trapdoor_top",
-      "y": 0
+      "model": "endupdate:block/chorus_trapdoor_top"
     },
     "facing=north,half=top,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 0,
-      "x": 90
+      "x": 180,
+      "y": 180
     },
     "facing=north,half=top,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 0,
-      "x": 90
+      "x": 180,
+      "y": 180
     },
     "facing=east,half=bottom,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_bottom",
@@ -46,13 +38,11 @@
     },
     "facing=east,half=bottom,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 90,
-      "x": 90
+      "y": 90
     },
     "facing=east,half=bottom,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 90,
-      "x": 90
+      "y": 90
     },
     "facing=east,half=top,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_top",
@@ -64,13 +54,13 @@
     },
     "facing=east,half=top,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 90,
-      "x": 90
+      "x": 180,
+      "y": 270
     },
     "facing=east,half=top,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 90,
-      "x": 90
+      "x": 180,
+      "y": 270
     },
     "facing=south,half=bottom,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_bottom",
@@ -82,13 +72,11 @@
     },
     "facing=south,half=bottom,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 180,
-      "x": 90
+      "y": 180
     },
     "facing=south,half=bottom,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 180,
-      "x": 90
+      "y": 180
     },
     "facing=south,half=top,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_top",
@@ -100,13 +88,11 @@
     },
     "facing=south,half=top,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 180,
-      "x": 90
+      "x": 180
     },
     "facing=south,half=top,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 180,
-      "x": 90
+      "x": 180
     },
     "facing=west,half=bottom,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_bottom",
@@ -118,13 +104,11 @@
     },
     "facing=west,half=bottom,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 270,
-      "x": 90
+      "y": 270
     },
     "facing=west,half=bottom,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 270,
-      "x": 90
+      "y": 270
     },
     "facing=west,half=top,open=false,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_top",
@@ -136,13 +120,13 @@
     },
     "facing=west,half=top,open=true,powered=false": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 270,
-      "x": 90
+      "x": 180,
+      "y": 90
     },
     "facing=west,half=top,open=true,powered=true": {
       "model": "endupdate:block/chorus_trapdoor_open",
-      "y": 270,
-      "x": 90
+      "x": 180,
+      "y": 90
     }
   }
 }
