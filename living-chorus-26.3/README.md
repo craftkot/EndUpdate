@@ -1,26 +1,14 @@
-# Living Chorus 0.14.0 — infection survives vanilla chorus growth
+# Living Chorus v0.15.0 – Natural-looking branches and smoother feeding
 
-Fix user-reported loss of infection when a growing chorus_flower becomes a
-chorus_plant block. The original flower position is now recognized as a
-persistent infected stem and temporarily stores a saved growth origin marker.
-Its new child flower(s) inherit the infection immediately, while other buds
-connected through previously infected stems may be infected progressively.
+Changes:
+- Thickened client stalk cubes from 4×4px to 8×8px and added 10px block-textured joint collars, both using the original vanilla chorus_plant sprite without stretched UVs.
+- Smoothed discrete target updates on the client instead of snapping the branch every ~7 server ticks.
+- Fixed the number of pivot/IK branch segments at attack start to avoid sudden joint switching.
+- Split low Endermite feeding into turning, lowering, telescopic extending, contact, mouth-closing and retracting phases with continuous ease-in/out curves.
+- Added up to 32 rigid 16px segments at 0.7-block spacing to cover the ground target even when the infected flower begins several blocks high, within the configured prey detection range.
+- The Endermite attack target is now grounded: jaw center is Endermite feet + 7/16 block, so the *bottom* of the 14px flower touches its standing surface rather than clipping through it.
+- Removed the hard-coded 0.14 radian mouth opening jump; orientation uses the final segment when the mouth reaches its target so it does not snap to north.
+- Existing flower-origin spreading infection, live/dead buds, custom per-branch length, peaceful checks, asleep projectile vulnerability and naturally spawning End Endermites are kept.
+- Sounds unchanged, per user request.
 
-- Reconciliation runs before server AI each tick, and whenever a formerly
-  infected flower fails the flower blockstate check.
-- SavedData codec includes an optional backwards-compatible `growthOrigins`
-  field. Existing v0.13 saves load unchanged.
-- The spread system no longer deletes all infected stem records merely
-  because the flower-to-stem transition temporarily leaves no infected tip.
-- Loaded invalid growth origins are pruned, without forcing chunk loads.
-- `/livingchorus stats` now reports infected flower, stem, and growing-origin
-  counts, making growth migration verifiable from gameplay.
-- Manually marked flowers can attack in the Overworld; natural discovery
-  and supplemental Endermite spawning remain exclusive to The End.
-- Branch length, individual real-block kinematics, player versus Endermite
-  attacks, sleeping projectile vulnerability and deferred sound work remain.
-
-Quick in-game regression test: mark a young flower, verify stats; apply random
-ticks until it grows a new bud; verify that infected stems grow and that the
-new tip is listed as infected. A successful Gradle build does NOT prove that
-the complete survival game transition has been tested.
+Limits: a real gameplay capture is needed to verify appearance and contact under different terrain elevations. This phase does not add ground-clipping avoidance for the whole stalk, new combat health or sound design.

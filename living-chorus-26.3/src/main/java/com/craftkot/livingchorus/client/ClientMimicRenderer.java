@@ -56,9 +56,10 @@ public final class ClientMimicRenderer {
     private static final ContextKey<List<RenderSnapshot>> RENDER_DATA = new ContextKey<>(
         Identifier.fromNamespaceAndPath(LivingChorus.MOD_ID, "mimic_rigs"));
 
-    // Pixel dimensions of rigid parts. 10px stems overlap 0.64-block joints
-    // slightly without changing UV scale or elongating cuboids.
-    private static final ModelPart STEM = part("stem", -2, -8, -2, 4, 16, 4);
+    // Vanilla-like robust stalk (8px) plus the thicker 10px joint collars.
+    // Every cube retains its original 16x16 chorus_plant pixel UV mapping.
+    private static final ModelPart STEM = part("stem", -4, -8, -4, 8, 16, 8);
+    private static final ModelPart JOINT = part("joint", -5, -5, -5, 10, 10, 10);
     private static final ModelPart HEAD = part("head", -7, -7, -7, 14, 14, 14);
     // Four nonoverlapping CLOSED sections of a 14x14x14 flower cube.
     // No exterior caps or cover cubes are added in the sleeping state.
@@ -87,23 +88,31 @@ public final class ClientMimicRenderer {
         final BlockPos flower;
         final MimicProfile profile;
         final java.util.List<BlockPos> branch;
+        final java.util.List<Vec3> rest;
+        final int bendCount;
         final long started;
         final int charge;
         final int recovery;
         final boolean dead;
         final byte kind;
         Vec3 target;
+        Vec3 smoothedTarget;
+        double lastSampleTime;
 
         ClientAttack(MimicPosePacket data, long now) {
             flower = data.flower();
             profile = MimicProfile.fromPacked(data.packedProfile());
             branch = java.util.List.copyOf(data.branch());
+            rest = branch.stream().map(Vec3::atCenterOf).toList();
+            bendCount = MimicRig.neededSegments(rest, data.target());
             started = now;
+            lastSampleTime = now;
             charge = data.chargeTicks();
             recovery = data.recoverTicks();
             dead = data.dead();
             kind = data.kind();
             target = data.target();
+            smoothedTarget = target;
         }
     }
 
@@ -175,9 +184,15 @@ public final class ClientMimicRenderer {
             double progress = recover ? (elapsed - attack.charge) / attack.recovery
                 : elapsed / attack.charge;
 
-            java.util.List<Vec3> resting = attack.branch.stream().map(Vec3::atCenterOf).toList();
+            // Packets refresh the target every seven ticks. Never snap the
+            // entire branch to a new server target: low-pass the aim per frame.
+            double dt = Math.max(0.0, Math.min(1.0, now - attack.lastSampleTime));
+            attack.lastSampleTime = now;
+            double tracking = 1.0 - Math.exp(-.72 * dt);
+            attack.smoothedTarget = attack.smoothedTarget.lerp(attack.target, tracking);
             MimicRig.Pose pose = MimicRig.evaluateBranch(
-                attack.profile, resting, attack.target, progress, recover);
+                attack.profile, attack.rest, attack.smoothedTarget,
+                progress, recover, attack.bendCount);
             // Light must be sampled here, on the extraction/client world pass.
             // SubmitCustomGeometryEvent must not consult the world or light engine.
             ArrayList<Integer> segmentLight = new ArrayList<>();
@@ -187,7 +202,7 @@ public final class ClientMimicRenderer {
                 segmentLight.add(sampleWorldLight(level, middle));
             }
             int mouthLight = sampleWorldLight(level, pose.mouth());
-            snapshots.add(new RenderSnapshot(pose, attack.target,
+            snapshots.add(new RenderSnapshot(pose, attack.smoothedTarget,
                 attack.dead, attack.profile.mouthVariant(), List.copyOf(segmentLight), mouthLight));
         }
         event.getRenderState().setRenderData(RENDER_DATA, List.copyOf(snapshots));
@@ -232,11 +247,24 @@ public final class ClientMimicRenderer {
                 collector.submitModelPart(STEM, matrices, RenderTypes.entityCutout(PLANT_TEXTURE),
                     render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
+
+                // Rounder, thicker connection at moving 90-degree bends:
+                // covers exposed seams without adding an external shell.
+                if (i < path.size() - 1) {
+                    matrices.pushPose();
+                    matrices.translate(b.x - camera.x, b.y - camera.y, b.z - camera.z);
+                    collector.submitModelPart(JOINT, matrices,
+                        RenderTypes.entityCutout(PLANT_TEXTURE),
+                        render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
+                    matrices.popPose();
+                }
             }
             Vec3 head = render.pose.mouth();
             matrices.pushPose();
             matrices.translate(head.x - camera.x, head.y - camera.y, head.z - camera.z);
             Vec3 toPrey = render.target.subtract(head);
+            if (toPrey.horizontalDistanceSqr() < .01 && path.size() > 1)
+                toPrey = head.subtract(path.get(path.size() - 2));
             if (toPrey.horizontalDistanceSqr() > .001) {
                 float facing = (float) Math.atan2(-toPrey.x, -toPrey.z);
                 matrices.mulPose(new Matrix4f().rotationY(facing));
@@ -251,8 +279,8 @@ public final class ClientMimicRenderer {
             } else {
                 // Hinge locations are the OUTER perimeter of the 14px head.
                 // Local hinge coordinates are in model pixels, converted by /16.
-                float jawAmplitude = .14F + .88F * opening;
-                float sideAmplitude = .12F + .70F * opening;
+                float jawAmplitude = .93F * opening;
+                float sideAmplitude = .74F * opening;
                 // Top/bottom rotate about their outer horizontal edges.
                 submitJaw(collector, matrices, flower, UPPER,
                     0F, 7F, 0F, jawAmplitude, 0F, 0F, light);

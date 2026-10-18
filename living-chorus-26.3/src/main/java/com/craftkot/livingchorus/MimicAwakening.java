@@ -232,10 +232,12 @@ public final class MimicAwakening {
             if (now % 3L == 0L && now < strike.clearAt()) {
                 Entity previewTarget = level.getEntity(strike.targetId());
                 if (previewTarget != null && previewTarget.isAlive()) {
-                    double aimY = strike.kind() == HuntType.ENDERMITE
-                        ? previewTarget.getY() + previewTarget.getBbHeight() * .45
-                        : previewTarget.getY() + Math.min(1.55, previewTarget.getBbHeight() * .85);
-                    Vec3 aim = new Vec3(previewTarget.getX(), aimY, previewTarget.getZ());
+                    Vec3 aim = strike.kind() == HuntType.ENDERMITE
+                        ? MimicRig.endermiteGroundAim(previewTarget.getX(),
+                            previewTarget.getY(), previewTarget.getZ())
+                        : new Vec3(previewTarget.getX(),
+                            previewTarget.getY() + Math.min(1.55, previewTarget.getBbHeight() * .85),
+                            previewTarget.getZ());
                     // Anchor to the vanilla stem below the flower. The whole
                     // plant is NOT replaced; the infected tip alone animates.
                     java.util.List<Vec3> branch = MimicBranchPath.trace(level, pos).stream()
@@ -351,10 +353,11 @@ public final class MimicAwakening {
                                    byte kind, byte operation) {
         Vec3 aim = Vec3.atCenterOf(flower);
         if (target != null) {
-            double y = target instanceof ServerPlayer
-                ? target.getY() + Math.min(1.55, target.getBbHeight() * .85)
-                : target.getY() + target.getBbHeight() * .45;
-            aim = new Vec3(target.getX(), y, target.getZ());
+            aim = target instanceof ServerPlayer
+                ? new Vec3(target.getX(),
+                    target.getY() + Math.min(1.55, target.getBbHeight() * .85),
+                    target.getZ())
+                : MimicRig.endermiteGroundAim(target.getX(), target.getY(), target.getZ());
         }
         int duration = kind == MimicPosePacket.ENDERMITE_FEED
             ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS;
