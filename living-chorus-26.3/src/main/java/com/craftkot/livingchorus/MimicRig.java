@@ -51,14 +51,23 @@ public final class MimicRig {
         }
 
         double p = clamp(fraction);
-        // Immediately bend DOWN AND toward the prey, rather than building a
-        // horizontal beam first and hanging over the target.
-        double bend = recovering ? 1.0 - smooth((p - .19) / .77)
-                                 : smooth(p / .83);
-        double telescope = recovering ? 1.0 - smooth((p - .06) / .73)
-                                      : smooth((p - .35) / .60);
-        double open = recovering ? 1.0 - smooth((p - .03) / .36)
-                                 : smooth((p - .39) / .47);
+        // Fix v0.18.1: the initial stalk bend and the final 1.5-block
+        // extension MUST move together from the first frame. Previously
+        // the extension began at 35% of the attack and completed at 95%,
+        // producing the sudden late downward dive reported by the player.
+        //
+        // Ease-out frontloads downward motion; the derivative tends to
+        // zero at the contact approach, preventing a last-frame snap.
+        // On recovery, retract and unfurl together so the returning stalk
+        // never hangs above its own falling flower.
+        double reach = recovering
+            ? 1.0 - smooth(p / .90)
+            : fastApproach(p / .94);
+        double bend = reach;
+        double telescope = reach;
+        // Bite begins during descent, not after the head has hovered.
+        double open = recovering ? 1.0 - smooth((p - .02) / .34)
+                                 : smooth((p - .20) / .48);
 
         ArrayList<Vec3> points = new ArrayList<>(resting);
         Vec3 root = resting.get(0);
@@ -119,6 +128,17 @@ public final class MimicRig {
     public static Pose evaluate(MimicProfile profile, Vec3 root, Vec3 head,
                                 Vec3 target, double progress, boolean recovering) {
         return evaluateBranch(profile, List.of(root, head), target, progress, recovering);
+    }
+
+    /**
+     * Starts promptly, slows continuously and completes without a late
+     * corrective jerk. Unlike smoothstep its initial velocity is nonzero,
+     * so tall branches descend immediately when the attack starts.
+     */
+    private static double fastApproach(double fraction) {
+        double t = clamp(fraction);
+        double remaining = 1.0 - t;
+        return 1.0 - remaining * remaining * remaining;
     }
 
     private static double smooth(double value) {
