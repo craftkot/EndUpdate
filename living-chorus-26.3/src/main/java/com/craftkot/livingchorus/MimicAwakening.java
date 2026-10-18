@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.ClipContext;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -82,7 +82,7 @@ public final class MimicAwakening {
                     }
                     if (!unobstructed(level, cursor, player)) continue;
                     eligible++;
-                    if (level.random.nextInt(eligible) == 0) chosen = cursor.immutable();
+                    if (level.getRandom().nextInt(eligible) == 0) chosen = cursor.immutable();
                 }
             }
         }
@@ -109,7 +109,7 @@ public final class MimicAwakening {
 
         state.charging.put(key, new Strike(player.getUUID(), now + CHARGE_TICKS,
             now + CHARGE_TICKS + RECOVER_TICKS));
-        state.flowerCooldown.put(key, now + 130 + level.random.nextInt(100)); // 6.5–11.5 s
+        state.flowerCooldown.put(key, now + 130 + level.getRandom().nextInt(100)); // 6.5–11.5 s
         state.playerCooldown.put(player.getUUID(), now + 85); // no simultaneous dogpile
         // Wake-up telegraph. Before this moment the flower is completely vanilla.
         level.playSound(null, pos, SoundEvents.CHORUS_FLOWER_GROW, SoundSource.BLOCKS, 0.8F, 0.75F);
