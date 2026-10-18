@@ -205,6 +205,10 @@ public final class MimicAwakening {
         long key = pos.asLong();
         long now = level.getGameTime();
         if (state.charging.containsKey(key)) return false;
+        // Do not animate an impossible reach: this was the other reason
+        // tall flowers grew absurdly long boom-like cranes.
+        if (kind == HuntType.ENDERMITE && !canReachMite(level, pos, target))
+            return false;
         if (!force && (now < state.flowerCooldown.getOrDefault(key, 0L)
             || now < state.targetCooldown.getOrDefault(target.getUUID(), 0L))) return false;
 
@@ -404,6 +408,14 @@ public final class MimicAwakening {
         }
     }
 
+    /** The whole real attached branch may bend, but extra growth is capped at 1.5 blocks. */
+    private static boolean canReachMite(ServerLevel level, BlockPos flower, Entity mite) {
+        java.util.List<Vec3> resting = MimicBranchPath.trace(level, flower).stream()
+            .map(Vec3::atCenterOf).toList();
+        Vec3 aim = MimicRig.endermiteGroundAim(mite.getX(), mite.getY(), mite.getZ());
+        return MimicRig.canReach(resting, aim);
+    }
+
     /** Do not consume prey until the articulated flower has ACTUALLY reached it. */
     private static boolean mouthAtPrey(ServerLevel level, BlockPos flower, Endermite mite) {
         List<Vec3> resting = MimicBranchPath.trace(level, flower).stream()
@@ -472,7 +484,8 @@ public final class MimicAwakening {
 
         long targetCooldown = Math.max(0L,
             state.targetCooldown.getOrDefault(nearest.getUUID(), 0L) - now);
-        return "SLEEPING, branch blocks=" + MimicBranchPath.trace(level,flower).size()
+        return "SLEEPING, can reach physically=" + canReachMite(level, flower, nearest)
+            + ", branch blocks=" + MimicBranchPath.trace(level,flower).size()
             + ", nearest Endermite distance=" + String.format(java.util.Locale.ROOT, "%.2f", Math.sqrt(best))
             + ", within wake range=" + withinMiteHuntRange(flower, nearest)
             + " (horizontal " + MITE_HUNT_XZ + ", vertical " + MITE_HUNT_VERTICAL + ")"
