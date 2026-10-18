@@ -30,7 +30,7 @@ jobs:
           if-no-files-found: error
 
   real-client:
-    if: startsWith(github.event.head_commit.message, '[client]')
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 50
     defaults:
