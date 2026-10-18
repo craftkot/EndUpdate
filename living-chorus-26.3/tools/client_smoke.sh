@@ -38,8 +38,12 @@ echo "Starting REAL NeoForge 26.3 Minecraft client" | tee -a client-smoke/status
 gradle --no-daemon --console=plain runClient > client-smoke/client.log 2>&1 &
 MC_PID=$!
 WIN=''
-for i in $(seq 1 330); do
+for i in $(seq 1 125); do
   WIN=$(xdotool search --onlyvisible --name Minecraft 2>/dev/null | tail -n 1 || true)
+  if [ -z "$WIN" ] && grep -Fq 'Created window using SDL video driver' client-smoke/client.log; then
+    WIN=$(xdotool getactivewindow 2>/dev/null || true)
+    echo "SDL_WINDOW_FALLBACK=$WIN" >> client-smoke/status.txt
+  fi
   if [ -n "$WIN" ]; then
     echo "CLIENT_REAL_WINDOW=YES after ${i}s" | tee -a client-smoke/status.txt
     break
@@ -54,10 +58,19 @@ for i in $(seq 1 330); do
     tail -120 client-smoke/client.log
     exit 1
   fi
+  if [ "$i" -eq 65 ]; then
+    xwininfo -root -tree > client-smoke/window-tree.txt 2>&1 || true
+    xprop -root _NET_ACTIVE_WINDOW > client-smoke/root-active-window.txt 2>&1 || true
+    import -display :99 -window root -silent client-smoke/screenshots/00-display-during-start.png || true
+    echo "DISPLAY_PROBE_65_SECONDS=YES" | tee -a client-smoke/status.txt
+  fi
   sleep 1
 done
+xwininfo -root -tree > client-smoke/window-tree.txt 2>&1 || true
+xdotool getactivewindow > client-smoke/active-window-id.txt 2>&1 || true
 if [ -z "$WIN" ]; then
-  echo "CLIENT_REAL_WINDOW=NO" | tee -a client-smoke/status.txt
+  echo "SDL_LOADED_BUT_NO_WINDOW_ID=YES" | tee -a client-smoke/status.txt
+  import -display :99 -window root -silent client-smoke/screenshots/01-root-no-window-title.png || true
   exit 1
 fi
 xdotool windowactivate --sync "$WIN" || true
