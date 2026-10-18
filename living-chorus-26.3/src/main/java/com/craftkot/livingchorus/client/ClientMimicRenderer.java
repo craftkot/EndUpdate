@@ -197,7 +197,7 @@ public final class ClientMimicRenderer {
                 + " flower_head=" + sample.pose().mouth()
                 + " joints=" + sample.pose().joints().size()
                 + " opening=" + sample.pose().opening()
-                + " camera=" + Minecraft.getInstance().gameRenderer.getMainCamera().position());
+                + " camera=" + event.getRenderState().cameraRenderState.pos);
         }
     }
 
