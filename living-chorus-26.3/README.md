@@ -1,39 +1,41 @@
-# Living Chorus — NeoForge 26.3 / experimental
+# Living Chorus — Minecraft 26.3 NeoForge (experimental)
 
-Standalone subproject in craftkot/EndUpdate. Does not modify the original Forge 1.20.1 EndUpdate mod.
+Kept in a standalone subproject of craftkot/EndUpdate. Not merged into main.
 
-## Stage 3: target-specific behaviours and unique branch profiles (v0.4.0)
+## 0.5.0 — flower-rooted infection, dormant one-hit kills
 
-**V17 Blockbench model is an animation demonstration, not the final in-game mob.**
-Do not assume a uniform four-flower shape or use one universal attack animation.
+### Flower, not whole plant
+- A mimic infection is tied to **one vanilla minecraft:chorus_flower position**.
+- A live flower (AGE 0–4) and a dead flower (AGE 5) are both eligible; these are block states of the same block.
+- Each infected flower is the anchor of **its own infected branch**, but neighbouring branches and flowers remain normal unless independently marked.
+- Breaking or shooting the anchor flower while it sleeps instantly removes its mimic identity. Remaining chorus_plant stem blocks remain vanilla and harmless.
+- The killed flower position is excluded from repeat deterministic infection until explicitly marked. No separate mob is spawned while sleeping.
+- Other infected flowers on the same grown chorus plant survive independently.
 
-- Dormant mimics remain **vanilla chorus_flower blocks**, with server-only infection markers. They are not separate detectable entities.
-- Infection stays at approximately 5% of eligible End chorus flowers and persists with server SavedData.
-- Players are attack targets **only while holding at least one ender pearl anywhere in their inventory**. Ender pearls are NOT removed. No pearls = no player-targeting.
-- Endermites are food. An infected flower near an endermite will preferentially target it, bend LOW, and swallow it at successful contact. Endermites are removed by successful consumption.
-- Separate action/animation identifiers:
-  - `bite_player_high`: target player eye/body height;
-  - `eat_endermite_low`: target low endermite height.
-- Both attacks have charge/telegraph/cooldown, target and distance/obstruction checks, and cancel on destruction of the vanilla flower.
-- Deterministic `MimicProfile` assigned to each flower from world seed and position: segment count (2–5), two bends, branch direction, extension units, mouth style, timing variant. Profiles are *data for the future renderer*, not visual changes to the vanilla plant yet. Distinct profiles are likely but exact uniqueness is not mathematically guaranteed.
-- A player nearby triggers lightweight server scans twice a second. No forced chunks or permanent mob entities.
-- Animation and full per-branch procedural mesh generation **are not implemented in-game yet**. No claim of in-game bending or visual swallowing at this stage.
+### Projectile behavior
+- NeoForge ProjectileImpactEvent checks impacts against sleeping marked flowers.
+- A shot destroying an infected dormant flower uses ordinary block destruction with drops; no special entity hitbox exists.
+- Projectile hits on ordinary vanilla chorus flowers remain vanilla.
+- Projectiles during an ACTIVE attack are **not** covered by the sleeping one-hit mechanic, though vanilla projectile/block interactions may still break the underlying flower while the animated combat entity has not yet been implemented. Active HP/defense comes in a later stage.
+- Breaking by a player removes infection via BreakBlockEvent. Scanning invalidated positions also removes obsolete infection markers when a flower grows into a stem.
 
-### Admin testing
+### Hunting (previous milestone)
+- Target players only if ender pearls are in inventory: high `bite_player_high` action.
+- Eat nearby endermites: separate `eat_endermite_low` action with low head target.
+- Target choice, charge, range, occlusion checks, and cooldown are server-side; no actual animated branch is rendered yet.
+- Per-flower MimicProfile is seeded independently, and is a descriptor for future varied branch geometry.
 
-Target a vanilla `chorus_flower` within 6 blocks:
+### Operator tests
 
-- `/livingchorus mark` — set infected
-- `/livingchorus inspect` — show marker state
-- `/livingchorus profile` — view deterministic shape blueprint and current attack identifier
-- `/livingchorus provoke` — force an attempt; prefers a nearby endermite, otherwise needs an ender pearl in your inventory
-- `/livingchorus clear` — clear marker and exclude from further infection
-- `/livingchorus stats` — infected and currently charging counts
+1. `/livingchorus mark` on a living or dead vanilla chorus flower.
+2. `/livingchorus inspect` shows `living` or `dead` and `MIMIC (sleeping)`.
+3. Shoot the flower with an arrow before it wakes. It should break in one hit.
+4. `/livingchorus stats` should show one less hidden infected flower.
+5. Other marked flowers remain infected; the untouched plant stems remain in their vanilla form.
+6. Repeat with a dead flower (give/place chorus_flower with age=5 or find a naturally dead one).
+7. Test `/livingchorus provoke` with nearby endermite or ender pearl to see the attack scheduling; attack visuals are pending.
 
-Normal play: have an ender pearl in inventory, enter Survival in The End, approach an infected flower. No pearl: it should ignore you. Spawn an endermite nearby to test the separate feeding branch. The endermite is consumed only if it remains in range and can be reached without intervening solid geometry. Collision, mini-map block appearance and vanilla item ID remain intact until attack visuals are implemented.
+### Limits
+The V17 .bbmodel is a *reference*, not the final creature; dynamic branches, active hitboxes, synchronized animations and complete client runtime testing remain outstanding.
 
-### Compatibility
-The older test block `livingchorus:living_chorus` still damages nearby players and is NOT the hidden mimicking chorus; use vanilla chorus flowers for this stage.
-
-### Build
-GitHub Actions `Build Living Chorus 26.3` uses Java 25, Gradle 9.2.1, NeoForge 26.3.0.90.
+Build with Java 25, Gradle 9.2.1, NeoForge 26.3.0.90 using GitHub Actions.

@@ -70,6 +70,18 @@ public final class MimicData extends SavedData {
         if (changed) setDirty();
     }
 
+    /**
+     * Kill the mimic attached to this flower, not the whole chorus plant.
+     * Its old position is temporarily exempt from seed-based reinfection:
+     * the same mimic cannot immediately revive at the same coordinates.
+     * An operator can still /livingchorus mark a new flower here explicitly.
+     */
+    public void defeat(BlockPos pos) {
+        long key = pos.asLong();
+        boolean changed = infected.remove(key) | safe.add(key);
+        if (changed) setDirty();
+    }
+
     /** Drop the marker when the flower is removed; a new flower may be infected later. */
     public void forget(BlockPos pos) {
         if (infected.remove(pos.asLong())) setDirty();

@@ -10,10 +10,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChorusFlowerBlock;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
@@ -62,10 +64,42 @@ public final class HiddenMimicEvents {
         }
     }
 
+    /**
+     * Breaking the actual infected flower destroys the disguised mimic.
+     * Neighbouring vanilla stem blocks and other flowers are left untouched.
+     */
     @SubscribeEvent
     public void blockBreak(BreakBlockEvent event) {
-        if (event.getLevel() instanceof ServerLevel level && event.getState().is(Blocks.CHORUS_FLOWER)) {
-            MimicData.get(level).forget(event.getPos());
+        if (!(event.getLevel() instanceof ServerLevel level)
+            || !event.getState().is(Blocks.CHORUS_FLOWER)) return;
+        BlockPos flower = event.getPos();
+        if (MimicData.get(level).isInfected(flower)) {
+            MimicData.get(level).defeat(flower);
+            MimicAwakening.onFlowerDestroyed(level, flower);
+        }
+    }
+
+    /**
+     * A sleeping flower can be shot down instantly, as a vanilla chorus flower can.
+     * This listens to projectiles directly, regardless of whether the default
+     * projectile implementation breaks the block by itself.
+     */
+    @SubscribeEvent
+    public void projectileImpact(ProjectileImpactEvent event) {
+        if (!(event.getProjectile().level() instanceof ServerLevel level)
+            || level.dimension() != Level.END
+            || !(event.getRayTraceResult() instanceof BlockHitResult hit)
+            || event.getRayTraceResult().getType() != HitResult.Type.BLOCK) return;
+        BlockPos flower = hit.getBlockPos();
+        if (!level.getBlockState(flower).is(Blocks.CHORUS_FLOWER)) return;
+        MimicData data = MimicData.get(level);
+        if (!data.isInfected(flower) || !MimicAwakening.isSleeping(level, flower)) return;
+
+        // Keep vanilla-style block drops and do not cancel projectile processing.
+        // Once the flower is gone, the server-only marker can no longer animate.
+        if (level.destroyBlock(flower, true, event.getProjectile())) {
+            data.defeat(flower);
+            MimicAwakening.onFlowerDestroyed(level, flower);
         }
     }
 
@@ -119,8 +153,10 @@ public final class HiddenMimicEvents {
             default -> { }
         }
         boolean infected = data.isInfected(pos);
+        boolean dead = level.getBlockState(pos).getValue(ChorusFlowerBlock.AGE) >= 5;
         source.sendSuccess(() -> Component.literal("Chorus flower at " + pos.toShortString()
-            + ": " + (infected ? "MIMIC (hidden)" : "normal/cleared")), false);
+            + " (" + (dead ? "dead" : "living") + "): "
+            + (infected ? (MimicAwakening.isSleeping(level, pos) ? "MIMIC (sleeping)" : "MIMIC (awake)") : "normal/cleared")), false);
         return Command.SINGLE_SUCCESS;
     }
 }

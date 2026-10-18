@@ -73,6 +73,18 @@ public final class MimicAwakening {
         return state(level).charging.size();
     }
 
+    public static boolean isSleeping(ServerLevel level, BlockPos flower) {
+        // Cooldown is not an animation: dormant flowers are vulnerable between attacks.
+        return !state(level).charging.containsKey(flower.asLong());
+    }
+
+    public static void onFlowerDestroyed(ServerLevel level, BlockPos flower) {
+        State state = state(level);
+        long id = flower.asLong();
+        state.charging.remove(id);
+        state.flowerCooldown.remove(id);
+    }
+
     public static String activeAnimation(ServerLevel level, BlockPos pos) {
         Strike strike = state(level).charging.get(pos.asLong());
         return strike == null ? "idle_mimic" : strike.kind().animation;
