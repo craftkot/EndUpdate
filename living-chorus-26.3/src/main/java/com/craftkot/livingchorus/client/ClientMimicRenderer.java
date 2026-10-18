@@ -56,10 +56,10 @@ public final class ClientMimicRenderer {
     private static final ContextKey<List<RenderSnapshot>> RENDER_DATA = new ContextKey<>(
         Identifier.fromNamespaceAndPath(LivingChorus.MOD_ID, "mimic_rigs"));
 
-    // 8px thickness everywhere, including corners. No 10px collars.
-    // Only draw a corner cube where the tangent changes direction.
+    // 8px stalk with decorative 10px connectors EVERY ~1-2 blocks, not
+    // every joint. The same original vanilla chorus_plant texture is used.
     private static final ModelPart STEM = part("stem", -4, -8, -4, 8, 16, 8);
-    private static final ModelPart JOINT = part("joint", -4, -4, -4, 8, 8, 8);
+    private static final ModelPart JOINT = part("joint", -5, -5, -5, 10, 10, 10);
     private static final ModelPart HEAD = part("head", -7, -7, -7, 14, 14, 14);
     // Four nonoverlapping CLOSED sections of a 14x14x14 flower cube.
     // No exterior caps or cover cubes are added in the sleeping state.
@@ -235,10 +235,12 @@ public final class ClientMimicRenderer {
 
         for (RenderSnapshot render : snapshots) {
             List<Vec3> path = render.pose.joints();
+            double distanceSinceCollar = 0.0;
             for (int i = 1; i < path.size(); i++) {
                 Vec3 a = path.get(i - 1), b = path.get(i);
                 Vec3 d = b.subtract(a);
                 if (d.lengthSqr() < 0.0001) continue;
+                distanceSinceCollar += d.length();
                 Vec3 middle = a.add(b).scale(.5);
                 matrices.pushPose();
                 matrices.translate(middle.x - camera.x, middle.y - camera.y, middle.z - camera.z);
@@ -248,18 +250,21 @@ public final class ClientMimicRenderer {
                     render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
 
-                // A corner exists only at a REAL turn (approx >=35 degrees).
-                // Do not pile a cube on every .88 block of straight branch.
-                // The bend is the SAME 8px thickness as the stalk.
-                if (i < path.size() - 1
+                // A pronounced elbow gets a connector, but never more often
+                // than about one per 1-2 blocks. Straight segments receive
+                // occasional collars too, like the original chorus plant.
+                boolean elbow = i < path.size() - 1
                     && path.get(i + 1).subtract(b).lengthSqr() > 1.0e-5
-                    && d.normalize().dot(path.get(i + 1).subtract(b).normalize()) < .82) {
+                    && d.normalize().dot(path.get(i + 1).subtract(b).normalize()) < .78;
+                if (i < path.size() - 1 && distanceSinceCollar >= 1.40
+                    && (elbow || distanceSinceCollar >= 1.85)) {
                     matrices.pushPose();
                     matrices.translate(b.x - camera.x, b.y - camera.y, b.z - camera.z);
                     collector.submitModelPart(JOINT, matrices,
                         RenderTypes.entityCutout(PLANT_TEXTURE),
                         render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                     matrices.popPose();
+                    distanceSinceCollar = 0.0;
                 }
             }
             Vec3 head = render.pose.mouth();

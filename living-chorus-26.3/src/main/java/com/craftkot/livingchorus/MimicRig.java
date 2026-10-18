@@ -19,12 +19,12 @@ public final class MimicRig {
 
     private MimicRig() { }
 
-    /** Stable joint count chosen once at the start; never recalculated mid-bite. */
+    /**
+     * Move the ENTIRE infected terminal branch, anchored at its first shared
+     * root or junction. No dynamically changing partial-tail pivot.
+     */
     public static int neededSegments(List<Vec3> rest, Vec3 target) {
-        if (rest.size() < 2) return 0;
-        Vec3 tip = rest.get(rest.size() - 1);
-        return Math.max(1, Math.min(rest.size() - 1,
-            (int)Math.ceil(tip.distanceTo(target) / 0.90) + 1));
+        return Math.max(0, rest.size() - 1);
     }
 
     public static Pose evaluateBranch(MimicProfile style, List<Vec3> resting,
@@ -42,22 +42,24 @@ public final class MimicRig {
         }
 
         double p = clamp(progress);
-        // Important: these phases proceed one after the other.
-        // The flower first leans outward at its current height, grows to the
-        // target's X, then Z, and ONLY THEN lowers the mouth vertically.
+        // Hunt WITHOUT hovering: the vertical drop starts almost at once,
+        // together with rotation and horizontal approach. Angular X->Z->Y
+        // construction remains, but the head heads DOWN throughout the attack.
+        // Full opening occurs before contact, and the bite lands near p=1.
         double bend = recovering
-            ? 1.0 - smooth((p - .56) / .44) : smooth(p / .32);
+            ? 1.0 - smooth((p - .32) / .67) : smooth(p / .40);
         double extendX = recovering
-            ? 1.0 - smooth((p - .43) / .51) : smooth((p - .25) / .29);
+            ? 1.0 - smooth((p - .42) / .48) : smooth((p - .04) / .60);
         double extendZ = recovering
-            ? 1.0 - smooth((p - .22) / .45) : smooth((p - .43) / .27);
+            ? 1.0 - smooth((p - .32) / .54) : smooth((p - .09) / .63);
         double descend = recovering
-            ? 1.0 - smooth(p / .38) : smooth((p - .66) / .30);
+            ? 1.0 - smooth((p - .06) / .73) : smooth((p - .05) / .79);
         double opening = recovering
-            ? 1.0 - smooth((p - .02) / .32) : smooth((p - .81) / .15);
+            ? 1.0 - smooth((p - .02) / .32) : smooth((p - .28) / .46);
 
         int last = resting.size() - 1;
-        int pivotIndex = last - Math.max(1, Math.min(last, affectedSegments));
+        // Use ALL real attached plant joints; never just the last few blocks.
+        int pivotIndex = 0;
         Vec3 pivot = resting.get(pivotIndex);
         Vec3 restingHead = resting.get(last);
 
@@ -71,8 +73,8 @@ public final class MimicRig {
             available += length;
         }
 
-        // The existing branch rotates toward the target's horizontal bearing,
-        // *not* diagonally down toward the prey. This creates the overhang.
+        // The shared root stays fixed while all branch segments flex.
+        // Sharp X/Z/Y extension legs handle direct approach without a hover.
         Vec3 horizontal = new Vec3(target.x - pivot.x, 0, target.z - pivot.z);
         Vec3 direction = horizontal.lengthSqr() > 1e-8
             ? horizontal.normalize() : new Vec3(0, 1, 0);
@@ -109,9 +111,9 @@ public final class MimicRig {
         for (int i = 1; i <= movable; i++)
             points.set(pivotIndex + i, solved.get(i));
 
-        // Three independent, cardinal direction legs make clear right angles:
-        // X (left/right) -> Z (forward/back) -> Y (ground/height).
-        // Each axis has its own eased timing; never interpolate diagonally.
+        // Strong, clean axis-aligned elbows X -> Z -> Y. The phases
+        // OVERLAP, so the flower moves toward the prey immediately, instead
+        // of waiting above it until the final third of the animation.
         Vec3 tip = points.get(points.size()-1);
         tip = appendAxis(points, tip, target.x, 0, extendX);
         tip = appendAxis(points, tip, target.z, 2, extendZ);
