@@ -25,21 +25,25 @@ public final class MimicData extends SavedData {
         MimicData::new,
         RecordCodecBuilder.create(instance -> instance.group(
             Codec.LONG.listOf().fieldOf("infected").forGetter(data -> new ArrayList<>(data.infected)),
-            Codec.LONG.listOf().fieldOf("safe").forGetter(data -> new ArrayList<>(data.safe))
+            Codec.LONG.listOf().fieldOf("safe").forGetter(data -> new ArrayList<>(data.safe)),
+            Codec.LONG.listOf().optionalFieldOf("stems", List.of())
+                .forGetter(data -> new ArrayList<>(data.infectedStems))
         ).apply(instance, MimicData::new))
     );
 
     private static final int INFECTION_THRESHOLD = 3277; // approx. 5% of eligible flowers
     private final Set<Long> infected;
     private final Set<Long> safe;
+    private final Set<Long> infectedStems;
 
     public MimicData() {
-        this(List.of(), List.of());
+        this(List.of(), List.of(), List.of());
     }
 
-    private MimicData(List<Long> infected, List<Long> safe) {
+    private MimicData(List<Long> infected, List<Long> safe, List<Long> stems) {
         this.infected = new HashSet<>(infected);
         this.safe = new HashSet<>(safe);
+        this.infectedStems = new HashSet<>(stems);
     }
 
     public static MimicData get(ServerLevel level) {
@@ -52,6 +56,98 @@ public final class MimicData extends SavedData {
 
     public int count() {
         return infected.size();
+    }
+
+    public int infectedStemCount() {
+        return infectedStems.size();
+    }
+
+    /**
+     * Saved, BLOCK-BY-BLOCK contagion rooted in infected live/dead flowers.
+     * Each 20-tick step moves through actual connected vanilla chorus_plant
+     * blocks, then can infect attached flowers. Does not alter block IDs,
+     * textures, collision or healthy unattached trees.
+     */
+    public void spreadAcrossChorus(ServerLevel level) {
+        if (infected.isEmpty()) {
+            if (!infectedStems.isEmpty()) {
+                infectedStems.clear();
+                setDirty();
+            }
+            return;
+        }
+        HashSet<Long> nextStems = new HashSet<>();
+        HashSet<Long> newFlowers = new HashSet<>();
+        int seedBudget = 256;
+        for (Long flowerKey : new ArrayList<>(infected)) {
+            if (--seedBudget < 0) break;
+            BlockPos flower = BlockPos.of(flowerKey);
+            if (!level.hasChunkAt(flower) || !level.getBlockState(flower).is(Blocks.CHORUS_FLOWER))
+                continue;
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                BlockPos adjacent = flower.relative(dir);
+                if (level.hasChunkAt(adjacent)
+                    && level.getBlockState(adjacent).is(Blocks.CHORUS_PLANT))
+                    nextStems.add(adjacent.asLong());
+            }
+        }
+
+        int spreadBudget = 256;
+        for (Long stemKey : new ArrayList<>(infectedStems)) {
+            if (--spreadBudget < 0) break;
+            BlockPos stem = BlockPos.of(stemKey);
+            if (!level.hasChunkAt(stem) || !level.getBlockState(stem).is(Blocks.CHORUS_PLANT))
+                continue;
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                BlockPos adjacent = stem.relative(dir);
+                if (!level.hasChunkAt(adjacent)) continue;
+                if (level.getBlockState(adjacent).is(Blocks.CHORUS_PLANT)) {
+                    nextStems.add(adjacent.asLong());
+                } else if (level.getBlockState(adjacent).is(Blocks.CHORUS_FLOWER)
+                    && !safe.contains(adjacent.asLong()) && !infected.contains(adjacent.asLong())
+                    && level.getRandom().nextInt(8) == 0) {
+                    // Spread to ANOTHER flower only along real infected chorus blocks.
+                    newFlowers.add(adjacent.asLong());
+                }
+            }
+        }
+
+        boolean changed = infectedStems.addAll(nextStems) | infected.addAll(newFlowers);
+        if (changed) setDirty();
+        // Cleanup happens only in loaded components; never load chunks to spread.
+        if (level.getGameTime() % 200L == 0L) pruneDisconnectedStems(level);
+    }
+
+    private void pruneDisconnectedStems(ServerLevel level) {
+        HashSet<Long> reachable = new HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (Long flowerKey : infected) {
+            BlockPos flower = BlockPos.of(flowerKey);
+            if (!level.hasChunkAt(flower)) continue;
+            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+                BlockPos stem = flower.relative(direction);
+                if (infectedStems.contains(stem.asLong())
+                    && level.hasChunkAt(stem) && reachable.add(stem.asLong()))
+                    queue.add(stem);
+            }
+        }
+        int budget = 8192;
+        while (!queue.isEmpty() && --budget >= 0) {
+            BlockPos at = queue.removeFirst();
+            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+                BlockPos next = at.relative(direction);
+                if (infectedStems.contains(next.asLong())
+                    && level.hasChunkAt(next) && reachable.add(next.asLong()))
+                    queue.addLast(next);
+            }
+        }
+        // Keep unloaded-stem records; they may still be connected in an
+        // unloaded area and deleting them here would corrupt saved spread.
+        boolean changed = infectedStems.removeIf(id -> {
+            BlockPos pos = BlockPos.of(id);
+            return level.hasChunkAt(pos) && !reachable.contains(id);
+        });
+        if (changed) setDirty();
     }
 
     /** Copy ids so event handlers may prune invalid flowers during iteration. */
