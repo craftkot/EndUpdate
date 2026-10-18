@@ -16,6 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 /** No entity is spawned during disguise; no replacement block is rendered. */
 public final class HiddenMimicEvents {
@@ -27,7 +28,9 @@ public final class HiddenMimicEvents {
     public void playerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(player.level() instanceof ServerLevel level)) return;
-        if (level.dimension() != Level.END || player.tickCount % SCAN_INTERVAL_TICKS != 0) return;
+        if (level.dimension() != Level.END) return;
+        if (player.tickCount % 10 == 0) MimicAwakening.seek(level, player);
+        if (player.tickCount % SCAN_INTERVAL_TICKS != 0) return;
 
         MimicData data = MimicData.get(level);
         BlockPos center = player.blockPosition();
@@ -53,6 +56,13 @@ public final class HiddenMimicEvents {
     }
 
     @SubscribeEvent
+    public void levelTick(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.END) {
+            MimicAwakening.tick(level);
+        }
+    }
+
+    @SubscribeEvent
     public void blockBreak(BreakBlockEvent event) {
         if (event.getLevel() instanceof ServerLevel level && event.getState().is(Blocks.CHORUS_FLOWER)) {
             MimicData.get(level).forget(event.getPos());
@@ -66,9 +76,12 @@ public final class HiddenMimicEvents {
             .then(Commands.literal("inspect").executes(ctx -> perform(ctx.getSource(), "inspect")))
             .then(Commands.literal("mark").executes(ctx -> perform(ctx.getSource(), "mark")))
             .then(Commands.literal("clear").executes(ctx -> perform(ctx.getSource(), "clear")))
+            .then(Commands.literal("provoke").executes(ctx -> perform(ctx.getSource(), "provoke")))
             .then(Commands.literal("stats").executes(ctx -> {
-                int count = MimicData.get(ctx.getSource().getLevel()).count();
-                ctx.getSource().sendSuccess(() -> Component.literal("Hidden mimic flowers recorded in this dimension: " + count), false);
+                ServerLevel level = ctx.getSource().getLevel();
+                int count = MimicData.get(level).count();
+                int active = MimicAwakening.activeCount(level);
+                ctx.getSource().sendSuccess(() -> Component.literal("Hidden infected flowers: " + count + ", charging: " + active), false);
                 return count;
             }))
         );
@@ -91,6 +104,12 @@ public final class HiddenMimicEvents {
         switch (action) {
             case "mark" -> data.mark(level, pos);
             case "clear" -> data.clear(pos);
+            case "provoke" -> {
+                if (!MimicAwakening.provoke(level, pos, player)) {
+                    source.sendFailure(Component.literal("Mark the flower first, or wait for its active attack to finish."));
+                    return 0;
+                }
+            }
             default -> { }
         }
         boolean infected = data.isInfected(pos);

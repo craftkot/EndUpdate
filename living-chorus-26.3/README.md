@@ -1,32 +1,29 @@
-# Living Chorus — Minecraft 26.3 / NeoForge
+# Living Chorus — NeoForge 26.3 (experimental)
 
-An isolated subproject in craftkot/EndUpdate (does not affect the main Forge 1.20.1 EndUpdate mod).
+Standalone subproject of craftkot/EndUpdate, kept isolated from Forge 1.20.1.
 
-## New: Stage 1 — hidden mimic markers
+## Stage 2 — wake-up, timed attack, and recovery (v0.3.0)
 
-- In **The End**, about 5% of vanilla `minecraft:chorus_flower` blocks near players become silently marked as hidden mimics.
-- The random choice is deterministic per world seed + position, not rerolled every scan.
-- Hidden markers persist per dimension using `SavedData`; vanilla blockstate, collision, texture, F3+B, selection outline and entity radar remain unchanged.
-- Vanilla chorus continues growing normally; one flower/branch may be infected while the others are normal.
-- No active disguise entity, animation or bite is spawned yet. This is groundwork for the future activated mob/animation.
-- Nearby flowers are inspected in a bounded area once every 10 seconds per player. No forced chunk loading.
-- Breaking a flower removes its infection marker. If another flower grows in the same location it may later be infected again.
+- In The End, ~5% of vanilla `minecraft:chorus_flower` blocks can be silently marked infected. The world block, tooltip, selection, F3+B behavior and vanilla rendering are **unchanged while idle**.
+- Marks persist in server world SavedData. Only flowers are marked; one flower on an otherwise normal chorus plant can be a mimic.
+- Server checks nearby marked flowers twice a second, in a bounded area around survival players. Every 10 seconds the server discovers new flowers. No forced chunk loading, no fake mob entity, no constant damage.
+- A reachable flower within 4 blocks may **wake up**: a chorus sound and portal particles telegraph the attack. After 1.5 seconds it bites for 3 damage if the target is still within 2.8 blocks, alive and unobstructed. Attacks can miss, and attacking flowers have a 6.5–11.5 second cooldown.
+- When multiple reachable flowers are infected, one is selected randomly. Additional per-player cooldown avoids simultaneous attacks.
+- Removing or clearing the flower during the wind-up cancels the bite. Creative/spectator players are immune.
+- **Not yet implemented:** visible bending of stems, petal opening, full V8 animated rig, body growth/shape changes, actual invisible branch swap during attack. Those are separate milestones. All animations currently remain in Blockbench only.
+- The legacy `livingchorus:living_chorus` damaging custom block remains for backwards compatibility; it is *not* the hidden mimic.
 
-### Operator debugging
+### Operator-only test commands
 
-Look directly at a **vanilla chorus flower** from within 6 blocks:
+Look at a **vanilla chorus flower**, not the stem, from within six blocks:
 
-- `/livingchorus inspect` — is this flower marked?
-- `/livingchorus mark` — force this flower to be infected (still looks vanilla).
-- `/livingchorus clear` — force this location to remain normal.
-- `/livingchorus stats` — count stored infections in the current dimension.
+- `/livingchorus mark` — mark the targeted flower infected.
+- `/livingchorus inspect` — check whether the flower is infected.
+- `/livingchorus provoke` — force wake-up and an attempted bite, ignoring cooldown.
+- `/livingchorus clear` — clear and prevent automatic rediscovery at this position.
+- `/livingchorus stats` — count of stored infected flowers and current charging attacks.
 
-Use commands with cheats/OP enabled. No messages or visual effects appear in normal play.
-
-## Existing prototype
-
-The old `livingchorus:living_chorus` custom block with a passive proximity-damage tick remains available for compatibility. It is **not** the hidden mimic and is not the intended final implementation.
+For testing, switch to survival after marking; observe that nearby flowers wake, wind up and can miss. Normal play has no admin indicators.
 
 ## Build
-
-Java 25 and Gradle 9.2.1 with NeoForge 26.3.0.90; GitHub Actions **Build Living Chorus 26.3** uploads a JAR artifact.
+Requires Java 25, Gradle 9.2.1 and NeoForge 26.3.0.90. GitHub Actions workflow **Build Living Chorus 26.3** builds and uploads the JAR.
