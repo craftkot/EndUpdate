@@ -172,12 +172,21 @@ send_chat '/setblock 0 79 4 minecraft:chorus_plant'
 send_chat '/setblock 0 80 4 minecraft:chorus_plant'
 send_chat '/setblock 0 81 4 minecraft:chorus_plant'
 send_chat '/setblock 0 82 4 minecraft:chorus_flower[age=5]'
-send_chat '/tp @s 0.5 79.5 0.5 0 -18'
-sleep 3
+# Put the viewer's eye at the flower's actual center height, instead
+# of blindly targeting the stem below the flower.
+send_chat '/setblock 0 80 0 minecraft:end_stone'
+send_chat '/tp @s 0.5 81 0.5 0 0'
+sleep 2
 capture 07-real-vanilla-dead-flower
 send_chat '/livingchorus mark'
-sleep 1
+sleep .4
 capture 08-real-mimic-flower-marked
+if ! grep -Fq 'MIMIC (sleeping)' client-smoke/client.log; then
+  echo 'REAL_MIMIC_MARK_NOT_CONFIRMED=YES' | tee -a client-smoke/status.txt
+  tail -55 client-smoke/client.log >&2
+  exit 1
+fi
+echo 'REAL_MIMIC_MARK_CONFIRMED=YES' | tee -a client-smoke/status.txt
 send_chat '/difficulty easy'
 send_chat '/summon minecraft:endermite 0.5 79 2.5'
 sleep 1
