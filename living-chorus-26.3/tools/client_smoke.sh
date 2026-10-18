@@ -11,6 +11,7 @@ export SDL_VIDEODRIVER=x11
 export EGL_PLATFORM=x11
 export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
 export ALSOFT_DRIVERS=null
+export LIVING_CHORUS_SMOKE=1
 export XDG_RUNTIME_DIR=/tmp/living-chorus-minecraft
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
@@ -188,17 +189,34 @@ if ! grep -Fq 'MIMIC (sleeping)' client-smoke/client.log; then
 fi
 echo 'REAL_MIMIC_MARK_CONFIRMED=YES' | tee -a client-smoke/status.txt
 send_chat '/difficulty easy'
+# Prefer a wide diagonal downward view so the original flower, lower bite
+# trajectory AND Endermite ground level are all inside the same screenshot.
+send_chat '/tp @s 5.5 84 -4.5 31 24'
+sleep 2
+capture 09a-side-above-camera-before-prey
+# Summon prey shortly before activation; do not rely on a 2-second action
+# being visible after the command returns and chat typing finishes.
 send_chat '/summon minecraft:endermite 0.5 79 2.5'
-sleep 1
-capture 09-real-endermite-near-infected-flower
-# If a bite is already scheduled, a 2s charge/recovery may have completed.
-send_chat '/livingchorus provoke'
-sleep .2
-capture 10-low-attack-early
+capture 09b-prey-side-view
+# Capture the natural feeding animation immediately. No /provoke command
+# while the first bite is active (that would return "already charging").
+sleep .3
+capture 10-feeding-start
+sleep .45
+capture 11-feeding-moving
 sleep .5
-capture 11-low-attack-moving
-sleep .6
-capture 12-low-attack-late
-# Intentionally do not claim the images contain an attack until inspected.
-echo "REAL_ENDERMITE_ATTACK_ATTEMPT_CAPTURED=YES" | tee -a client-smoke/status.txt
-echo "REAL_MINECRAFT_WORLD_SCREENSHOTS_DONE=YES" | tee -a client-smoke/status.txt
+capture 12-feeding-snap
+sleep .55
+capture 13-feeding-recovery
+sleep 1
+capture 14-feeding-idle-return
+# Fail the test if no client packet and no extracted + submitted geometry.
+# A green screenshot job alone must NOT be equated to successful rendering.
+for token in LC_SMOKE_PACKET LC_SMOKE_MASK_STARTED LC_SMOKE_EXTRACT LC_SMOKE_SUBMIT; do
+  if ! grep -Fq "$token" client-smoke/client.log; then
+    echo "RENDER_DIAGNOSTIC_MISSING=$token" | tee -a client-smoke/status.txt
+    exit 1
+  fi
+  echo "RENDER_DIAGNOSTIC_PRESENT=$token" | tee -a client-smoke/status.txt
+done
+echo "REAL_MINECRAFT_ANIMATED_MODEL_PIPELINE_CONFIRMED=YES" | tee -a client-smoke/status.txt

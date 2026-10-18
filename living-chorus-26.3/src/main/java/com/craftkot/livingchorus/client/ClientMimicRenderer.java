@@ -72,6 +72,11 @@ public final class ClientMimicRenderer {
     private static final ModelPart BOTTOM_TEETH = part("bottom_teeth", -4, -2, -5, 8, 2, 2);
 
     private static final Map<Long, ClientAttack> ACTIVE = new HashMap<>();
+    // The CI smoke sets this environment variable. Real gameplay does not
+    // produce per-frame logs and dormant mimics remain undisclosed.
+    private static final boolean SMOKE = "1".equals(System.getenv("LIVING_CHORUS_SMOKE"));
+    private static long lastExtractLog = Long.MIN_VALUE;
+    private static long lastSubmitLog = Long.MIN_VALUE;
     private static net.minecraft.client.multiplayer.ClientLevel previousLevel;
 
     private record RenderSnapshot(MimicRig.Pose pose, Vec3 target,
@@ -118,6 +123,9 @@ public final class ClientMimicRenderer {
             previousLevel = level;
         }
         long key = data.flower().asLong();
+        if (SMOKE) System.out.println("LC_SMOKE_PACKET op=" + data.operation()
+            + " flower=" + data.flower() + " kind=" + data.kind()
+            + " target=" + data.target() + " active_before=" + ACTIVE.size());
         if (data.operation() == MimicPosePacket.STOP) {
             ACTIVE.remove(key);
             ClientMimicBlockMask.stop(level, data.flower());
@@ -130,6 +138,7 @@ public final class ClientMimicRenderer {
             // Never decode or reveal markers for dormant flowers.
             ACTIVE.put(key, new ClientAttack(data, level.getGameTime()));
             ClientMimicBlockMask.start(level, data.flower());
+            if (SMOKE) System.out.println("LC_SMOKE_MASK_STARTED flower=" + data.flower());
         }
     }
 
@@ -181,6 +190,15 @@ public final class ClientMimicRenderer {
                 attack.dead, attack.profile.mouthVariant(), List.copyOf(segmentLight), mouthLight));
         }
         event.getRenderState().setRenderData(RENDER_DATA, List.copyOf(snapshots));
+        if (SMOKE && !snapshots.isEmpty() && level.getGameTime() != lastExtractLog) {
+            lastExtractLog = level.getGameTime();
+            var sample = snapshots.get(0);
+            System.out.println("LC_SMOKE_EXTRACT count=" + snapshots.size()
+                + " flower_head=" + sample.pose().mouth()
+                + " joints=" + sample.pose().joints().size()
+                + " opening=" + sample.pose().opening()
+                + " camera=" + Minecraft.getInstance().gameRenderer.getMainCamera().position());
+        }
     }
 
     @SubscribeEvent
@@ -192,6 +210,12 @@ public final class ClientMimicRenderer {
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         var collector = event.getSubmitNodeCollector();
 
+        if (SMOKE && Minecraft.getInstance().level != null
+            && Minecraft.getInstance().level.getGameTime() != lastSubmitLog) {
+            lastSubmitLog = Minecraft.getInstance().level.getGameTime();
+            System.out.println("LC_SMOKE_SUBMIT snapshots=" + snapshots.size()
+                + " camera=" + camera + " collector=" + collector.getClass().getSimpleName());
+        }
 
         for (RenderSnapshot render : snapshots) {
             List<Vec3> path = render.pose.joints();
