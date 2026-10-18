@@ -1,15 +1,43 @@
-# Living Chorus 0.16.0 — tall chorus hunting range
+# Living Chorus v0.17.0 — orthogonal chorus branch growth and normal-sized corners
 
-Minecraft 26.3 · NeoForge 26.3.0.90.
+Minecraft 26.3 · NeoForge 26.3.0.90
 
-Bug report: user screenshot shows tall infected chorus flower overlooking Endermites on End stone below it, while 0.15.0 would not attack them because all prey searches and consumption were hard-coded to 5.2 block Euclidean distance.
+Feedback: Screenshot of an exaggerated thick, knotty tendril. The user wants
+vanilla-looking right-angle bends: if the Endermite is below the flower,
+the branch should first hover over it, then descend. If the prey is to the
+right and forward, it should go right, then forward, then down.
 
-Changes:
-- Endermites can be detected as far as 18 blocks horizontally and 24 blocks vertically below/above the flower, with a maximum 30 block direct distance.
-- Four related checks now share the same range rules: automatic nearby-player seek, independent server tick search, /livingchorus provoke, and attack-contact server logic. /livingchorus debug now shows the same reach numbers and line-of-sight result.
-- Independent infected-flower scan runs every 20 server ticks even if a player is not near the flower's tip. Bounded 128 flowers per scan, loaded chunks only; no forced chunk generation.
-- The IK telescopic branch can deploy up to 48 full-length, original-textured segments, 0.70 blocks apart, covering tall flower-to-ground differences; server still requires jaw-to-prey contact within 0.65 blocks and an unobstructed approach. No remote instant-kill.
-- No change to ender pearl player-bait radius (remains short range).
-- Prior flower-origin contagious stems, natural End Endermite spawning, live/dead flower markers, vanilla UV, 8px stalks, 10px joints and smooth movement retained. Sounds still deferred.
+## Changes
+- Procedural attack path uses separately eased cardinal X then Z then Y legs,
+  creating distinct 90-degree elbows instead of a long diagonal coil.
+- Retains an initial smooth hinge rotation of the ACTUAL attached chorus
+  blocks, with the first shared junction fixed.
+- Approaches a lower target at the flower's initial elevation, extends
+  horizontally over prey, then drops a perpendicular vertical stalk.
+- Recovery closes jaws, retracts Y first, then Z, then X, and returns
+  existing blocks to their uninfected visual arrangement.
+- Original vanilla chorus_plant texture, 8px stalk width and 14px flower.
+  Removed 10px joint collars; same 8px square joint only at REAL directional
+  changes (>~35 degrees), not between every straight segment.
+- Axis legs use separate full-size cubes at up to 0.88 block steps, never
+  nonuniform geometric scaling or stretched UV; limit 96 extra pieces.
+- Tall/distant Endermite attacks dynamically extend their charge time to
+  let multiple axis stages unfold without visibly jumping.
+- The server sends the SAME actual duration to the client in pose START
+  and UPDATE packets, preserving synchronization for distant bites.
+- Server consumes prey only if the actual jaw reaches its grounded target.
+- 18-block horizontal / 24-block vertical hunt detection from 0.16 is
+  preserved; manually infected live/dead flowers and spreading stems remain.
 
-Manual test: mark a tall chorus flower in The End. Summon Endermites on exposed End stone 10–20 blocks below it, within ~18 blocks horizontally. A healthy connected branch should bend and extend downward, then swallow only at contact. Inspect /livingchorus debug while aiming at the flower if detection is still blocked by geometry. Build success is not proof of game rendering.
+## Test
+1. Spawn a marked flower above an Endermite in Minecraft 26.3.
+2. Capture a side view: outward overhang should precede vertical descent.
+3. Move the Endermite right/forward: observe a second square elbow before
+   the drop. Inspect the branch width: it should not grow bulbous between
+   straight elements.
+4. Repeat with 10–20 blocks of vertical separation.
+5. Collect latest.log and video if geometry clips or oscillates.
+
+**CI compilation and runtime smoke checks don't establish that visual
+angles, UV direction and contact timing look perfect.** Do not merge to main.
+Sound work intentionally untouched.

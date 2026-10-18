@@ -56,10 +56,10 @@ public final class ClientMimicRenderer {
     private static final ContextKey<List<RenderSnapshot>> RENDER_DATA = new ContextKey<>(
         Identifier.fromNamespaceAndPath(LivingChorus.MOD_ID, "mimic_rigs"));
 
-    // Vanilla-like robust stalk (8px) plus the thicker 10px joint collars.
-    // Every cube retains its original 16x16 chorus_plant pixel UV mapping.
+    // 8px thickness everywhere, including corners. No 10px collars.
+    // Only draw a corner cube where the tangent changes direction.
     private static final ModelPart STEM = part("stem", -4, -8, -4, 8, 16, 8);
-    private static final ModelPart JOINT = part("joint", -5, -5, -5, 10, 10, 10);
+    private static final ModelPart JOINT = part("joint", -4, -4, -4, 8, 8, 8);
     private static final ModelPart HEAD = part("head", -7, -7, -7, 14, 14, 14);
     // Four nonoverlapping CLOSED sections of a 14x14x14 flower cube.
     // No exterior caps or cover cubes are added in the sleeping state.
@@ -248,9 +248,12 @@ public final class ClientMimicRenderer {
                     render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
 
-                // Rounder, thicker connection at moving 90-degree bends:
-                // covers exposed seams without adding an external shell.
-                if (i < path.size() - 1) {
+                // A corner exists only at a REAL turn (approx >=35 degrees).
+                // Do not pile a cube on every .88 block of straight branch.
+                // The bend is the SAME 8px thickness as the stalk.
+                if (i < path.size() - 1
+                    && path.get(i + 1).subtract(b).lengthSqr() > 1.0e-5
+                    && d.normalize().dot(path.get(i + 1).subtract(b).normalize()) < .82) {
                     matrices.pushPose();
                     matrices.translate(b.x - camera.x, b.y - camera.y, b.z - camera.z);
                     collector.submitModelPart(JOINT, matrices,

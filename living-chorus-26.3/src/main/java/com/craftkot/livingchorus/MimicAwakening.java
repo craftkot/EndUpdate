@@ -204,7 +204,15 @@ public final class MimicAwakening {
         if (!force && (now < state.flowerCooldown.getOrDefault(key, 0L)
             || now < state.targetCooldown.getOrDefault(target.getUUID(), 0L))) return false;
 
-        int charge = kind == HuntType.ENDERMITE ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS;
+        // Tall prey needs time for X -> Z -> Y movement. Keep close encounters
+        // snappy; give longer orthogonal journeys proportionally more ticks.
+        int charge = kind == HuntType.ENDERMITE
+            ? MITE_CHARGE_TICKS + Math.min(105, (int)Math.ceil(
+                Math.max(0.0,
+                    Math.abs(target.getX() - (pos.getX() + .5))
+                    + Math.abs(target.getZ() - (pos.getZ() + .5))
+                    + Math.abs(target.getY() - (pos.getY() + .5)) - 5.0) * 1.65))
+            : PLAYER_CHARGE_TICKS;
         state.charging.put(key, new Strike(target.getUUID(), kind, now, now + charge,
             now + charge + RECOVER_TICKS));
         state.flowerCooldown.put(key, now + 150 + level.getRandom().nextInt(100));
@@ -386,8 +394,13 @@ public final class MimicAwakening {
                     target.getZ())
                 : MimicRig.endermiteGroundAim(target.getX(), target.getY(), target.getZ());
         }
-        int duration = kind == MimicPosePacket.ENDERMITE_FEED
-            ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS;
+        // Critical: send the actual per-attack charge duration. The duration
+        // grows for distant prey, and client + server must reach contact on
+        // the same tick to avoid the disappearing-prey/empty-mouth bug.
+        Strike current = state(level).charging.get(flower.asLong());
+        int duration = current == null
+            ? (kind == MimicPosePacket.ENDERMITE_FEED ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS)
+            : (int)(current.hitAt() - current.startedAt());
         boolean dead = level.getBlockState(flower).is(Blocks.CHORUS_FLOWER)
             && level.getBlockState(flower).getValue(ChorusFlowerBlock.AGE) >= 5;
         MimicPosePacket packet = new MimicPosePacket(flower, aim,
