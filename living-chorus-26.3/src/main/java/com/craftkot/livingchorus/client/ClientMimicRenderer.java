@@ -62,7 +62,8 @@ public final class ClientMimicRenderer {
     private static final Map<Long, ClientAttack> ACTIVE = new HashMap<>();
     private static net.minecraft.client.multiplayer.ClientLevel previousLevel;
 
-    private record RenderSnapshot(MimicRig.Pose pose, boolean dead, int variant) { }
+    private record RenderSnapshot(MimicRig.Pose pose, Vec3 target,
+                                  boolean dead, int variant) { }
 
     private static final class ClientAttack {
         final BlockPos flower;
@@ -99,12 +100,14 @@ public final class ClientMimicRenderer {
         // A payload may arrive before the first render extraction after entering
         // The End. Bind the world here, otherwise extraction erases that first attack.
         if (previousLevel != level) {
+            if (previousLevel != null) ClientMimicBlockMask.reset(previousLevel);
             ACTIVE.clear();
             previousLevel = level;
         }
         long key = data.flower().asLong();
         if (data.operation() == MimicPosePacket.STOP) {
             ACTIVE.remove(key);
+            ClientMimicBlockMask.stop(level, data.flower());
             return;
         }
         if (data.operation() == MimicPosePacket.UPDATE) {
@@ -113,6 +116,7 @@ public final class ClientMimicRenderer {
         } else if (data.operation() == MimicPosePacket.START) {
             // Never decode or reveal markers for dormant flowers.
             ACTIVE.put(key, new ClientAttack(data, level.getGameTime()));
+            ClientMimicBlockMask.start(level, data.flower());
         }
     }
 
@@ -124,6 +128,7 @@ public final class ClientMimicRenderer {
     public static void extract(ExtractLevelRenderStateEvent event) {
         var level = Minecraft.getInstance().level;
         if (level == null || previousLevel != level) {
+            if (previousLevel != null) ClientMimicBlockMask.reset(previousLevel);
             ACTIVE.clear();
             previousLevel = level;
         }
@@ -139,6 +144,7 @@ public final class ClientMimicRenderer {
             double elapsed = Math.max(0, now - attack.started);
             if (elapsed > attack.charge + attack.recovery + 3) {
                 it.remove();
+                ClientMimicBlockMask.stop(level, attack.flower);
                 continue;
             }
             boolean recover = elapsed >= attack.charge;
@@ -149,7 +155,8 @@ public final class ClientMimicRenderer {
             Vec3 initialHead = Vec3.atCenterOf(attack.flower);
             MimicRig.Pose pose = MimicRig.evaluate(
                 attack.profile, root, initialHead, attack.target, progress, recover);
-            snapshots.add(new RenderSnapshot(pose, attack.dead, attack.profile.mouthVariant()));
+            snapshots.add(new RenderSnapshot(pose, attack.target,
+                attack.dead, attack.profile.mouthVariant()));
         }
         event.getRenderState().setRenderData(RENDER_DATA, List.copyOf(snapshots));
     }
@@ -182,6 +189,11 @@ public final class ClientMimicRenderer {
             Vec3 head = render.pose.mouth();
             matrices.pushPose();
             matrices.translate(head.x - camera.x, head.y - camera.y, head.z - camera.z);
+            Vec3 toPrey = render.target.subtract(head);
+            if (toPrey.horizontalDistanceSqr() > .001) {
+                float facing = (float) Math.atan2(-toPrey.x, -toPrey.z);
+                matrices.mulPose(new Matrix4f().rotationY(facing));
+            }
             var flower = RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE);
             float opening = (float) render.pose.opening();
             if (opening < .04F) {
