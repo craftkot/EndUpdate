@@ -107,13 +107,88 @@ sleep 2
 click_window_percent 50 33
 sleep 10
 capture 02-singleplayer-selected
-# Depending on installed version, the new-world GUI can be entered directly
-# when there are no saves. A second click captures the alternative list case.
-click_window_percent 50 92
-sleep 7
-capture 03-world-creation
-# We do not announce an integrated world without its log confirmation.
-# 26.3 UI layout must be visually audited before automating world creation.
-echo "CLIENT_REAL_START_CAPTURED=YES" | tee -a client-smoke/status.txt
-echo "WORLD_LOADED=$(grep -Ec 'joined the game|Starting integrated minecraft server' client-smoke/client.log || true)" | tee -a client-smoke/status.txt
-echo "REAL_CLIENT_PHASE1_COMPLETE=YES" | tee -a client-smoke/status.txt
+# REAL 26.3 Create New World GUI, confirmed by previous screenshot.
+# Existing screenshot at 1024x768: Game Mode y=240, Difficulty y=296,
+# Allow Commands y=352, Create World x=355 y=756.
+# Game Mode cycles Survival -> Hardcore -> Creative; use two clicks.
+click_window_percent 50 26
+sleep 1
+click_window_percent 50 26
+sleep 2
+# Default difficulty in the captured GUI was Hard -> Peaceful in one click.
+click_window_percent 50 34
+sleep 2
+# Explicitly allow commands, not inferred from typing into the chat.
+click_window_percent 50 41
+sleep 2
+capture 03-world-settings-before-create
+
+click_window_percent 34 93
+echo "WORLD_CREATION_BUTTON_CLICKED=YES" | tee -a client-smoke/status.txt
+world_started=0
+for n in $(seq 1 180); do
+  if grep -Eq 'Dev joined the game|joined the game' client-smoke/client.log; then
+    world_started=1
+    break
+  fi
+  if grep -Eiq 'Failed to start the minecraft server|Exception in server tick loop|Exception in thread "Render thread"|Minecraft has crashed' client-smoke/client.log; then
+    echo "WORLD_CREATION_CRASH=YES" | tee -a client-smoke/status.txt
+    break
+  fi
+  sleep 2
+done
+capture 04-world-load-attempt
+if [ "$world_started" != 1 ]; then
+  echo "REAL_INTEGRATED_WORLD_NOT_CONFIRMED=YES" | tee -a client-smoke/status.txt
+  tail -90 client-smoke/client.log
+  exit 1
+fi
+echo "REAL_INTEGRATED_WORLD_PLAYER_JOIN=YES" | tee -a client-smoke/status.txt
+sleep 6
+capture 05-actual-minecraft-world
+
+send_chat() {
+  xdotool key --clearmodifiers t
+  sleep .4
+  xdotool type --clearmodifiers --delay 4 "$1"
+  xdotool key --clearmodifiers Return
+  sleep 1.3
+}
+# Server success must appear in the log: mouse clicks alone aren't enough.
+send_chat '/say LIVING_CHORUS_REAL_CLIENT_COMMANDS'
+sleep 2
+if ! grep -q 'LIVING_CHORUS_REAL_CLIENT_COMMANDS' client-smoke/client.log; then
+  echo "WORLD_COMMAND_PERMISSION_NOT_CONFIRMED=YES" | tee -a client-smoke/status.txt
+  capture 06-game-chat-without-confirmed-permissions
+  exit 1
+fi
+echo "REAL_CLIENT_COMMANDS=YES" | tee -a client-smoke/status.txt
+# End island test fixture, not a fabricated rendering.
+send_chat '/execute in minecraft:the_end run tp @s 0.5 83 0.5 0 18'
+sleep 6
+send_chat '/fill -4 78 -4 4 78 8 minecraft:end_stone'
+send_chat '/setblock 0 79 4 minecraft:chorus_plant'
+send_chat '/setblock 0 80 4 minecraft:chorus_plant'
+send_chat '/setblock 0 81 4 minecraft:chorus_plant'
+send_chat '/setblock 0 82 4 minecraft:chorus_flower[age=5]'
+send_chat '/tp @s 0.5 79.5 0.5 0 0'
+sleep 3
+capture 07-real-vanilla-dead-flower
+send_chat '/livingchorus mark'
+sleep 1
+capture 08-real-mimic-flower-marked
+send_chat '/difficulty easy'
+send_chat '/summon minecraft:endermite 0.5 79 2.5'
+sleep 1
+capture 09-real-endermite-near-infected-flower
+# If a bite is already scheduled, a 2s charge/recovery may have completed.
+send_chat '/livingchorus provoke'
+sleep .2
+capture 10-low-attack-early
+sleep .5
+capture 11-low-attack-moving
+sleep .6
+capture 12-low-attack-late
+# Intentionally do not claim the images contain an attack until inspected.
+echo "REAL_ENDERMITE_ATTACK_ATTEMPT_CAPTURED=YES" | tee -a client-smoke/status.txt
+echo "REAL_MINECRAFT_WORLD_SCREENSHOTS_DONE=YES" | tee -a client-smoke/status.txt
