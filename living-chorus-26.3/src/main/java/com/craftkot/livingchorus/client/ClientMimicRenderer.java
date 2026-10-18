@@ -16,6 +16,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * First fully textured in-game visualization. All parts are rigid models with
@@ -281,12 +283,57 @@ public final class ClientMimicRenderer {
         matrices.popPose();
     }
 
+    /**
+     * Bake each face as an independently UV-positioned visible quad on the
+     * ORIGINAL 16x16 vanilla texture. A normal ModelPart cube unwraps 6 faces
+     * in one long horizontal atlas strip, which overruns a 16x16 block sprite.
+     * The six one-sided copies let each face use [0,16] without cropping,
+     * tiling, a second atlas or new texture pixels.
+     *
+     * Critical: each jaw panel reuses the UV coordinates it occupied when
+     * the flower was intact. The picture remains seamless in closed pose and
+     * each panel is rigid during articulation (no stretch).
+     *
+     * Coordinate origin: model flower centered at (0,0,0), outer corners
+     * [-7,7]. Source texture borders are reserved, map [-7,7] -> [1,15].
+     */
     private static ModelPart part(String name, float x, float y, float z,
                                   float w, float h, float d) {
         MeshDefinition mesh = new MeshDefinition();
-        mesh.getRoot().addOrReplaceChild(name,
-            CubeListBuilder.create().texOffs(0, 0).addBox(x, y, z, w, h, d),
-            PartPose.ZERO);
-        return LayerDefinition.create(mesh, 16, 16).bakeRoot().getChild(name);
+        for (Direction face : Direction.values()) {
+            // Position of this cuboid's face inside the original 16px flower.
+            // NORTH/SOUTH: x/y; EAST/WEST: z/y; UP/DOWN: x/z.
+            float desiredU = switch (face) {
+                case EAST, WEST -> z + 8F;
+                default -> x + 8F;
+            };
+            float desiredV = switch (face) {
+                case UP, DOWN -> z + 8F;
+                default -> y + 8F;
+            };
+
+            // Mojang ModelPart.Cube layout for a box with width w and depth d:
+            // left [0,d], north/up [d,d+w], right/down [d+w,d+2w],
+            // south [2d+w,2d+2w]; side faces begin at v=d, caps at v=0.
+            float faceOffsetU = switch (face) {
+                case WEST -> 0F;
+                case NORTH, UP -> d;
+                case EAST, DOWN -> d + w;
+                case SOUTH -> 2F * d + w;
+            };
+            float faceOffsetV = switch (face) {
+                case DOWN, UP -> 0F;
+                default -> d;
+            };
+
+            // Integer texture coordinates preserve pixel alignment exactly.
+            int u = Math.round(desiredU - faceOffsetU);
+            int v = Math.round(desiredV - faceOffsetV);
+            CubeListBuilder faceOnly = CubeListBuilder.create().texOffs(u, v)
+                .addBox(x, y, z, w, h, d, Set.of(face));
+            mesh.getRoot().addOrReplaceChild(name + "_" + face.getName(),
+                faceOnly, PartPose.ZERO);
+        }
+        return LayerDefinition.create(mesh, 16, 16).bakeRoot();
     }
 }

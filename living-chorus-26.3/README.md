@@ -1,15 +1,38 @@
-# Living Chorus 0.10.0 — articulated jaws and world lighting
+# Living Chorus 0.11.0 — pixel-aligned vanilla-face UV
 
-Experimental port to Minecraft 26.3 NeoForge, living-chorus-26.3 only. No changes to EndUpdate's Forge 1.20.1 main game.
+Minecraft 26.3 / NeoForge. Standalone experimental project in craftkot/EndUpdate.
+Sound design remains intentionally deferred.
 
-- The active flower is still reconstructed from original *vanilla* chorus plant, flower and dead flower textures; asleep vanilla blocks are untouched.
-- NEW: head now closes into a single 14px cube. Opening changes over to four strictly non-overlapping cuboids: top, bottom, left and right. Jaw rotations have pivots at the **outside edges** of the flower, not in its center. Left/right yaw open around the Y axis, not Z.
-- Core and small internal teeth appear only when the mouth is open. These details do not remain visible in idle/sleep and are not separate facade overlay walls.
-- Rigid branch segments are 10px long (matching roughly 0.64-block Bezier sample spacing) instead of 16px segments piled over each other. No mesh scaling / UV stretching.
-- Per-segment and per-flower world packed light is sampled during the NeoForge extraction stage at current positions and used in submit stage. **No fullbright**.
-- Previous net-sync, flower masking, different aim heights for players/Endermites, rare End spawns, autonomous feeding and sleeping projectile one-hit destruction retained.
+## Exact vanilla sprite mapping
+Earlier versions put a normal **entity-style box UV atlas** on an ordinary
+16×16 vanilla *block* sprite. ModelPart normally lays out all six faces as a
+large strip, causing repeated/cropped flowers and conspicuous white seams.
 
-## Limitations
-- Existing vanilla 16x16 sprite is still used as an **entity-style box UV**. The complete per-face UV retopology is not yet correct: large cuboids may repeat or crop texture portions. This remains the next art/renderer task; no new pixels added.
-- Active moving collision/health is absent. Distinct branches still use profile-generated joints, not a rendered full multi-flower tree.
-- CI validates compilation. An actual game-client screenshot/video test has not been performed; visual seams or clipping remain possible. Sounds are intentionally deferred per user request.
+Version 0.11.0 bakes the six faces of every moving cuboid **separately**:
+- Only the matching Direction face is enabled for each of the six coincident
+  ModelPart cuboids. This creates six textured faces (not six overlapping
+  rendered whole cubes).
+- Each face sets a per-direction texOffs so that it samples the correct
+  contiguous part of the original 16×16 `minecraft:chorus_flower.png`,
+  `chorus_flower_dead.png` or `chorus_plant.png`, directly.
+- Coordinates of a 14px flower are mapped 1:1 to pixel [1,15], preserving
+  the existing outer 1px border. Each jaw panel inherits the same UV placement
+  as its surface area on a closed flower.
+- During an attack, four hinged plates unfold independently without changing
+  geometry or stretching pixels. Closed state displays a single cube; teeth
+  and central interior are only submitted when open.
+- No new images, recolouring, custom texture atlas or sampled replacement
+  block texture were added.
+
+### Still pending
+**In-game screenshot/client run required.** Code and CI cannot prove the
+model's UV orientations are aesthetically correct. The model still uses
+one 14px flower cube and simple jaw plates rather than full V17 procedural
+petal geometry. During attacks only terminal blocks can be hidden safely;
+complex shared-stem topology needs future work. Active collision/hitpoints,
+animated full-tree variations, networking smoke tests and sound effects
+are still open tasks.
+
+Preserved: rare Endermite spawning in The End, autonomous prey feeding, high
+player / low Endermite trajectories, living/dead flowers as infection anchors,
+sleeping one-hit projectile defeat, world-light sampling and client sync.
