@@ -1,26 +1,19 @@
-# Living Chorus — Minecraft 26.3 / NeoForge (experimental)
+# Living Chorus 0.7.0 — procedural motion groundwork
 
-Separate project inside `craftkot/EndUpdate`; the Forge 1.20.1 EndUpdate code is not changed.
+Minecraft 26.3 · NeoForge. Standalone directory, do not merge without approval.
 
-## v0.6.0 — End endermites + autonomous feeding
+### Actual in-game step
+- `MimicRig` calculates deterministic, articulated per-flower branch joints from `MimicProfile`, its vanilla flower anchor and the target's position.
+- The head smoothly bows toward targets; the last portion of the movement snaps into a bite; recovery retracts toward its sleeping flower.
+- Distinct aim heights: player chest/head at about 1.55 blocks and endermite at roughly half the creature's low body height.
+- Segment number increases with reach to keep segments short. Future UVs will be applied to **rigid tiles**; no nonuniform stem or texture stretch.
+- While charging, 1 vanilla portal particle per computed joint every 3 server ticks gives a temporary **visual motion preview**; the mouth indicates opening with reverse-portal particles. In sleep state there are no particles or entities.
+- Spawn/feeding/infection mechanics v0.6 remain, including rare Endermite spawning in The End, player bait requiring ender pearls, and one-shot death of sleeping infected flowers.
 
-- Endermites now get an **additional rare spawn opportunity in The End** on exposed End stone near chorus plants. This mod uses vanilla Endermite entities, not replacements.
-- About once every 30 seconds per eligible nearby player the mod tries a spawning roll; only 1 of 3 rolls proceeds, and 6 local candidate locations are sampled.
-- Candidates must be in **already loaded chunks**, 18–36 blocks diagonally away from the player, on solid End stone with air above and some nearby chorus vegetation.
-- A local cap of 6 Endermites within about 56 horizontal blocks prevents the new spawn system from filling the End.
-- No spawning in peaceful difficulty; spectators do not cause spawning. Endermites may still despawn normally.
-- Newly infected chorus flowers remain vanilla blocks when sleeping. Living and dead flowers can both carry infection and may be instantly destroyed by projectiles while sleeping.
-- Sleeping/active state uses the infection marker associated with the exact flower, not with the entire plant.
-- **Autonomous endermite feeding:** every 2 seconds, a small round-robin budget of at most 128 stored infected flowers in loaded chunks is checked for nearby Endermites. A flower can consume a mite without any player standing within attack distance.
-- Endermite feeding uses `eat_endermite_low` and differs from `bite_player_high`, which is only eligible for players carrying ender pearls. These are separate server behaviors; procedural meshes and their visible animations are still not implemented.
-- Every infected flower has a deterministic `MimicProfile` for future variable branch morphology.
-- Current V17 Blockbench rig is a demonstration and not the final shape.
+### Not yet finished
+This is **not the final textured procedural model**. Vanilla chorus blocks stay rendered while moving, and particle markers only show the computed moving rig. Rendering textured stems and four independently hinged jaw plates will require client-side geometry submission and attack-state synchronization, which is the next phase.
 
-### Smoke test
-1. Open The End in Survival; wait around chorus forests. Endermites should occasionally spawn on End stone away from you (a rare event, not guaranteed every minute).
-2. `/livingchorus mark` on a vanilla chorus flower.
-3. Place/spawn an Endermite nearby or allow one to wander there; it should get eaten after the independent charge time even without a player close to the infected flower.
-4. Check `/livingchorus stats`, `/livingchorus profile`, and `/livingchorus provoke` for debugging.
+### Tests
+With survival cheats enabled, look at a live or dead vanilla chorus flower, use `/livingchorus mark`, then summon an Endermite or carry an ender pearl and run `/livingchorus provoke`. Distinct high / low particle motions should appear; no particles while asleep.
 
-### Not yet implemented
-Custom spawned mobs are not synchronized to V17 animated models. No procedural client renderer/animated collision meshes yet. Gameplay tests still required after Gradle CI compilation.
+GitHub Actions build compiles JAR; runtime client test is still required.

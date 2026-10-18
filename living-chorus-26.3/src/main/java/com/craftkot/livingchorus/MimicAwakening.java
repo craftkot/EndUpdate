@@ -54,7 +54,7 @@ public final class MimicAwakening {
         }
     }
 
-    private record Strike(UUID targetId, HuntType kind, long hitAt, long clearAt) { }
+    private record Strike(UUID targetId, HuntType kind, long startedAt, long hitAt, long clearAt) { }
     private record Candidate(BlockPos flower, Entity target, HuntType type) { }
 
     private static final class State {
@@ -189,7 +189,7 @@ public final class MimicAwakening {
             || now < state.targetCooldown.getOrDefault(target.getUUID(), 0L))) return false;
 
         int charge = kind == HuntType.ENDERMITE ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS;
-        state.charging.put(key, new Strike(target.getUUID(), kind, now + charge,
+        state.charging.put(key, new Strike(target.getUUID(), kind, now, now + charge,
             now + charge + RECOVER_TICKS));
         state.flowerCooldown.put(key, now + 150 + level.getRandom().nextInt(100));
         state.targetCooldown.put(target.getUUID(), now + 95);
@@ -217,6 +217,40 @@ public final class MimicAwakening {
                 || !level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
                 it.remove();
                 continue;
+            }
+            // Temporary in-world rig preview until the textured, client-side
+            // animated renderer is ready. Never rendered while masquerading.
+            // Each joint corresponds to one rigid future chorus stem segment;
+            // no stretched UV. The two hunting types use different aim heights.
+            if (now % 3L == 0L && now < strike.clearAt()) {
+                Entity previewTarget = level.getEntity(strike.targetId());
+                if (previewTarget != null && previewTarget.isAlive()) {
+                    double aimY = strike.kind() == HuntType.ENDERMITE
+                        ? previewTarget.getY() + previewTarget.getBbHeight() * .45
+                        : previewTarget.getY() + Math.min(1.55, previewTarget.getBbHeight() * .85);
+                    Vec3 aim = new Vec3(previewTarget.getX(), aimY, previewTarget.getZ());
+                    // Anchor to the vanilla stem below the flower. The whole
+                    // plant is NOT replaced; the infected tip alone animates.
+                    Vec3 root = Vec3.atCenterOf(pos.below(2));
+                    Vec3 head = Vec3.atCenterOf(pos);
+                    boolean recover = now >= strike.hitAt();
+                    double phase = recover
+                        ? (now - strike.hitAt()) / (double) RECOVER_TICKS
+                        : (now - strike.startedAt()) / (double) (strike.hitAt() - strike.startedAt());
+                    MimicRig.Pose pose = MimicRig.evaluate(profile(level, pos), root, head,
+                        aim, phase, recover);
+                    // Sparse ephemeral markers, NOT new permanent entities.
+                    for (int joint = 1; joint < pose.joints().size(); joint++) {
+                        Vec3 v = pose.joints().get(joint);
+                        level.sendParticles(ParticleTypes.PORTAL, v.x, v.y, v.z,
+                            1, .025, .025, .025, 0);
+                    }
+                    Vec3 mouth = pose.mouth();
+                    if (pose.opening() > .45) {
+                        level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                            mouth.x, mouth.y, mouth.z, 4, .12, .12, .12, .015);
+                    }
+                }
             }
             if (now == strike.hitAt() - 8) {
                 level.sendParticles(ParticleTypes.REVERSE_PORTAL,
