@@ -51,7 +51,8 @@ public final class MimicAwakening {
             && dx * dx + dy * dy + dz * dz <= MITE_HUNT_RADIUS_SQR;
     }
     private static final int PLAYER_CHARGE_TICKS = 35;
-    private static final int MITE_CHARGE_TICKS = 46;
+    private static final int MITE_CHARGE_TICKS = 26;
+    private static final int DIGEST_TICKS = 100; // 5 seconds at 20 TPS
     private static final int RECOVER_TICKS = 18;
 
     private static final Map<ServerLevel, State> STATES = new WeakHashMap<>();
@@ -75,6 +76,8 @@ public final class MimicAwakening {
         final Map<Long, Strike> charging = new HashMap<>();
         final Map<Long, Long> flowerCooldown = new HashMap<>();
         final Map<UUID, Long> targetCooldown = new HashMap<>();
+        // Only a flower that actually swallowed a mite produces this effect.
+        final Map<Long, Long> digestingUntil = new HashMap<>();
         int miteScanCursor = 0;
     }
 
@@ -98,6 +101,7 @@ public final class MimicAwakening {
         long id = flower.asLong();
         state.charging.remove(id);
         state.flowerCooldown.remove(id);
+        state.digestingUntil.remove(id);
         notifyPose(level, flower, null, (byte) 0, MimicPosePacket.STOP);
     }
 
@@ -204,14 +208,14 @@ public final class MimicAwakening {
         if (!force && (now < state.flowerCooldown.getOrDefault(key, 0L)
             || now < state.targetCooldown.getOrDefault(target.getUUID(), 0L))) return false;
 
-        // Tall prey needs time for X -> Z -> Y movement. Keep close encounters
-        // snappy; give longer orthogonal journeys proportionally more ticks.
+        // The branch descends while turning from the beginning of the bite.
+        // Farther prey get a proportionate (but not excessive) travel time.
         int charge = kind == HuntType.ENDERMITE
-            ? MITE_CHARGE_TICKS + Math.min(105, (int)Math.ceil(
+            ? MITE_CHARGE_TICKS + Math.min(64, (int)Math.ceil(
                 Math.max(0.0,
                     Math.abs(target.getX() - (pos.getX() + .5))
                     + Math.abs(target.getZ() - (pos.getZ() + .5))
-                    + Math.abs(target.getY() - (pos.getY() + .5)) - 5.0) * 1.65))
+                    + Math.abs(target.getY() - (pos.getY() + .5)) - 5.0) * 1.15))
             : PLAYER_CHARGE_TICKS;
         state.charging.put(key, new Strike(target.getUUID(), kind, now, now + charge,
             now + charge + RECOVER_TICKS));
@@ -310,6 +314,9 @@ public final class MimicAwakening {
                         level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
                             SoundSource.HOSTILE, .55F, .55F);
                         mite.discard(); // prey eaten; no attack on a nearby player
+                        // Five seconds of Endermite portal motes emerge from
+                        // the original infected blossom after a real swallow.
+                        state.digestingUntil.put(pos.asLong(), now + DIGEST_TICKS);
                     }
                 }
             }
@@ -323,6 +330,30 @@ public final class MimicAwakening {
                         strike.kind() == HuntType.ENDERMITE ? MimicPosePacket.ENDERMITE_FEED
                             : MimicPosePacket.PLAYER_BITE,
                         MimicPosePacket.UPDATE);
+                }
+            }
+        }
+
+        // Independent of the active animation: continues after the stalk
+        // has already returned to its resting vanilla shape.
+        Iterator<Map.Entry<Long, Long>> digest = state.digestingUntil.entrySet().iterator();
+        while (digest.hasNext()) {
+            Map.Entry<Long, Long> entry = digest.next();
+            BlockPos flower = BlockPos.of(entry.getKey());
+            if (now >= entry.getValue() || !level.hasChunkAt(flower)
+                || !data.isInfected(flower)
+                || !level.getBlockState(flower).is(Blocks.CHORUS_FLOWER)) {
+                digest.remove();
+                continue;
+            }
+            if (now % 4L == 0L) {
+                level.sendParticles(ParticleTypes.PORTAL,
+                    flower.getX() + .5, flower.getY() + .46, flower.getZ() + .5,
+                    3, .24, .25, .24, .018);
+                if (now % 12L == 0L) {
+                    level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                        flower.getX() + .5, flower.getY() + .52, flower.getZ() + .5,
+                        1, .12, .15, .12, .005);
                 }
             }
         }
