@@ -1,8 +1,8 @@
 {
   "textures": {
-    "particle": "minecraft:block/chorus_plant",
-    "plant": "minecraft:block/chorus_plant",
-    "flower": "minecraft:block/chorus_flower"
+    "particle": "livingchorus:block/chorus_plant",
+    "plant": "livingchorus:block/chorus_plant",
+    "flower": "livingchorus:block/chorus_flower"
   },
   "elements": [
     {
