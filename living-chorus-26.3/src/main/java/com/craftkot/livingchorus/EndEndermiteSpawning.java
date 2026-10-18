@@ -5,12 +5,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Rare supplemental Endermite population in The End, around chorus forests.
@@ -59,9 +58,10 @@ public final class EndEndermiteSpawning {
             // Favour chorus forests rather than artificially spawning all over The End.
             if (!nearChorus(level, spot)) continue;
 
-            Endermite mite = EntityType.ENDERMITE.create(level, EntitySpawnReason.NATURAL);
+            Endermite mite = EntityTypes.ENDERMITE.create(level, EntitySpawnReason.NATURAL);
             if (mite == null) return;
-            mite.moveTo(x + .5, y, z + .5, level.getRandom().nextFloat() * 360F, 0);
+            mite.setPos(x + .5, y, z + .5);
+            mite.setYRot(level.getRandom().nextFloat() * 360F);
             if (!level.noCollision(mite)) continue;
 
             level.addFreshEntity(mite);
