@@ -166,17 +166,17 @@ if ! grep -E 'Server thread.*LIVING_CHORUS_REAL_CLIENT_COMMANDS' client-smoke/cl
 fi
 echo "REAL_CLIENT_COMMANDS=YES" | tee -a client-smoke/status.txt
 # End island test fixture, not a fabricated rendering.
-send_chat '/execute in minecraft:the_end run tp @s 0.5 83 0.5 0 18'
+send_chat '/execute in minecraft:the_end run tp @s 32.5 83 32.5 0 18'
 sleep 6
-send_chat '/fill -4 78 -4 4 78 8 minecraft:end_stone'
-send_chat '/setblock 0 79 4 minecraft:chorus_plant'
-send_chat '/setblock 0 80 4 minecraft:chorus_plant'
-send_chat '/setblock 0 81 4 minecraft:chorus_plant'
-send_chat '/setblock 0 82 4 minecraft:chorus_flower[age=5]'
+send_chat '/fill 28 78 28 36 78 40 minecraft:end_stone'
+send_chat '/setblock 32 79 36 minecraft:chorus_plant'
+send_chat '/setblock 32 80 36 minecraft:chorus_plant'
+send_chat '/setblock 32 81 36 minecraft:chorus_plant'
+send_chat '/setblock 32 82 36 minecraft:chorus_flower[age=5]'
 # Put the viewer's eye at the flower's actual center height, instead
 # of blindly targeting the stem below the flower.
-send_chat '/setblock 0 80 0 minecraft:end_stone'
-send_chat '/tp @s 0.5 81 0.5 0 0'
+send_chat '/setblock 32 80 32 minecraft:end_stone'
+send_chat '/tp @s 32.5 81 32.5 0 0'
 sleep 2
 capture 07-real-vanilla-dead-flower
 send_chat '/livingchorus mark'
@@ -191,12 +191,12 @@ echo 'REAL_MIMIC_MARK_CONFIRMED=YES' | tee -a client-smoke/status.txt
 send_chat '/difficulty easy'
 # Prefer a wide diagonal downward view so the original flower, lower bite
 # trajectory AND Endermite ground level are all inside the same screenshot.
-send_chat '/tp @s 5.5 84 -4.5 31 24'
+send_chat '/tp @s 37.5 84.5 27.5 31 20'
 sleep 2
 capture 09a-side-above-camera-before-prey
 # Summon prey shortly before activation; do not rely on a 2-second action
 # being visible after the command returns and chat typing finishes.
-send_chat '/summon minecraft:endermite 0.5 79 2.5'
+send_chat '/summon minecraft:endermite 32.5 79 34.5'
 capture 09b-prey-side-view
 # Capture the natural feeding animation immediately. No /provoke command
 # while the first bite is active (that would return "already charging").
