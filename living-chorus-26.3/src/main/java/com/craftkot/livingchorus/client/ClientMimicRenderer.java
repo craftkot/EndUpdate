@@ -12,6 +12,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -52,18 +53,27 @@ public final class ClientMimicRenderer {
     private static final ContextKey<List<RenderSnapshot>> RENDER_DATA = new ContextKey<>(
         Identifier.fromNamespaceAndPath(LivingChorus.MOD_ID, "mimic_rigs"));
 
-    private static final ModelPart STEM = part("stem", -2, -8, -2, 4, 16, 4);
+    // Pixel dimensions of rigid parts. 10px stems overlap 0.64-block joints
+    // slightly without changing UV scale or elongating cuboids.
+    private static final ModelPart STEM = part("stem", -2, -5, -2, 4, 10, 4);
     private static final ModelPart HEAD = part("head", -7, -7, -7, 14, 14, 14);
-    private static final ModelPart UPPER = part("upper", -7, 0, -7, 14, 7, 14);
-    private static final ModelPart LOWER = part("lower", -7, -7, -7, 14, 7, 14);
-    private static final ModelPart LEFT = part("left", -7, -2, -7, 7, 4, 14);
-    private static final ModelPart RIGHT = part("right", 0, -2, -7, 7, 4, 14);
+    // Four nonoverlapping CLOSED sections of a 14x14x14 flower cube.
+    // No exterior caps or cover cubes are added in the sleeping state.
+    private static final ModelPart UPPER = part("upper", -7, 1, -7, 14, 6, 14);
+    private static final ModelPart LOWER = part("lower", -7, -7, -7, 14, 6, 14);
+    private static final ModelPart LEFT = part("left", -7, -1, -7, 6, 2, 14);
+    private static final ModelPart RIGHT = part("right", 1, -1, -7, 6, 2, 14);
+    private static final ModelPart CORE = part("core", -1, -1, -4, 2, 2, 8);
+    // Teeth are visible only AFTER opening; hidden completely by HEAD when shut.
+    private static final ModelPart TOP_TEETH = part("top_teeth", -4, 0, -5, 8, 2, 2);
+    private static final ModelPart BOTTOM_TEETH = part("bottom_teeth", -4, -2, -5, 8, 2, 2);
 
     private static final Map<Long, ClientAttack> ACTIVE = new HashMap<>();
     private static net.minecraft.client.multiplayer.ClientLevel previousLevel;
 
     private record RenderSnapshot(MimicRig.Pose pose, Vec3 target,
-                                  boolean dead, int variant) { }
+                                  boolean dead, int variant,
+                                  List<Integer> segmentLight, int mouthLight) { }
 
     private static final class ClientAttack {
         final BlockPos flower;
@@ -155,8 +165,17 @@ public final class ClientMimicRenderer {
             Vec3 initialHead = Vec3.atCenterOf(attack.flower);
             MimicRig.Pose pose = MimicRig.evaluate(
                 attack.profile, root, initialHead, attack.target, progress, recover);
+            // Light must be sampled here, on the extraction/client world pass.
+            // SubmitCustomGeometryEvent must not consult the world or light engine.
+            ArrayList<Integer> segmentLight = new ArrayList<>();
+            for (int segment = 1; segment < pose.joints().size(); segment++) {
+                Vec3 a = pose.joints().get(segment - 1), b = pose.joints().get(segment);
+                Vec3 middle = a.add(b).scale(.5);
+                segmentLight.add(LevelRenderer.getLightColor(level, BlockPos.containing(middle)));
+            }
+            int mouthLight = LevelRenderer.getLightColor(level, BlockPos.containing(pose.mouth()));
             snapshots.add(new RenderSnapshot(pose, attack.target,
-                attack.dead, attack.profile.mouthVariant()));
+                attack.dead, attack.profile.mouthVariant(), List.copyOf(segmentLight), mouthLight));
         }
         event.getRenderState().setRenderData(RENDER_DATA, List.copyOf(snapshots));
     }
@@ -169,7 +188,7 @@ public final class ClientMimicRenderer {
         PoseStack matrices = event.getPoseStack();
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         var collector = event.getSubmitNodeCollector();
-        final int light = 0x00F000F0; // bright temporary preview, dynamic light later
+
 
         for (RenderSnapshot render : snapshots) {
             List<Vec3> path = render.pose.joints();
@@ -183,7 +202,7 @@ public final class ClientMimicRenderer {
                 matrices.mulPose(new Matrix4f().rotation(new Quaternionf().rotationTo(0, 1, 0,
                     (float)d.x, (float)d.y, (float)d.z)));
                 collector.submitModelPart(STEM, matrices, RenderTypes.entityCutout(PLANT_TEXTURE),
-                    light, OverlayTexture.NO_OVERLAY, null);
+                    render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
             }
             Vec3 head = render.pose.mouth();
@@ -196,14 +215,40 @@ public final class ClientMimicRenderer {
             }
             var flower = RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE);
             float opening = (float) render.pose.opening();
+            int light = render.mouthLight();
             if (opening < .04F) {
+                // Closed mimic = ONE head, not four separately visible jaw cuboids.
                 collector.submitModelPart(HEAD, matrices, flower,
                     light, OverlayTexture.NO_OVERLAY, null);
             } else {
-                submitJaw(collector, matrices, flower, UPPER, opening * .65F, 0F, 0F, light);
-                submitJaw(collector, matrices, flower, LOWER, -opening * .65F, 0F, 0F, light);
-                submitJaw(collector, matrices, flower, LEFT, 0F, 0F, opening * .55F, light);
-                submitJaw(collector, matrices, flower, RIGHT, 0F, 0F, -opening * .55F, light);
+                // Hinge locations are the OUTER perimeter of the 14px head.
+                // Local hinge coordinates are in model pixels, converted by /16.
+                float jawAmplitude = .14F + .88F * opening;
+                float sideAmplitude = .12F + .70F * opening;
+                // Top/bottom rotate about their outer horizontal edges.
+                submitJaw(collector, matrices, flower, UPPER,
+                    0F, 7F, 0F, jawAmplitude, 0F, 0F, light);
+                submitJaw(collector, matrices, flower, LOWER,
+                    0F, -7F, 0F, -jawAmplitude, 0F, 0F, light);
+                // Left/right swing about the two outer vertical edges, not Z.
+                submitJaw(collector, matrices, flower, LEFT,
+                    -7F, 0F, 0F, 0F, sideAmplitude, 0F, light);
+                submitJaw(collector, matrices, flower, RIGHT,
+                    7F, 0F, 0F, 0F, -sideAmplitude, 0F, light);
+                // This uses the original vanilla plant pixels for the interior,
+                // never a newly painted texture or an extra cosmetic overlay.
+                collector.submitModelPart(CORE, matrices,
+                    RenderTypes.entityCutout(PLANT_TEXTURE), light,
+                    OverlayTexture.NO_OVERLAY, null);
+                // Small internal teeth are submitted ONLY after jaws visibly open.
+                if (opening > .23F) {
+                    collector.submitModelPart(TOP_TEETH, matrices,
+                        RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE),
+                        light, OverlayTexture.NO_OVERLAY, null);
+                    collector.submitModelPart(BOTTOM_TEETH, matrices,
+                        RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE),
+                        light, OverlayTexture.NO_OVERLAY, null);
+                }
             }
             matrices.popPose();
         }
@@ -212,9 +257,16 @@ public final class ClientMimicRenderer {
     private static void submitJaw(net.minecraft.client.renderer.SubmitNodeCollector collector,
                                   PoseStack matrices,
                                   net.minecraft.client.renderer.rendertype.RenderType texture,
-                                  ModelPart panel, float x, float y, float z, int light) {
+                                  ModelPart panel,
+                                  float pivotXpx, float pivotYpx, float pivotZpx,
+                                  float x, float y, float z, int light) {
         matrices.pushPose();
+        // ModelPart boxes are authored in 16px block coordinates.
+        // Rotate around the shared OUTER hinge so plates physically split,
+        // instead of spinning through each other at the center.
+        matrices.translate(pivotXpx / 16F, pivotYpx / 16F, pivotZpx / 16F);
         matrices.mulPose(new Matrix4f().rotation(new Quaternionf().rotationXYZ(x, y, z)));
+        matrices.translate(-pivotXpx / 16F, -pivotYpx / 16F, -pivotZpx / 16F);
         collector.submitModelPart(panel, matrices, texture, light,
             OverlayTexture.NO_OVERLAY, null);
         matrices.popPose();
