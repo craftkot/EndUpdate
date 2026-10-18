@@ -4,6 +4,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -24,5 +25,6 @@ public final class LivingChorus {
     public LivingChorus(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
+        NeoForge.EVENT_BUS.register(new HiddenMimicEvents());
     }
 }
