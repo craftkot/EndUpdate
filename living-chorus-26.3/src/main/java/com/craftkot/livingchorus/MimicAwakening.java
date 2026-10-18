@@ -238,13 +238,13 @@ public final class MimicAwakening {
                     Vec3 aim = new Vec3(previewTarget.getX(), aimY, previewTarget.getZ());
                     // Anchor to the vanilla stem below the flower. The whole
                     // plant is NOT replaced; the infected tip alone animates.
-                    Vec3 root = Vec3.atCenterOf(pos.below(2));
-                    Vec3 head = Vec3.atCenterOf(pos);
+                    java.util.List<Vec3> branch = MimicBranchPath.trace(level, pos).stream()
+                        .map(Vec3::atCenterOf).toList();
                     boolean recover = now >= strike.hitAt();
                     double phase = recover
                         ? (now - strike.hitAt()) / (double) RECOVER_TICKS
                         : (now - strike.startedAt()) / (double) (strike.hitAt() - strike.startedAt());
-                    MimicRig.Pose pose = MimicRig.evaluate(profile(level, pos), root, head,
+                    MimicRig.Pose pose = MimicRig.evaluateBranch(profile(level, pos), branch,
                         aim, phase, recover);
                     // Sparse ephemeral markers, NOT new permanent entities.
                     for (int joint = 1; joint < pose.joints().size(); joint++) {
@@ -397,7 +397,8 @@ public final class MimicAwakening {
 
         long targetCooldown = Math.max(0L,
             state.targetCooldown.getOrDefault(nearest.getUUID(), 0L) - now);
-        return "SLEEPING, nearest Endermite distance=" + String.format(java.util.Locale.ROOT, "%.2f", Math.sqrt(best))
+        return "SLEEPING, branch blocks=" + MimicBranchPath.trace(level,flower).size()
+            + ", nearest Endermite distance=" + String.format(java.util.Locale.ROOT, "%.2f", Math.sqrt(best))
             + ", within wake range=" + (best <= MITE_WAKE_SQR)
             + ", path clear=" + unobstructed(level, flower, nearest)
             + ", flower cooldown=" + cooldown + "t"

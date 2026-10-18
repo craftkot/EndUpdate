@@ -91,7 +91,7 @@ public final class MimicRig {
             }
         }
         double opening = recovering ? 1.0 - smooth(phase / .6)
-            : smooth((phase - .68)/.23);
+            : smooth((phase - .84)/.16);
         return new Pose(List.copyOf(joints), tip, clamp(opening), movement);
     }
 
