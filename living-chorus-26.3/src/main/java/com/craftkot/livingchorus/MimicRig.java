@@ -5,65 +5,102 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Geometry-independent rig shared by procedural renderer and server attack
- * logic. Every piece is a rigid segment: no geometry/UV texture scaling.
- *
- * The V17 Blockbench file is a *reference* only; final stems derive from a
- * deterministic per-flower MimicProfile and real target position.
+ * Real chorus-plant block centers become actual rigid articulated bone joints.
+ * Affected joints are chosen by reach; extra units slide out as rigid 16px
+ * telescopic segments, never by scaling a cube or UVs.
  */
 public final class MimicRig {
-    public record Pose(List<Vec3> joints, Vec3 mouth, double opening, double attackProgress) { }
+    public record Pose(List<Vec3> joints, Vec3 mouth, double opening, double attackProgress) {}
 
-    private MimicRig() { }
+    private MimicRig() {}
 
-    public static Pose evaluate(MimicProfile profile, Vec3 root, Vec3 sleepingHead,
-                                Vec3 target, double fraction, boolean recovering) {
-        fraction = clamp(fraction);
-        double move = recovering ? 1.0 - smooth(fraction) : smooth(clamp(fraction / 0.84));
-        // Slow approach with a fast final forward snap.
-        double snap = recovering ? 0.0 : smooth(clamp((fraction - 0.76) / 0.24));
-        double reach = clamp(move * (0.82 + 0.18 * snap));
-        Vec3 end = sleepingHead.lerp(target, reach);
+    public static Pose evaluateBranch(MimicProfile style, List<Vec3> resting,
+                                      Vec3 target, double fraction, boolean recovering) {
+        if (resting.size() < 2) return new Pose(List.copyOf(resting),
+            resting.isEmpty() ? target : resting.get(resting.size()-1), 0, 0);
+        double phase = clamp(fraction);
+        double movement;
+        if (recovering) movement = 1.0 - smooth(phase);
+        else if (phase < .46) movement = .42 * smooth(phase / .46);
+        else movement = .42 + .58 * smooth((phase - .46) / .54);
 
-        double sign = (profile.direction() % 2 == 0) ? 1.0 : -1.0;
-        double curveX = sign * (0.08 + profile.firstBend() / 75.0);
-        double curveZ = -sign * (0.08 + profile.secondBend() / 95.0);
+        int last = resting.size() - 1;
+        Vec3 head = resting.get(last);
+        double distance = head.distanceTo(target);
+        // Bend the MINIMUM useful portion of the existing infected branch.
+        // More distant prey involve more real chorus blocks automatically.
+        int needed = Math.max(1, Math.min(last, (int)Math.ceil(distance / .78) + 1));
+        int pivotIndex = Math.max(0, last - needed);
+        ArrayList<Vec3> joints = new ArrayList<>(resting);
+        Vec3 pivot = resting.get(pivotIndex);
+        double available = 0;
+        for (int i = pivotIndex+1; i <= last; i++)
+            available += resting.get(i).distanceTo(resting.get(i-1));
+        // Limit rotation to the actual stalk length, then extend telescopically.
+        Vec3 towards = target.subtract(pivot);
+        double targetDistance = towards.length();
+        Vec3 direction = targetDistance > 1e-5 ? towards.scale(1.0 / targetDistance)
+            : new Vec3(0, 1, 0);
+        Vec3 approach = targetDistance > available
+            ? pivot.add(direction.scale(available * .985)) : target;
+        Vec3 intendedHead = head.lerp(approach, movement);
 
-        // Two cubic Bezier controls. At target height 0.2 the head bends
-        // below player height; at player height the same base follows a higher
-        // arc. A renderer instantiates rigid segments at the returned joints.
-        double rise = Math.max(.24, sleepingHead.y - root.y);
-        Vec3 c1 = root.add(curveX, Math.max(.34, rise * .67), curveZ);
-        Vec3 toward = end.subtract(root);
-        Vec3 c2 = end.subtract(toward.x * .27, 0, toward.z * .27)
-            .add(-curveZ, Math.max(.12, Math.abs(toward.y) * .13), curveX);
-
-        // Up to 12 uniform-length displayable segments; NEVER scale segment
-        // meshes to bridge longer reaches or their UV pixels would stretch.
-        int count = Math.min(12, Math.max(profile.sectionCount(),
-            (int) Math.ceil(end.distanceTo(root) / .64)));
-        ArrayList<Vec3> joints = new ArrayList<>(count + 1);
-        for (int i = 0; i <= count; ++i) {
-            joints.add(cubic(root, c1, c2, end, i / (double) count));
+        // FABRIK: solve a fixed-length chain anchored to the real junction.
+        ArrayList<Vec3> solved = new ArrayList<>();
+        for (int i=pivotIndex; i<=last; i++) solved.add(resting.get(i));
+        int movable = solved.size()-1;
+        double[] lengths = new double[movable];
+        for (int i=0;i<movable;i++)
+            lengths[i] = resting.get(pivotIndex+i).distanceTo(resting.get(pivotIndex+i+1));
+        for (int iteration=0; iteration<12; iteration++) {
+            solved.set(movable, intendedHead);
+            for (int i=movable-1;i>=0;i--) {
+                Vec3 delta = solved.get(i).subtract(solved.get(i+1));
+                double len = delta.length();
+                if (len > 1e-5)
+                    solved.set(i, solved.get(i+1).add(delta.scale(lengths[i]/len)));
+            }
+            solved.set(0, pivot);
+            for (int i=1;i<=movable;i++) {
+                Vec3 delta = solved.get(i).subtract(solved.get(i-1));
+                double len = delta.length();
+                if (len > 1e-5)
+                    solved.set(i, solved.get(i-1).add(delta.scale(lengths[i-1]/len)));
+            }
         }
+        for (int i=1;i<=movable;i++) joints.set(pivotIndex+i, solved.get(i));
+        Vec3 tip = joints.get(joints.size()-1);
 
-        double opening = recovering ? 1.0 - smooth(clamp(fraction * 1.7))
-            : smooth(clamp((fraction - .56) / .26));
-        return new Pose(List.copyOf(joints), end, opening, reach);
+        // Stage 2: telescope extra full-sized pieces only after most of the
+        // branch has rotated to face prey. Individual cubes translate; no UV warp.
+        if (!recovering && phase >= .46 && targetDistance > available) {
+            double out = smooth((phase - .46) / .54);
+            double extraDistance = Math.min(style.extensionUnits() / 16.0 + 3.0,
+                Math.max(0, tip.distanceTo(target) - .05)) * out;
+            int pieces = Math.min(8, (int)Math.ceil(extraDistance));
+            Vec3 v = target.subtract(tip);
+            if (v.lengthSqr() > 1e-5) {
+                Vec3 unit = v.normalize();
+                for (int i=0;i<pieces;i++) {
+                    // Overlap full-length cubes as they telescope, avoiding
+                    // a shortened or stretched final piece.
+                    double dist = Math.min(extraDistance, i+1.0);
+                    joints.add(tip.add(unit.scale(dist)));
+                }
+                tip = joints.get(joints.size()-1);
+            }
+        }
+        double opening = recovering ? 1.0 - smooth(phase / .6)
+            : smooth((phase - .68)/.23);
+        return new Pose(List.copyOf(joints), tip, clamp(opening), movement);
     }
 
-    private static Vec3 cubic(Vec3 a, Vec3 b, Vec3 c, Vec3 d, double t) {
-        double s = 1.0 - t;
-        return a.scale(s*s*s).add(b.scale(3*s*s*t))
-            .add(c.scale(3*s*t*t)).add(d.scale(t*t*t));
+    // Keep legacy helper for existing server particle debugging only.
+    public static Pose evaluate(MimicProfile style, Vec3 root, Vec3 head,
+                                Vec3 target, double fraction, boolean recovering) {
+        return evaluateBranch(style, List.of(root, head), target, fraction, recovering);
     }
 
-    private static double smooth(double t) {
-        t = clamp(t);
-        return t * t * (3.0 - 2.0 * t);
-    }
-
-    private static double clamp(double value) {
-        return Math.max(0, Math.min(1, value));
-    }
+    private static double smooth(double p) { p=clamp(p); return p*p*(3-2*p); }
+    private static double clamp(double x) { return Math.max(0,Math.min(1,x)); }
 }
