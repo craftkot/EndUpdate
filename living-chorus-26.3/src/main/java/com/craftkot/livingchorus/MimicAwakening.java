@@ -35,9 +35,21 @@ public final class MimicAwakening {
     private static final int SEARCH_XZ = 5;
     private static final int SEARCH_Y = 6;
     private static final double PLAYER_WAKE_SQR = 4.5 * 4.5;
-    private static final double MITE_WAKE_SQR = 5.2 * 5.2;
+    // Tall chorus flowers must perceive prey on the ground below them.
+    // Rectangular scan bounds plus a radial cap avoid unrealistic infinite reach.
+    public static final double MITE_HUNT_XZ = 18.0;
+    public static final double MITE_HUNT_VERTICAL = 24.0;
+    private static final double MITE_HUNT_RADIUS_SQR = 30.0 * 30.0;
     private static final double PLAYER_HIT_SQR = 4.0 * 4.0;
-    private static final double MITE_HIT_SQR = MITE_WAKE_SQR;
+
+    private static boolean withinMiteHuntRange(BlockPos flower, Entity mite) {
+        Vec3 at = Vec3.atCenterOf(flower);
+        double dx = at.x - mite.getX(), dz = at.z - mite.getZ();
+        double dy = at.y - (mite.getY() + mite.getBbHeight() * .5);
+        return dx * dx + dz * dz <= MITE_HUNT_XZ * MITE_HUNT_XZ
+            && Math.abs(dy) <= MITE_HUNT_VERTICAL
+            && dx * dx + dy * dy + dz * dz <= MITE_HUNT_RADIUS_SQR;
+    }
     private static final int PLAYER_CHARGE_TICKS = 35;
     private static final int MITE_CHARGE_TICKS = 46;
     private static final int RECOVER_TICKS = 18;
@@ -132,7 +144,7 @@ public final class MimicAwakening {
                     Vec3 source = Vec3.atCenterOf(flower);
                     for (Endermite mite : mites) {
                         if (now < state.targetCooldown.getOrDefault(mite.getUUID(), 0L)) continue;
-                        if (source.distanceToSqr(mite.position()) <= MITE_WAKE_SQR
+                        if (withinMiteHuntRange(flower, mite)
                             && unobstructed(level, flower, mite)) {
                             miteOptions.add(new Candidate(flower, mite, HuntType.ENDERMITE));
                         }
@@ -157,9 +169,10 @@ public final class MimicAwakening {
     public static boolean provoke(ServerLevel level, BlockPos pos, ServerPlayer player) {
         if (!MimicData.get(level).isInfected(pos)) return false;
         // Operator test chooses an actual endermite first if close enough.
-        AABB area = AABB.ofSize(Vec3.atCenterOf(pos), 11, 12, 11);
+        AABB area = AABB.ofSize(Vec3.atCenterOf(pos),
+            MITE_HUNT_XZ * 2 + 2, MITE_HUNT_VERTICAL * 2 + 2, MITE_HUNT_XZ * 2 + 2);
         for (Endermite mite : level.getEntitiesOfClass(Endermite.class, area, Entity::isAlive)) {
-            if (Vec3.atCenterOf(pos).distanceToSqr(mite.position()) <= MITE_WAKE_SQR) {
+            if (withinMiteHuntRange(pos, mite)) {
                 return begin(level, pos, mite, HuntType.ENDERMITE, true);
             }
         }
@@ -269,8 +282,9 @@ public final class MimicAwakening {
             if (now == strike.hitAt()) {
                 Entity target = level.getEntity(strike.targetId());
                 if (target != null && target.isAlive()
-                    && Vec3.atCenterOf(pos).distanceToSqr(target.position()) <=
-                        (strike.kind() == HuntType.ENDERMITE ? MITE_HIT_SQR : PLAYER_HIT_SQR)
+                    && (strike.kind() == HuntType.ENDERMITE
+                        ? withinMiteHuntRange(pos, target)
+                        : Vec3.atCenterOf(pos).distanceToSqr(target.position()) <= PLAYER_HIT_SQR)
                     && unobstructed(level, pos, target)) {
                     if (strike.kind() == HuntType.PLAYER_PEARL && target instanceof ServerPlayer player
                         && canHuntPlayer(player) && hasEnderPearl(player)) {
@@ -336,10 +350,11 @@ public final class MimicAwakening {
                 data.reconcileFlower(level, pos);
                 continue;
             }
-            AABB area = AABB.ofSize(Vec3.atCenterOf(pos), 10.4, 10.4, 10.4);
+            AABB area = AABB.ofSize(Vec3.atCenterOf(pos),
+                MITE_HUNT_XZ * 2 + 2, MITE_HUNT_VERTICAL * 2 + 2, MITE_HUNT_XZ * 2 + 2);
             for (Endermite mite : level.getEntitiesOfClass(Endermite.class, area, Entity::isAlive)) {
                 if (now < state.targetCooldown.getOrDefault(mite.getUUID(), 0L)) continue;
-                if (Vec3.atCenterOf(pos).distanceToSqr(mite.position()) > MITE_WAKE_SQR) continue;
+                if (!withinMiteHuntRange(pos, mite)) continue;
                 if (!unobstructed(level, pos, mite)) continue;
                 options.add(new Candidate(pos, mite, HuntType.ENDERMITE));
             }
@@ -398,7 +413,8 @@ public final class MimicAwakening {
         }
 
         long cooldown = Math.max(0L, state.flowerCooldown.getOrDefault(flower.asLong(), 0L) - now);
-        AABB scan = AABB.ofSize(Vec3.atCenterOf(flower), 16, 16, 16);
+        AABB scan = AABB.ofSize(Vec3.atCenterOf(flower),
+            MITE_HUNT_XZ * 2 + 2, MITE_HUNT_VERTICAL * 2 + 2, MITE_HUNT_XZ * 2 + 2);
         Endermite nearest = null;
         double best = Double.POSITIVE_INFINITY;
         for (Endermite mite : level.getEntitiesOfClass(Endermite.class, scan, Entity::isAlive)) {
@@ -408,13 +424,14 @@ public final class MimicAwakening {
                 nearest = mite;
             }
         }
-        if (nearest == null) return "SLEEPING, no alive Endermites within 8 blocks; flower cooldown=" + cooldown + "t";
+        if (nearest == null) return "SLEEPING, no alive Endermites within 18 horizontal / 24 vertical blocks; flower cooldown=" + cooldown + "t";
 
         long targetCooldown = Math.max(0L,
             state.targetCooldown.getOrDefault(nearest.getUUID(), 0L) - now);
         return "SLEEPING, branch blocks=" + MimicBranchPath.trace(level,flower).size()
             + ", nearest Endermite distance=" + String.format(java.util.Locale.ROOT, "%.2f", Math.sqrt(best))
-            + ", within wake range=" + (best <= MITE_WAKE_SQR)
+            + ", within wake range=" + withinMiteHuntRange(flower, nearest)
+            + " (horizontal " + MITE_HUNT_XZ + ", vertical " + MITE_HUNT_VERTICAL + ")"
             + ", path clear=" + unobstructed(level, flower, nearest)
             + ", flower cooldown=" + cooldown + "t"
             + ", prey cooldown=" + targetCooldown + "t";

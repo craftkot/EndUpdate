@@ -1,14 +1,15 @@
-# Living Chorus v0.15.0 – Natural-looking branches and smoother feeding
+# Living Chorus 0.16.0 — tall chorus hunting range
+
+Minecraft 26.3 · NeoForge 26.3.0.90.
+
+Bug report: user screenshot shows tall infected chorus flower overlooking Endermites on End stone below it, while 0.15.0 would not attack them because all prey searches and consumption were hard-coded to 5.2 block Euclidean distance.
 
 Changes:
-- Thickened client stalk cubes from 4×4px to 8×8px and added 10px block-textured joint collars, both using the original vanilla chorus_plant sprite without stretched UVs.
-- Smoothed discrete target updates on the client instead of snapping the branch every ~7 server ticks.
-- Fixed the number of pivot/IK branch segments at attack start to avoid sudden joint switching.
-- Split low Endermite feeding into turning, lowering, telescopic extending, contact, mouth-closing and retracting phases with continuous ease-in/out curves.
-- Added up to 32 rigid 16px segments at 0.7-block spacing to cover the ground target even when the infected flower begins several blocks high, within the configured prey detection range.
-- The Endermite attack target is now grounded: jaw center is Endermite feet + 7/16 block, so the *bottom* of the 14px flower touches its standing surface rather than clipping through it.
-- Removed the hard-coded 0.14 radian mouth opening jump; orientation uses the final segment when the mouth reaches its target so it does not snap to north.
-- Existing flower-origin spreading infection, live/dead buds, custom per-branch length, peaceful checks, asleep projectile vulnerability and naturally spawning End Endermites are kept.
-- Sounds unchanged, per user request.
+- Endermites can be detected as far as 18 blocks horizontally and 24 blocks vertically below/above the flower, with a maximum 30 block direct distance.
+- Four related checks now share the same range rules: automatic nearby-player seek, independent server tick search, /livingchorus provoke, and attack-contact server logic. /livingchorus debug now shows the same reach numbers and line-of-sight result.
+- Independent infected-flower scan runs every 20 server ticks even if a player is not near the flower's tip. Bounded 128 flowers per scan, loaded chunks only; no forced chunk generation.
+- The IK telescopic branch can deploy up to 48 full-length, original-textured segments, 0.70 blocks apart, covering tall flower-to-ground differences; server still requires jaw-to-prey contact within 0.65 blocks and an unobstructed approach. No remote instant-kill.
+- No change to ender pearl player-bait radius (remains short range).
+- Prior flower-origin contagious stems, natural End Endermite spawning, live/dead flower markers, vanilla UV, 8px stalks, 10px joints and smooth movement retained. Sounds still deferred.
 
-Limits: a real gameplay capture is needed to verify appearance and contact under different terrain elevations. This phase does not add ground-clipping avoidance for the whole stalk, new combat health or sound design.
+Manual test: mark a tall chorus flower in The End. Summon Endermites on exposed End stone 10–20 blocks below it, within ~18 blocks horizontally. A healthy connected branch should bend and extend downward, then swallow only at contact. Inspect /livingchorus debug while aiming at the flower if detection is still blocked by geometry. Build success is not proof of game rendering.

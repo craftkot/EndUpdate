@@ -13,7 +13,7 @@ public final class MimicRig {
     public record Pose(List<Vec3> joints, Vec3 mouth, double opening, double attackProgress) { }
 
     private static final double TELESCOPIC_SPACING = .70;
-    private static final int MAX_EXTENSIONS = 32;
+    private static final int MAX_EXTENSIONS = 48;
 
     private MimicRig() { }
 
@@ -96,8 +96,8 @@ public final class MimicRig {
         double remainingLength = remaining.length();
         if (remainingLength > 1e-6 && extension > 1e-5) {
             Vec3 towards = remaining.scale(1.0 / remainingLength);
-            // The target is at most 5.2 blocks from the flower at wake-up;
-            // extra rigid pieces cover the missing length of a tall branch.
+            // A flower may now see ground prey up to 24 blocks below itself.
+            // More rigid 16px pieces cover the vertical drop without UV scaling.
             // Use short *overlaps*, never scaled cubes/UVs.
             double covered = Math.min(remainingLength, MAX_EXTENSIONS * TELESCOPIC_SPACING)
                 * extension;

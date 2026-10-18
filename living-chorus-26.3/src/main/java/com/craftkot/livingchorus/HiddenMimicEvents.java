@@ -67,7 +67,8 @@ public final class HiddenMimicEvents {
             // wrongly interpret a grown flower as a destroyed one.
             MimicData.get(level).reconcileAllGrowth(level);
             MimicAwakening.tick(level);
-            if (level.getGameTime() % 40L == 0L)
+            // Poll every second; tall flowers no longer wait for nearby players.
+            if (level.getGameTime() % 20L == 0L)
                 MimicAwakening.seekUnattendedEndermites(level);
             if (level.getGameTime() % 20L == 0L)
                 MimicData.get(level).spreadAcrossChorus(level);
