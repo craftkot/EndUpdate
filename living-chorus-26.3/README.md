@@ -1,20 +1,28 @@
-# Living Chorus 0.18.2 — immediate downward hunt (hotfix)
+# Living Chorus 0.18.3 — stealing Ender Pearls from players
 
-Previous version 0.18.1 removed the large horizontal crane, but retained
-separate animation curves: stalk bending ran 0%–83%, while telescoping
-began only at 35% and finished at 95% of the attack. The flower therefore
-still performed a visibly abrupt final dive after lingering above prey.
+Minecraft 26.3 / NeoForge 26.3.0.90. Feature branch only; main untouched.
 
-0.18.2 makes existing stalk bending and short terminal telescoping follow
-the SAME fast-start/ease-out curve immediately from the first attack frame.
-Both slow to a halt smoothly near the prey; neither waits until late in the
-animation. Mouth opening now begins at 20% of attack time.
+- The pre-existing separate player bite animation still triggers only
+  for Survival/Adventure players carrying vanilla ENDER_PEARLs anywhere
+  in their inventory (including hotbar and offhand) within the short
+  pearl-bait range. Creative/spectator players remain excluded.
+- A successful player bite now deals the existing 3 points of damage AND
+  removes up to THREE actual Ender Pearls from their inventory. It
+  searches multiple stacks and synchronizes the inventory to the client.
+- Pearls are not removed at detection or animation start, only when
+  the server's attack contact tick confirms a valid player carrying
+  pearls. A cancelled/missed bite or empty inventory steals nothing.
+- Brief reverse-portal particles at the infected flower accompany
+  successful theft. The Endermite-only 5-second digestion effect
+  remains separate.
+- When all pearls are gone, the player no longer attracts a pearl
+  bait attack, regardless of the new bite's cooldown.
+- The compact non-crane 0.18.2 rig, 1.5 block extension limit, existing
+  Endermite feeding, live/dead infection and fixed flower growth
+  persistence remain unchanged.
 
-Retained: all connected branch joints moving, maximum 1.5-block extra
-extension, realistic reach rejection, vanilla chorus texture, sparse 10px
-collars, contagious growth, five-second post-feeding particles, and
-18-block horizontal / 24-block vertical Endermite detection.
-
-This is a code/compilation hotfix; per the user's request no graphical
-gameplay testing is performed before sending the corrected JAR. Manual
-side-view footage is needed to verify how it looks in Minecraft 26.3.
+Manual test: in Survival, carry 7 pearls split between inventory slots,
+approach a marked flower at <4 blocks and wait for bite. Expected first
+successful bite: 3 pearls removed, second successful bite: 3 removed,
+third successful bite: last pearl removed. No further pearl-bait attacks.
+Do not equate a passing build with a proven in-world bite.

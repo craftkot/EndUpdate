@@ -51,6 +51,8 @@ public final class MimicAwakening {
             && dx * dx + dy * dy + dz * dz <= MITE_HUNT_RADIUS_SQR;
     }
     private static final int PLAYER_CHARGE_TICKS = 35;
+    // A single successful bite cannot empty a full inventory at once.
+    private static final int PLAYER_PEARLS_STOLEN_PER_BITE = 3;
     private static final int MITE_CHARGE_TICKS = 26;
     private static final int DIGEST_TICKS = 100; // 5 seconds at 20 TPS
     private static final int RECOVER_TICKS = 18;
@@ -195,6 +197,31 @@ public final class MimicAwakening {
         return false;
     }
 
+    /**
+     * Server-authoritative: remove up to three real ender pearls, not a
+     * duplicate cosmetic effect. Search every player-inventory slot,
+     * including the hotbar and offhand, even if the stacks are split.
+     * This is invoked ONLY at contact on a successful player bite.
+     */
+    private static int stealPlayerPearls(ServerPlayer player) {
+        var inventory = player.getInventory();
+        int remaining = PLAYER_PEARLS_STOLEN_PER_BITE;
+        for (int slot = 0; slot < inventory.getContainerSize() && remaining > 0; slot++) {
+            var stack = inventory.getItem(slot);
+            if (!stack.is(Items.ENDER_PEARL)) continue;
+            int amount = Math.min(remaining, stack.getCount());
+            if (amount <= 0) continue;
+            stack.shrink(amount);
+            remaining -= amount;
+        }
+        int stolen = PLAYER_PEARLS_STOLEN_PER_BITE - remaining;
+        if (stolen > 0) {
+            inventory.setChanged();
+            player.containerMenu.broadcastChanges();
+        }
+        return stolen;
+    }
+
     private static boolean begin(ServerLevel level, BlockPos pos, Entity target,
                                  HuntType kind, boolean force) {
         if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
@@ -304,11 +331,22 @@ public final class MimicAwakening {
                     && unobstructed(level, pos, target)) {
                     if (strike.kind() == HuntType.PLAYER_PEARL && target instanceof ServerPlayer player
                         && canHuntPlayer(player) && hasEnderPearl(player)) {
+                        // Pearls are stolen at the hit tick, never when the
+                        // mimic merely detects a carrier or starts charging.
                         player.hurtServer(level, level.damageSources().cactus(), 3.0F);
+                        int stolen = stealPlayerPearls(player);
                         level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
                             SoundSource.HOSTILE, .8F, .85F);
                         level.sendParticles(ParticleTypes.CRIT, player.getX(),
                             player.getY() + 1.0, player.getZ(), 12, .2, .3, .2, .05);
+                        if (stolen > 0) {
+                            // Ender motes make the stolen items visible as a
+                            // short magical gulp; not the Endermite-only
+                            // five-second digestion timer.
+                            level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                                pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5,
+                                stolen * 5, .24, .28, .24, .04);
+                        }
                     } else if (strike.kind() == HuntType.ENDERMITE && target instanceof Endermite mite
                         && mouthAtPrey(level, pos, mite)) {
                         // The feeding animation must end at endermite height, not eye height.
