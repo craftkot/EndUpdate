@@ -27,7 +27,9 @@ public final class MimicData extends SavedData {
             Codec.LONG.listOf().fieldOf("infected").forGetter(data -> new ArrayList<>(data.infected)),
             Codec.LONG.listOf().fieldOf("safe").forGetter(data -> new ArrayList<>(data.safe)),
             Codec.LONG.listOf().optionalFieldOf("stems", List.of())
-                .forGetter(data -> new ArrayList<>(data.infectedStems))
+                .forGetter(data -> new ArrayList<>(data.infectedStems)),
+            Codec.LONG.listOf().optionalFieldOf("growthOrigins", List.of())
+                .forGetter(data -> new ArrayList<>(data.growthOrigins))
         ).apply(instance, MimicData::new))
     );
 
@@ -35,15 +37,20 @@ public final class MimicData extends SavedData {
     private final Set<Long> infected;
     private final Set<Long> safe;
     private final Set<Long> infectedStems;
+    // A former infected flower which became a stem during vanilla growth.
+    // Stored separately so infection survives the gap before new tips appear.
+    private final Set<Long> growthOrigins;
 
     public MimicData() {
-        this(List.of(), List.of(), List.of());
+        this(List.of(), List.of(), List.of(), List.of());
     }
 
-    private MimicData(List<Long> infected, List<Long> safe, List<Long> stems) {
+    private MimicData(List<Long> infected, List<Long> safe, List<Long> stems,
+                      List<Long> growthOrigins) {
         this.infected = new HashSet<>(infected);
         this.safe = new HashSet<>(safe);
         this.infectedStems = new HashSet<>(stems);
+        this.growthOrigins = new HashSet<>(growthOrigins);
     }
 
     public static MimicData get(ServerLevel level) {
@@ -62,6 +69,56 @@ public final class MimicData extends SavedData {
         return infectedStems.size();
     }
 
+    public int growingOriginCount() {
+        return growthOrigins.size();
+    }
+
+    /**
+     * Vanilla flower growth replaces the old chorus_flower with chorus_plant.
+     * Transfer the infection marker to that new stem rather than forgetting it.
+     * This method must also be used in the AI's stale-block checks, because
+     * those may run earlier than the periodic infection spread task.
+     */
+    public void reconcileFlower(ServerLevel level, BlockPos pos) {
+        long id = pos.asLong();
+        if (!infected.contains(id) || !level.hasChunkAt(pos)) return;
+        if (level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) return;
+        boolean changed = infected.remove(id);
+        if (level.getBlockState(pos).is(Blocks.CHORUS_PLANT)) {
+            changed |= infectedStems.add(id);
+            changed |= growthOrigins.add(id);
+            // Growing sideways buds can be adjacent on the very same tick.
+            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+                BlockPos bud = pos.relative(direction);
+                if (level.hasChunkAt(bud)
+                    && level.getBlockState(bud).is(Blocks.CHORUS_FLOWER)
+                    && !safe.contains(bud.asLong()))
+                    changed |= infected.add(bud.asLong());
+            }
+            // Growth source is now tracked; old stem is no longer a flower.
+            if (hasInfectedAdjacentFlower(level, pos)) changed |= growthOrigins.remove(id);
+        }
+        if (changed) setDirty();
+    }
+
+    private boolean hasInfectedAdjacentFlower(ServerLevel level, BlockPos stem) {
+        for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+            BlockPos bud = stem.relative(direction);
+            if (infected.contains(bud.asLong())
+                && level.hasChunkAt(bud) && level.getBlockState(bud).is(Blocks.CHORUS_FLOWER))
+                return true;
+        }
+        return false;
+    }
+
+    /** Examine actual infected flowers before any other code discards them. */
+    public void reconcileAllGrowth(ServerLevel level) {
+        for (Long id : new ArrayList<>(infected)) {
+            BlockPos pos = BlockPos.of(id);
+            if (level.hasChunkAt(pos)) reconcileFlower(level, pos);
+        }
+    }
+
     /**
      * Saved, BLOCK-BY-BLOCK contagion rooted in infected live/dead flowers.
      * Each 20-tick step moves through actual connected vanilla chorus_plant
@@ -69,7 +126,10 @@ public final class MimicData extends SavedData {
      * textures, collision or healthy unattached trees.
      */
     public void spreadAcrossChorus(ServerLevel level) {
-        if (infected.isEmpty()) {
+        reconcileAllGrowth(level);
+        // A recently grown infected flower may temporarily exist only as a
+        // living chorus_plant stem. Do not erase that source while it grows buds.
+        if (infected.isEmpty() && growthOrigins.isEmpty()) {
             if (!infectedStems.isEmpty()) {
                 infectedStems.clear();
                 setDirty();
@@ -77,6 +137,7 @@ public final class MimicData extends SavedData {
             return;
         }
         HashSet<Long> nextStems = new HashSet<>();
+        HashSet<Long> completedOrigins = new HashSet<>();
         HashSet<Long> newFlowers = new HashSet<>();
         int seedBudget = 256;
         for (Long flowerKey : new ArrayList<>(infected)) {
@@ -104,15 +165,24 @@ public final class MimicData extends SavedData {
                 if (level.getBlockState(adjacent).is(Blocks.CHORUS_PLANT)) {
                     nextStems.add(adjacent.asLong());
                 } else if (level.getBlockState(adjacent).is(Blocks.CHORUS_FLOWER)
-                    && !safe.contains(adjacent.asLong()) && !infected.contains(adjacent.asLong())
-                    && level.getRandom().nextInt(8) == 0) {
-                    // Spread to ANOTHER flower only along real infected chorus blocks.
+                    && !safe.contains(adjacent.asLong())
+                    && (growthOrigins.contains(stemKey) || level.getRandom().nextInt(8) == 0)) {
+                    // Direct children of a former infected flower inherit the
+                    // infection immediately. Other buds are infected gradually.
                     newFlowers.add(adjacent.asLong());
+                    if (growthOrigins.contains(stemKey)) completedOrigins.add(stemKey);
                 }
             }
         }
 
         boolean changed = infectedStems.addAll(nextStems) | infected.addAll(newFlowers);
+        changed |= growthOrigins.removeAll(completedOrigins);
+        // A growing origin can be removed naturally if the infected block is
+        // broken; do not leave a phantom source in saved world data.
+        changed |= growthOrigins.removeIf(id -> {
+            BlockPos pos = BlockPos.of(id);
+            return level.hasChunkAt(pos) && !level.getBlockState(pos).is(Blocks.CHORUS_PLANT);
+        });
         if (changed) setDirty();
         // Cleanup happens only in loaded components; never load chunks to spread.
         if (level.getGameTime() % 200L == 0L) pruneDisconnectedStems(level);
@@ -121,6 +191,12 @@ public final class MimicData extends SavedData {
     private void pruneDisconnectedStems(ServerLevel level) {
         HashSet<Long> reachable = new HashSet<>();
         java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (Long seedKey : growthOrigins) {
+            BlockPos seed = BlockPos.of(seedKey);
+            if (level.hasChunkAt(seed)
+                && level.getBlockState(seed).is(Blocks.CHORUS_PLANT)
+                && reachable.add(seedKey)) queue.add(seed);
+        }
         for (Long flowerKey : infected) {
             BlockPos flower = BlockPos.of(flowerKey);
             if (!level.hasChunkAt(flower)) continue;
@@ -168,6 +244,9 @@ public final class MimicData extends SavedData {
     public void clear(BlockPos pos) {
         long key = pos.asLong();
         boolean changed = infected.remove(key) | safe.add(key);
+        // A player who explicitly clears the only remaining source should
+        // not leave self-reinfecting growth points behind.
+        if (infected.isEmpty()) changed |= growthOrigins.removeIf(id -> id == key);
         if (changed) setDirty();
     }
 
@@ -183,7 +262,7 @@ public final class MimicData extends SavedData {
         if (changed) setDirty();
     }
 
-    /** Drop the marker when the flower is removed; a new flower may be infected later. */
+    /** Called only when the flower truly disappeared, not when it grew. */
     public void forget(BlockPos pos) {
         if (infected.remove(pos.asLong())) setDirty();
     }
@@ -195,7 +274,7 @@ public final class MimicData extends SavedData {
     public void discover(ServerLevel level, BlockPos pos) {
         long key = pos.asLong();
         if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
-            if (infected.remove(key)) setDirty();
+            reconcileFlower(level, pos);
             return;
         }
         if (infected.contains(key) || safe.contains(key)) return;

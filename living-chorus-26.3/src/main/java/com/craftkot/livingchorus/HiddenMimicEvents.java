@@ -53,7 +53,7 @@ public final class HiddenMimicEvents {
                     if (level.getBlockState(cursor).is(Blocks.CHORUS_FLOWER)) {
                         data.discover(level, cursor);
                     } else if (data.isInfected(cursor)) {
-                        data.forget(cursor);
+                        data.reconcileFlower(level, cursor);
                     }
                 }
             }
@@ -63,6 +63,9 @@ public final class HiddenMimicEvents {
     @SubscribeEvent
     public void levelTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level) {
+            // Critical: reconcile growth before attack timers and searches can
+            // wrongly interpret a grown flower as a destroyed one.
+            MimicData.get(level).reconcileAllGrowth(level);
             MimicAwakening.tick(level);
             if (level.getGameTime() % 40L == 0L)
                 MimicAwakening.seekUnattendedEndermites(level);
@@ -122,9 +125,13 @@ public final class HiddenMimicEvents {
             .then(Commands.literal("debug").executes(ctx -> perform(ctx.getSource(), "debug")))
             .then(Commands.literal("stats").executes(ctx -> {
                 ServerLevel level = ctx.getSource().getLevel();
-                int count = MimicData.get(level).count();
+                MimicData data = MimicData.get(level);
+                int count = data.count();
                 int active = MimicAwakening.activeCount(level);
-                ctx.getSource().sendSuccess(() -> Component.literal("Hidden infected flowers: " + count + ", charging: " + active), false);
+                ctx.getSource().sendSuccess(() -> Component.literal("Hidden infected flowers: " + count
+                    + ", infected stems: " + data.infectedStemCount()
+                    + ", growing origins: " + data.growingOriginCount()
+                    + ", charging: " + active), false);
                 return count;
             }))
         );

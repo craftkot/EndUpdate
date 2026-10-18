@@ -1,48 +1,26 @@
-# Living Chorus 0.13.0 — real infected block-based branches (NeoForge 26.3)
+# Living Chorus 0.14.0 — infection survives vanilla chorus growth
 
-## User-reported bug fixed
-The user's 50s Minecraft video showed the test structure in the OVERWORLD.
-Prior event handlers were gated to The End, so manually infected flowers
-could never attack Endermites in that test environment.
+Fix user-reported loss of infection when a growing chorus_flower becomes a
+chorus_plant block. The original flower position is now recognized as a
+persistent infected stem and temporarily stores a saved growth origin marker.
+Its new child flower(s) inherit the infection immediately, while other buds
+connected through previously infected stems may be infected progressively.
 
-Now all **manually infected** chorus flowers run AI in ALL dimensions.
-Random discovery/infection and extra Endermite natural spawns stay End-only.
+- Reconciliation runs before server AI each tick, and whenever a formerly
+  infected flower fails the flower blockstate check.
+- SavedData codec includes an optional backwards-compatible `growthOrigins`
+  field. Existing v0.13 saves load unchanged.
+- The spread system no longer deletes all infected stem records merely
+  because the flower-to-stem transition temporarily leaves no infected tip.
+- Loaded invalid growth origins are pruned, without forcing chunk loads.
+- `/livingchorus stats` now reports infected flower, stem, and growing-origin
+  counts, making growth migration verifiable from gameplay.
+- Manually marked flowers can attack in the Overworld; natural discovery
+  and supplemental Endermite spawning remain exclusive to The End.
+- Branch length, individual real-block kinematics, player versus Endermite
+  attacks, sleeping projectile vulnerability and deferred sound work remain.
 
-## Flower-rooted infection
-- Infected live/dead chorus flowers are anchors.
-- Every 20 ticks infection progressively moves into CONNECTED vanilla
-  chorus_plant blocks (saved in the `stems` field of MimicData SavedData).
-- Once a contagious stem touches another vanilla chorus_flower it can
-  infect that flower, giving it a new independent attacking branch.
-- Neighboring disconnected chorus plants are not infected.
-- Normal minecraft block IDs, collision and item drops remain unchanged.
-- All stem markers are stored and restored; orphan loaded stems are pruned.
-
-## Actual branch as appendage
-- `MimicBranchPath.trace` starts at the flower, follows connected
-  chorus_plant positions back to the first branching junction or base.
-- Trace returns **actual block centers from fixed root to flower**, capped
-  at 24 positions. Never mask a shared root junction.
-- START/UPDATE packets carry the actual block path to clients. The renderer
-  masks only its own moving stalk/flower during attacks, leaving adjacent
-  healthy branches intact.
-- The procedural IK solver chooses as many real chain joints as necessary
-  for target distance, rotates the chosen chain, telescopes short full-size
-  chorus segments (no stretched UV), then opens the jaw to swallow near
-  the END of the attack.
-- Player/high target and Endermite/low target remain separate.
-- All manual `/livingchorus mark, inspect, provoke, debug` commands still
-  work. /livingchorus debug now includes branch block count.
-
-## Tests
-Manual reproduction (including the Overworld):
-1. Build connected vanilla chorus_plant stem with a living/dead flower.
-2. Mark targeted flower using /livingchorus mark.
-3. /livingchorus debug should list branch blocks and target range.
-4. Summon an Endermite within 2–4 blocks, not in Peaceful.
-5. Capture 5s video, send latest.log if invisible.
-6. /livingchorus provoke while pointing at flower isolates animation from AI.
-Run additional test in The End for natural infection/spawns.
-
-CI compilation is NOT proof of correct in-game rendering.
-Sounds are intentionally deferred as requested.
+Quick in-game regression test: mark a young flower, verify stats; apply random
+ticks until it grows a new bud; verify that infected stems grow and that the
+new tip is listed as infected. A successful Gradle build does NOT prove that
+the complete survival game transition has been tested.

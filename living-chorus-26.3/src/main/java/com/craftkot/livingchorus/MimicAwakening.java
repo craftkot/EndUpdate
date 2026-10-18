@@ -125,7 +125,7 @@ public final class MimicAwakening {
                     if (!data.isInfected(cursor)) continue;
                     if (state.charging.containsKey(key) || now < state.flowerCooldown.getOrDefault(key, 0L)) continue;
                     if (!level.getBlockState(cursor).is(Blocks.CHORUS_FLOWER)) {
-                        data.forget(cursor);
+                        data.reconcileFlower(level, cursor);
                         continue;
                     }
                     BlockPos flower = cursor.immutable();
@@ -181,7 +181,7 @@ public final class MimicAwakening {
     private static boolean begin(ServerLevel level, BlockPos pos, Entity target,
                                  HuntType kind, boolean force) {
         if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
-            MimicData.get(level).forget(pos);
+            MimicData.get(level).reconcileFlower(level, pos);
             return false;
         }
         State state = state(level);
@@ -330,7 +330,7 @@ public final class MimicAwakening {
             long id = pos.asLong();
             if (state.charging.containsKey(id) || now < state.flowerCooldown.getOrDefault(id, 0L)) continue;
             if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
-                data.forget(pos);
+                data.reconcileFlower(level, pos);
                 continue;
             }
             AABB area = AABB.ofSize(Vec3.atCenterOf(pos), 10.4, 10.4, 10.4);
