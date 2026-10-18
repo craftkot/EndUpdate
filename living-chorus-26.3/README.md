@@ -1,41 +1,26 @@
-# Living Chorus — Minecraft 26.3 NeoForge (experimental)
+# Living Chorus — Minecraft 26.3 / NeoForge (experimental)
 
-Kept in a standalone subproject of craftkot/EndUpdate. Not merged into main.
+Separate project inside `craftkot/EndUpdate`; the Forge 1.20.1 EndUpdate code is not changed.
 
-## 0.5.0 — flower-rooted infection, dormant one-hit kills
+## v0.6.0 — End endermites + autonomous feeding
 
-### Flower, not whole plant
-- A mimic infection is tied to **one vanilla minecraft:chorus_flower position**.
-- A live flower (AGE 0–4) and a dead flower (AGE 5) are both eligible; these are block states of the same block.
-- Each infected flower is the anchor of **its own infected branch**, but neighbouring branches and flowers remain normal unless independently marked.
-- Breaking or shooting the anchor flower while it sleeps instantly removes its mimic identity. Remaining chorus_plant stem blocks remain vanilla and harmless.
-- The killed flower position is excluded from repeat deterministic infection until explicitly marked. No separate mob is spawned while sleeping.
-- Other infected flowers on the same grown chorus plant survive independently.
+- Endermites now get an **additional rare spawn opportunity in The End** on exposed End stone near chorus plants. This mod uses vanilla Endermite entities, not replacements.
+- About once every 30 seconds per eligible nearby player the mod tries a spawning roll; only 1 of 3 rolls proceeds, and 6 local candidate locations are sampled.
+- Candidates must be in **already loaded chunks**, 18–36 blocks diagonally away from the player, on solid End stone with air above and some nearby chorus vegetation.
+- A local cap of 6 Endermites within about 56 horizontal blocks prevents the new spawn system from filling the End.
+- No spawning in peaceful difficulty; spectators do not cause spawning. Endermites may still despawn normally.
+- Newly infected chorus flowers remain vanilla blocks when sleeping. Living and dead flowers can both carry infection and may be instantly destroyed by projectiles while sleeping.
+- Sleeping/active state uses the infection marker associated with the exact flower, not with the entire plant.
+- **Autonomous endermite feeding:** every 2 seconds, a small round-robin budget of at most 128 stored infected flowers in loaded chunks is checked for nearby Endermites. A flower can consume a mite without any player standing within attack distance.
+- Endermite feeding uses `eat_endermite_low` and differs from `bite_player_high`, which is only eligible for players carrying ender pearls. These are separate server behaviors; procedural meshes and their visible animations are still not implemented.
+- Every infected flower has a deterministic `MimicProfile` for future variable branch morphology.
+- Current V17 Blockbench rig is a demonstration and not the final shape.
 
-### Projectile behavior
-- NeoForge ProjectileImpactEvent checks impacts against sleeping marked flowers.
-- A shot destroying an infected dormant flower uses ordinary block destruction with drops; no special entity hitbox exists.
-- Projectile hits on ordinary vanilla chorus flowers remain vanilla.
-- Projectiles during an ACTIVE attack are **not** covered by the sleeping one-hit mechanic, though vanilla projectile/block interactions may still break the underlying flower while the animated combat entity has not yet been implemented. Active HP/defense comes in a later stage.
-- Breaking by a player removes infection via BreakBlockEvent. Scanning invalidated positions also removes obsolete infection markers when a flower grows into a stem.
+### Smoke test
+1. Open The End in Survival; wait around chorus forests. Endermites should occasionally spawn on End stone away from you (a rare event, not guaranteed every minute).
+2. `/livingchorus mark` on a vanilla chorus flower.
+3. Place/spawn an Endermite nearby or allow one to wander there; it should get eaten after the independent charge time even without a player close to the infected flower.
+4. Check `/livingchorus stats`, `/livingchorus profile`, and `/livingchorus provoke` for debugging.
 
-### Hunting (previous milestone)
-- Target players only if ender pearls are in inventory: high `bite_player_high` action.
-- Eat nearby endermites: separate `eat_endermite_low` action with low head target.
-- Target choice, charge, range, occlusion checks, and cooldown are server-side; no actual animated branch is rendered yet.
-- Per-flower MimicProfile is seeded independently, and is a descriptor for future varied branch geometry.
-
-### Operator tests
-
-1. `/livingchorus mark` on a living or dead vanilla chorus flower.
-2. `/livingchorus inspect` shows `living` or `dead` and `MIMIC (sleeping)`.
-3. Shoot the flower with an arrow before it wakes. It should break in one hit.
-4. `/livingchorus stats` should show one less hidden infected flower.
-5. Other marked flowers remain infected; the untouched plant stems remain in their vanilla form.
-6. Repeat with a dead flower (give/place chorus_flower with age=5 or find a naturally dead one).
-7. Test `/livingchorus provoke` with nearby endermite or ender pearl to see the attack scheduling; attack visuals are pending.
-
-### Limits
-The V17 .bbmodel is a *reference*, not the final creature; dynamic branches, active hitboxes, synchronized animations and complete client runtime testing remain outstanding.
-
-Build with Java 25, Gradle 9.2.1, NeoForge 26.3.0.90 using GitHub Actions.
+### Not yet implemented
+Custom spawned mobs are not synchronized to V17 animated models. No procedural client renderer/animated collision meshes yet. Gameplay tests still required after Gradle CI compilation.

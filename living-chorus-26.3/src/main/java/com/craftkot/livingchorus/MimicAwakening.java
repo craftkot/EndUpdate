@@ -61,6 +61,7 @@ public final class MimicAwakening {
         final Map<Long, Strike> charging = new HashMap<>();
         final Map<Long, Long> flowerCooldown = new HashMap<>();
         final Map<UUID, Long> targetCooldown = new HashMap<>();
+        int miteScanCursor = 0;
     }
 
     private MimicAwakening() { }
@@ -252,6 +253,45 @@ public final class MimicAwakening {
         if (now % 2400L == 0) {
             state.flowerCooldown.entrySet().removeIf(e -> e.getValue() < now);
             state.targetCooldown.entrySet().removeIf(e -> e.getValue() < now);
+        }
+    }
+
+    /**
+     * Unattended feeding: an infected flower may eat a nearby Endermite even
+     * when no player is standing next to it. Only loaded chunks are consulted.
+     * A rolling cursor amortizes work across world ticks.
+     */
+    public static void seekUnattendedEndermites(ServerLevel level) {
+        State state = state(level);
+        MimicData data = MimicData.get(level);
+        java.util.List<Long> flowers = data.infectedIds();
+        if (flowers.isEmpty()) return;
+        int budget = Math.min(128, flowers.size());
+        int start = Math.floorMod(state.miteScanCursor, flowers.size());
+        state.miteScanCursor = (start + budget) % flowers.size();
+        long now = level.getGameTime();
+
+        java.util.List<Candidate> options = new java.util.ArrayList<>();
+        for (int i = 0; i < budget; i++) {
+            BlockPos pos = BlockPos.of(flowers.get((start + i) % flowers.size()));
+            if (!level.hasChunkAt(pos)) continue;
+            long id = pos.asLong();
+            if (state.charging.containsKey(id) || now < state.flowerCooldown.getOrDefault(id, 0L)) continue;
+            if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
+                data.forget(pos);
+                continue;
+            }
+            AABB area = AABB.ofSize(Vec3.atCenterOf(pos), 10.4, 10.4, 10.4);
+            for (Endermite mite : level.getEntitiesOfClass(Endermite.class, area, Entity::isAlive)) {
+                if (now < state.targetCooldown.getOrDefault(mite.getUUID(), 0L)) continue;
+                if (Vec3.atCenterOf(pos).distanceToSqr(mite.position()) > MITE_WAKE_SQR) continue;
+                if (!unobstructed(level, pos, mite)) continue;
+                options.add(new Candidate(pos, mite, HuntType.ENDERMITE));
+            }
+        }
+        if (!options.isEmpty()) {
+            Candidate choice = options.get(level.getRandom().nextInt(options.size()));
+            begin(level, choice.flower(), choice.target(), choice.type(), false);
         }
     }
 

@@ -31,6 +31,9 @@ public final class HiddenMimicEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(player.level() instanceof ServerLevel level)) return;
         if (level.dimension() != Level.END) return;
+        // Living Chorus-specific Endermite spawning runs independently of
+        // the vanilla Endermite teleportation mechanic.
+        EndEndermiteSpawning.tickPlayer(level, player);
         if (player.tickCount % 10 == 0) MimicAwakening.seek(level, player);
         if (player.tickCount % SCAN_INTERVAL_TICKS != 0) return;
 
@@ -61,6 +64,8 @@ public final class HiddenMimicEvents {
     public void levelTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.END) {
             MimicAwakening.tick(level);
+            // Feeding is no longer gated by a player standing next to the plant.
+            if (level.getGameTime() % 40L == 0L) MimicAwakening.seekUnattendedEndermites(level);
         }
     }
 

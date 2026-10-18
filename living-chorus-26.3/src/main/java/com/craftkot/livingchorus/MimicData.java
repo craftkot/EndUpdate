@@ -54,6 +54,11 @@ public final class MimicData extends SavedData {
         return infected.size();
     }
 
+    /** Copy ids so event handlers may prune invalid flowers during iteration. */
+    public java.util.List<Long> infectedIds() {
+        return new java.util.ArrayList<>(infected);
+    }
+
     public boolean mark(ServerLevel level, BlockPos pos) {
         if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
             return false;
