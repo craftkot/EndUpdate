@@ -189,9 +189,13 @@ if ! grep -Fq 'MIMIC (sleeping)' client-smoke/client.log; then
 fi
 echo 'REAL_MIMIC_MARK_CONFIRMED=YES' | tee -a client-smoke/status.txt
 send_chat '/difficulty easy'
+# Real-client capture bug: the Creative camera dropped ~20 blocks while
+# awaiting the attack, so earlier runs showed empty ground. Give the camera
+# its own stable End-stone observation platform at the intended height.
+send_chat '/fill 36 83 26 39 83 29 minecraft:end_stone'
 # Prefer a wide diagonal downward view so the original flower, lower bite
 # trajectory AND Endermite ground level are all inside the same screenshot.
-send_chat '/tp @s 37.5 84.5 27.5 31 20'
+send_chat '/tp @s 37.5 84.5 27.5 31 18'
 sleep 2
 capture 09a-side-above-camera-before-prey
 # Summon prey shortly before activation; do not rely on a 2-second action
@@ -210,6 +214,11 @@ sleep .55
 capture 13-feeding-recovery
 sleep 1
 capture 14-feeding-idle-return
+# Five-second post-swallow particle check (two additional real screenshots).
+sleep 2
+capture 15-digestion-motes-after-2s
+sleep 3
+capture 16-digestion-motes-after-5s
 # Fail the test if no client packet and no extracted + submitted geometry.
 # A green screenshot job alone must NOT be equated to successful rendering.
 for token in LC_SMOKE_PACKET LC_SMOKE_MASK_STARTED LC_SMOKE_EXTRACT LC_SMOKE_SUBMIT; do
