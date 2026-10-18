@@ -11,7 +11,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.renderer.OverlayTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -22,8 +22,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
-import net.neoforged.neoforge.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import org.joml.Quaternionf;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -166,8 +167,8 @@ public final class ClientMimicRenderer {
                 Vec3 middle = a.add(b).scale(.5);
                 matrices.pushPose();
                 matrices.translate(middle.x - camera.x, middle.y - camera.y, middle.z - camera.z);
-                matrices.mulPose(new Quaternionf().rotationTo(0, 1, 0,
-                    (float)d.x, (float)d.y, (float)d.z));
+                matrices.mulPose(new Matrix4f().rotation(new Quaternionf().rotationTo(0, 1, 0,
+                    (float)d.x, (float)d.y, (float)d.z)));
                 collector.submitModelPart(STEM, matrices, RenderTypes.entityCutout(PLANT_TEXTURE),
                     light, OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
@@ -195,7 +196,7 @@ public final class ClientMimicRenderer {
                                   net.minecraft.client.renderer.rendertype.RenderType texture,
                                   ModelPart panel, float x, float y, float z, int light) {
         matrices.pushPose();
-        matrices.mulPose(new Quaternionf().rotationXYZ(x, y, z));
+        matrices.mulPose(new Matrix4f().rotation(new Quaternionf().rotationXYZ(x, y, z)));
         collector.submitModelPart(panel, matrices, texture, light,
             OverlayTexture.NO_OVERLAY, null);
         matrices.popPose();
