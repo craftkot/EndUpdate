@@ -110,16 +110,16 @@ capture 02-singleplayer-selected
 # REAL 26.3 Create New World GUI, confirmed by previous screenshot.
 # Existing screenshot at 1024x768: Game Mode y=240, Difficulty y=296,
 # Allow Commands y=352, Create World x=355 y=756.
-# Game Mode cycles Survival -> Hardcore -> Creative; use two clicks.
-click_window_percent 50 26
-sleep 1
+# Real 26.3 screenshot proved: Survival -> Creative -> Hardcore;
+# ONE click chooses Creative. Two clicks previously selected Hardcore,
+# locking difficulty and disabling commands for the entire test.
 click_window_percent 50 26
 sleep 2
 # Default difficulty in the captured GUI was Hard -> Peaceful in one click.
 click_window_percent 50 34
 sleep 2
-# Explicitly allow commands, not inferred from typing into the chat.
-click_window_percent 50 41
+# Creative world creation enables commands automatically; do not blindly
+# toggle it back OFF. Inspect persisted level.dat after world creation.
 sleep 2
 capture 03-world-settings-before-create
 
@@ -144,6 +144,7 @@ if [ "$world_started" != 1 ]; then
   exit 1
 fi
 echo "REAL_INTEGRATED_WORLD_PLAYER_JOIN=YES" | tee -a client-smoke/status.txt
+python3 tools/assert_client_world_commands.py run/saves | tee -a client-smoke/status.txt
 sleep 6
 capture 05-actual-minecraft-world
 
@@ -157,7 +158,7 @@ send_chat() {
 # Server success must appear in the log: mouse clicks alone aren't enough.
 send_chat '/say LIVING_CHORUS_REAL_CLIENT_COMMANDS'
 sleep 2
-if ! grep -q 'LIVING_CHORUS_REAL_CLIENT_COMMANDS' client-smoke/client.log; then
+if ! grep -E 'Server thread.*LIVING_CHORUS_REAL_CLIENT_COMMANDS' client-smoke/client.log; then
   echo "WORLD_COMMAND_PERMISSION_NOT_CONFIRMED=YES" | tee -a client-smoke/status.txt
   capture 06-game-chat-without-confirmed-permissions
   exit 1
@@ -171,7 +172,7 @@ send_chat '/setblock 0 79 4 minecraft:chorus_plant'
 send_chat '/setblock 0 80 4 minecraft:chorus_plant'
 send_chat '/setblock 0 81 4 minecraft:chorus_plant'
 send_chat '/setblock 0 82 4 minecraft:chorus_flower[age=5]'
-send_chat '/tp @s 0.5 79.5 0.5 0 0'
+send_chat '/tp @s 0.5 79.5 0.5 0 -18'
 sleep 3
 capture 07-real-vanilla-dead-flower
 send_chat '/livingchorus mark'
