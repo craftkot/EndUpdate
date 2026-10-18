@@ -1,43 +1,22 @@
-# Living Chorus v0.17.0 — orthogonal chorus branch growth and normal-sized corners
+# Living Chorus 0.18.0 — immediate hunting, full-branch bends and digestion
 
-Minecraft 26.3 · NeoForge 26.3.0.90
+Minecraft 26.3, NeoForge 26.3.0.90. Standalone branch in craftkot/EndUpdate; do not merge to main without user approval.
 
-Feedback: Screenshot of an exaggerated thick, knotty tendril. The user wants
-vanilla-looking right-angle bends: if the Endermite is below the flower,
-the branch should first hover over it, then descend. If the prey is to the
-right and forward, it should go right, then forward, then down.
+## Updated feeding (after real in-game feedback)
+- **No waiting above prey**: branch turns and descends from the beginning of the Endermite attack, with overlapping X/Z/Y phases. It still produces crisp, orthogonal, vanilla-chorus-looking elbows rather than an unstructured diagonal curve.
+- Entire *dedicated* infected branch, traced back to its first shared trunk junction, is articulated as the moving bone chain; the shared/root junction stays anchored so other normal flowers are not moved.
+- Mite attack charges start from 26 ticks for near targets instead of 46; the extra time for far prey is reduced and capped at 64 ticks. Client receives the actual dynamic charge duration.
+- Four flower jaw plates open during approach, reaching full opening before the contact frame; the server consumes a mite only if the calculated mouth reached it.
+- **Digestion**: on *successful* Endermite consumption, purple vanilla `PORTAL` and `REVERSE_PORTAL` particles rise from the original infected flower for 100 server ticks (~5 s). The effect continues after the attacking branch retracts, stops on flower destruction, and never plays for missed bites or player attacks. No new sound effects.
+- **Decorative thickening retained but sparse**: 8px stalks use 10px vanilla-textured joint collars at real turns or roughly once every 1.4–1.85 block lengths, not at every moving joint. No custom sprite or stretched UV.
+- Original live/dead flower infections, flower-to-stem contagion through growth, 18 horizontal / 24 vertical Endermite detection, pearl-based player targeting, and rare End spawning stay intact.
 
-## Changes
-- Procedural attack path uses separately eased cardinal X then Z then Y legs,
-  creating distinct 90-degree elbows instead of a long diagonal coil.
-- Retains an initial smooth hinge rotation of the ACTUAL attached chorus
-  blocks, with the first shared junction fixed.
-- Approaches a lower target at the flower's initial elevation, extends
-  horizontally over prey, then drops a perpendicular vertical stalk.
-- Recovery closes jaws, retracts Y first, then Z, then X, and returns
-  existing blocks to their uninfected visual arrangement.
-- Original vanilla chorus_plant texture, 8px stalk width and 14px flower.
-  Removed 10px joint collars; same 8px square joint only at REAL directional
-  changes (>~35 degrees), not between every straight segment.
-- Axis legs use separate full-size cubes at up to 0.88 block steps, never
-  nonuniform geometric scaling or stretched UV; limit 96 extra pieces.
-- Tall/distant Endermite attacks dynamically extend their charge time to
-  let multiple axis stages unfold without visibly jumping.
-- The server sends the SAME actual duration to the client in pose START
-  and UPDATE packets, preserving synchronization for distant bites.
-- Server consumes prey only if the actual jaw reaches its grounded target.
-- 18-block horizontal / 24-block vertical hunt detection from 0.16 is
-  preserved; manually infected live/dead flowers and spreading stems remain.
+## Smoke tests
+1. Use NeoForge 26.3 with ONLY livingchorus-0.18.0.jar. Mark a connected vanilla chorus flower using `/livingchorus mark`.
+2. Summon an Endermite on End stone directly below or diagonally beside the flower.
+3. Observe that the **whole terminal branch** moves, with a prompt descent instead of lingering overhead, and sparse thicker joints.
+4. After a successful swallow, watch the ORIGINAL blossom for portal motes for approximately five seconds, even after it returns to resting form.
+5. A missed bite and a sleeping/shot flower must NOT emit digestion particles.
+6. Record a side-view video and upload latest.log if the model clips, flickers, or appears disconnected.
 
-## Test
-1. Spawn a marked flower above an Endermite in Minecraft 26.3.
-2. Capture a side view: outward overhang should precede vertical descent.
-3. Move the Endermite right/forward: observe a second square elbow before
-   the drop. Inspect the branch width: it should not grow bulbous between
-   straight elements.
-4. Repeat with 10–20 blocks of vertical separation.
-5. Collect latest.log and video if geometry clips or oscillates.
-
-**CI compilation and runtime smoke checks don't establish that visual
-angles, UV direction and contact timing look perfect.** Do not merge to main.
-Sound work intentionally untouched.
+GitHub Actions compilation and client startup are not substitutes for visual motion verification; inspect actual gameplay frames.
