@@ -12,7 +12,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -171,9 +172,9 @@ public final class ClientMimicRenderer {
             for (int segment = 1; segment < pose.joints().size(); segment++) {
                 Vec3 a = pose.joints().get(segment - 1), b = pose.joints().get(segment);
                 Vec3 middle = a.add(b).scale(.5);
-                segmentLight.add(LevelRenderer.getLightColor(level, BlockPos.containing(middle)));
+                segmentLight.add(sampleWorldLight(level, middle));
             }
-            int mouthLight = LevelRenderer.getLightColor(level, BlockPos.containing(pose.mouth()));
+            int mouthLight = sampleWorldLight(level, pose.mouth());
             snapshots.add(new RenderSnapshot(pose, attack.target,
                 attack.dead, attack.profile.mouthVariant(), List.copyOf(segmentLight), mouthLight));
         }
@@ -252,6 +253,14 @@ public final class ClientMimicRenderer {
             }
             matrices.popPose();
         }
+    }
+
+    private static int sampleWorldLight(net.minecraft.client.multiplayer.ClientLevel level,
+                                        Vec3 position) {
+        BlockPos pos = BlockPos.containing(position);
+        int sky = level.getBrightness(LightLayer.SKY, pos);
+        int block = level.getBrightness(LightLayer.BLOCK, pos);
+        return LightCoordsUtil.pack(block, sky);
     }
 
     private static void submitJaw(net.minecraft.client.renderer.SubmitNodeCollector collector,
