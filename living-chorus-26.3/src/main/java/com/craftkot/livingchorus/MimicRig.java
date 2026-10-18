@@ -115,11 +115,50 @@ public final class MimicRig {
         // OVERLAP, so the flower moves toward the prey immediately, instead
         // of waiting above it until the final third of the animation.
         Vec3 tip = points.get(points.size()-1);
-        tip = appendAxis(points, tip, target.x, 0, extendX);
-        tip = appendAxis(points, tip, target.z, 2, extendZ);
+        double dx = target.x - tip.x;
+        double dz = target.z - tip.z;
+        double dy = target.y - tip.y;
+
+        // Make some elbows STRONGER than a plain 90-degree corner (~112°):
+        // extend 0.26 blocks beyond an axis, then turn with a short backward
+        // diagonal into the next straight leg. The next leg returns exactly
+        // to the prey's X/Z coordinates. This keeps the chorus-like square
+        // silhouette without introducing long bent/diagonal tubes.
+        double xHook = Math.abs(dx) > .75 && Math.abs(dz) > .75
+            ? Math.copySign(.26, dx) : 0.0;
+        double zHook = Math.abs(dz) > .75 && Math.abs(dy) > .75
+            ? Math.copySign(.26, dz) : 0.0;
+
+        tip = appendAxis(points, tip, target.x + xHook, 0, extendX);
+        if (xHook != 0 && Math.abs(target.z - tip.z) > .01)
+            tip = elbow(points, tip, 0, -xHook, 2, target.z - tip.z, extendZ);
+        tip = appendAxis(points, tip, target.z + zHook, 2, extendZ);
+        if (zHook != 0 && Math.abs(target.y - tip.y) > .01)
+            tip = elbow(points, tip, 2, -zHook, 1, target.y - tip.y, descend);
         tip = appendAxis(points, tip, target.y, 1, descend);
 
         return new Pose(List.copyOf(points), tip, clamp(opening), bend);
+    }
+
+    /**
+     * A compact backward-leaning elbow. The 0.26px-block retrace against
+     * a 0.65-block forward leg produces an external angle around 112°.
+     * The rest of the branch still follows cardinal-axis straight segments.
+     */
+    private static Vec3 elbow(ArrayList<Vec3> joints, Vec3 from,
+                              int retreatAxis, double retreat, int forwardAxis,
+                              double forwardDistance, double phase) {
+        if (joints.size() >= MAX_EXTENSIONS + 24 || phase <= 1e-7) return from;
+        double t = smooth(phase / .45);
+        double next = Math.copySign(Math.min(.65, Math.abs(forwardDistance)), forwardDistance) * t;
+        double x = from.x, y = from.y, z = from.z;
+        if (retreatAxis == 0) x += retreat * t;
+        if (retreatAxis == 2) z += retreat * t;
+        if (forwardAxis == 1) y += next;
+        if (forwardAxis == 2) z += next;
+        Vec3 bend = new Vec3(x, y, z);
+        if (bend.distanceToSqr(from) >= 1e-8) joints.add(bend);
+        return bend;
     }
 
     private static Vec3 appendAxis(ArrayList<Vec3> points, Vec3 from,
