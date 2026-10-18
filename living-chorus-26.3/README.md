@@ -1,38 +1,31 @@
-# Living Chorus 0.11.0 — pixel-aligned vanilla-face UV
+# Living Chorus 0.12.0 — Endermite wake-up visibility fix
 
-Minecraft 26.3 / NeoForge. Standalone experimental project in craftkot/EndUpdate.
-Sound design remains intentionally deferred.
+Minecraft 26.3 / NeoForge 26.3.0.90; experimental branch only.
 
-## Exact vanilla sprite mapping
-Earlier versions put a normal **entity-style box UV atlas** on an ordinary
-16×16 vanilla *block* sprite. ModelPart normally lays out all six faces as a
-large strip, causing repeated/cropped flowers and conspicuous white seams.
+FIX: Infection is still tied to a vanilla living/dead chorus_flower block.
+The automatic Endermite seeking ray now ignores collisions with that flower and
+with up to four blocks of its OWN vertical chorus stem, while still stopping
+at solid terrain such as End stone. Previously the flower/own stem could
+occlude the Endermite underneath, preventing automatic wake-up.
+Manual /livingchorus provoke still allows testing without the visibility gate.
 
-Version 0.11.0 bakes the six faces of every moving cuboid **separately**:
-- Only the matching Direction face is enabled for each of the six coincident
-  ModelPart cuboids. This creates six textured faces (not six overlapping
-  rendered whole cubes).
-- Each face sets a per-direction texOffs so that it samples the correct
-  contiguous part of the original 16×16 `minecraft:chorus_flower.png`,
-  `chorus_flower_dead.png` or `chorus_plant.png`, directly.
-- Coordinates of a 14px flower are mapped 1:1 to pixel [1,15], preserving
-  the existing outer 1px border. Each jaw panel inherits the same UV placement
-  as its surface area on a closed flower.
-- During an attack, four hinged plates unfold independently without changing
-  geometry or stretching pixels. Closed state displays a single cube; teeth
-  and central interior are only submitted when open.
-- No new images, recolouring, custom texture atlas or sampled replacement
-  block texture were added.
+NEW: With cheats, look at an infected chorus flower within six blocks and run
+/livingchorus debug. The output includes whether the flower is active, nearest
+live Endermite range, line-of-sight result, and both flower/prey cooldown timers.
+Inspect /livingchorus stats for active attacks after summoning prey.
 
-### Still pending
-**In-game screenshot/client run required.** Code and CI cannot prove the
-model's UV orientations are aesthetically correct. The model still uses
-one 14px flower cube and simple jaw plates rather than full V17 procedural
-petal geometry. During attacks only terminal blocks can be hidden safely;
-complex shared-stem topology needs future work. Active collision/hitpoints,
-animated full-tree variations, networking smoke tests and sound effects
-are still open tasks.
+Existing Minecraft 26.3 client visuals remain experimental. The real-world
+CI run #54 confirmed mark/infection and active masking, but did NOT yet
+visually validate the complete textured model. Sound work is deferred.
 
-Preserved: rare Endermite spawning in The End, autonomous prey feeding, high
-player / low Endermite trajectories, living/dead flowers as infection anchors,
-sleeping one-hit projectile defeat, world-light sampling and client sync.
+Manual smoke:
+1. Place chorus plant with a living or dead chorus flower at its tip.
+2. Aim at FLOWER and run /livingchorus mark; inspect must say MIMIC (sleeping).
+3. Summon an Endermite on nearby End stone, within about four blocks of
+   the flower's center. Do not use Peaceful.
+4. Check /livingchorus debug, which should show path clear=true.
+5. Observe the flower for 3–6 seconds; if still idle capture /livingchorus debug.
+6. To isolate client rendering from AI, point at flower and /livingchorus provoke
+   while an Endermite is still alive.
+
+This build must pass Gradle CI; actual client gameplay remains to be checked.

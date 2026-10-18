@@ -366,16 +366,94 @@ public final class MimicAwakening {
             flower.getX() + .5, flower.getY() + .5, flower.getZ() + .5, 64, packet);
     }
 
+    /**
+     * Explicit diagnostic for the player looking at a marked flower.
+     * Uses identical prey range and line-of-sight rules to automatic hunting.
+     * The diagnosis is only exposed through the operator command.
+     */
+    public static String diagnose(ServerLevel level, BlockPos flower) {
+        if (!MimicData.get(level).isInfected(flower)) return "not infected";
+        State state = state(level);
+        long now = level.getGameTime();
+        Strike strike = state.charging.get(flower.asLong());
+        if (strike != null) {
+            return "ACTIVE " + strike.kind().animation + ", ticks until contact="
+                + Math.max(0L, strike.hitAt() - now);
+        }
+
+        long cooldown = Math.max(0L, state.flowerCooldown.getOrDefault(flower.asLong(), 0L) - now);
+        AABB scan = AABB.ofSize(Vec3.atCenterOf(flower), 16, 16, 16);
+        Endermite nearest = null;
+        double best = Double.POSITIVE_INFINITY;
+        for (Endermite mite : level.getEntitiesOfClass(Endermite.class, scan, Entity::isAlive)) {
+            double distance = Vec3.atCenterOf(flower).distanceToSqr(mite.position());
+            if (distance < best) {
+                best = distance;
+                nearest = mite;
+            }
+        }
+        if (nearest == null) return "SLEEPING, no alive Endermites within 8 blocks; flower cooldown=" + cooldown + "t";
+
+        long targetCooldown = Math.max(0L,
+            state.targetCooldown.getOrDefault(nearest.getUUID(), 0L) - now);
+        return "SLEEPING, nearest Endermite distance=" + String.format(java.util.Locale.ROOT, "%.2f", Math.sqrt(best))
+            + ", within wake range=" + (best <= MITE_WAKE_SQR)
+            + ", path clear=" + unobstructed(level, flower, nearest)
+            + ", flower cooldown=" + cooldown + "t"
+            + ", prey cooldown=" + targetCooldown + "t";
+    }
+
+    /**
+     * Ignore collisions with the infected flower and the local chorus
+     * stalk supporting it. A vanilla flower's own stem must never prevent
+     * its jaw from noticing prey directly under or beside it.
+     * Other solid blocks (especially End stone) still block visibility.
+     */
     private static boolean unobstructed(ServerLevel level, BlockPos pos, Entity target) {
         Vec3 center = Vec3.atCenterOf(pos);
         Vec3 end = target instanceof ServerPlayer player
             ? player.getEyePosition()
             : target.position().add(0, target.getBbHeight() * .5, 0);
-        Vec3 delta = end.subtract(center);
-        if (delta.lengthSqr() < .01) return true;
-        Vec3 start = center.add(delta.normalize().scale(.8));
-        BlockHitResult hit = level.clip(new ClipContext(start, end,
-            ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, target));
-        return hit.getType() == HitResult.Type.MISS || hit.getBlockPos().equals(pos);
+        Vec3 difference = end.subtract(center);
+        if (difference.lengthSqr() < 0.01) return true;
+        Vec3 dir = difference.normalize();
+        Vec3 start = center.add(dir.scale(0.15));
+
+        for (int attempt = 0; attempt < 16; attempt++) {
+            BlockHitResult hit = level.clip(new ClipContext(start, end,
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, target));
+            if (hit.getType() == HitResult.Type.MISS) return true;
+            BlockPos obstacle = hit.getBlockPos();
+            if (!onOwnChorusBranch(level, pos, obstacle)) return false;
+
+            Vec3 point = hit.getLocation();
+            // Jump past the bounding block to avoid repeatedly striking
+            // the same chorus collision shape. Do NOT jump through End stone.
+            double exit = Double.POSITIVE_INFINITY;
+            if (dir.x > 1e-6) exit = Math.min(exit, (obstacle.getX() + 1 - point.x) / dir.x);
+            else if (dir.x < -1e-6) exit = Math.min(exit, (obstacle.getX() - point.x) / dir.x);
+            if (dir.y > 1e-6) exit = Math.min(exit, (obstacle.getY() + 1 - point.y) / dir.y);
+            else if (dir.y < -1e-6) exit = Math.min(exit, (obstacle.getY() - point.y) / dir.y);
+            if (dir.z > 1e-6) exit = Math.min(exit, (obstacle.getZ() + 1 - point.z) / dir.z);
+            else if (dir.z < -1e-6) exit = Math.min(exit, (obstacle.getZ() - point.z) / dir.z);
+
+            if (!Double.isFinite(exit)) return false;
+            Vec3 next = point.add(dir.scale(Math.max(0, exit) + 0.025));
+            if (next.distanceToSqr(end) < 0.0001) return true;
+            if (next.distanceToSqr(end) >= start.distanceToSqr(end) - 0.00001) return false;
+            start = next;
+        }
+        return false;
+    }
+
+    private static boolean onOwnChorusBranch(ServerLevel level, BlockPos flower, BlockPos collision) {
+        if (collision.equals(flower)) return true;
+        // Ignore only short, connected local segments, never a remote plant
+        // or terrain wall. Each segment must be in the flower's own column.
+        return collision.getX() == flower.getX()
+            && collision.getZ() == flower.getZ()
+            && collision.getY() >= flower.getY() - 4
+            && collision.getY() < flower.getY()
+            && level.getBlockState(collision).is(Blocks.CHORUS_PLANT);
     }
 }

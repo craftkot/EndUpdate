@@ -117,6 +117,7 @@ public final class HiddenMimicEvents {
             .then(Commands.literal("clear").executes(ctx -> perform(ctx.getSource(), "clear")))
             .then(Commands.literal("provoke").executes(ctx -> perform(ctx.getSource(), "provoke")))
             .then(Commands.literal("profile").executes(ctx -> perform(ctx.getSource(), "profile")))
+            .then(Commands.literal("debug").executes(ctx -> perform(ctx.getSource(), "debug")))
             .then(Commands.literal("stats").executes(ctx -> {
                 ServerLevel level = ctx.getSource().getLevel();
                 int count = MimicData.get(level).count();
@@ -149,6 +150,8 @@ public final class HiddenMimicEvents {
                 source.sendSuccess(() -> Component.literal("Mimic branch blueprint: " + profile
                     + " | state: " + MimicAwakening.activeAnimation(level, pos)), false);
             }
+            case "debug" -> source.sendSuccess(() ->
+                Component.literal("Living Chorus diagnostic: " + MimicAwakening.diagnose(level, pos)), false);
             case "provoke" -> {
                 if (!MimicAwakening.provoke(level, pos, player)) {
                     source.sendFailure(Component.literal("Mark the flower first. Provoke requires a nearby endermite or ender pearls in your inventory; wait until any ongoing attack finishes."));
