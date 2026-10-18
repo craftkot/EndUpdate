@@ -96,6 +96,12 @@ public final class ClientMimicRenderer {
     private static void receive(MimicPosePacket data) {
         var level = Minecraft.getInstance().level;
         if (level == null) return;
+        // A payload may arrive before the first render extraction after entering
+        // The End. Bind the world here, otherwise extraction erases that first attack.
+        if (previousLevel != level) {
+            ACTIVE.clear();
+            previousLevel = level;
+        }
         long key = data.flower().asLong();
         if (data.operation() == MimicPosePacket.STOP) {
             ACTIVE.remove(key);
