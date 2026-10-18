@@ -4,6 +4,8 @@ on:
     branches: [feature/living-chorus-26-3]
     paths: ['living-chorus-26.3/**', '.github/workflows/living-chorus-26-3.yml']
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
