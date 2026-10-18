@@ -14,7 +14,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  */
 public record MimicPosePacket(BlockPos flower, Vec3 target, int packedProfile,
                               int chargeTicks, int recoverTicks, boolean dead,
-                              byte kind, byte operation) implements CustomPacketPayload {
+                              byte kind, byte operation, java.util.List<BlockPos> branch) implements CustomPacketPayload {
     public static final byte START = 0, UPDATE = 1, STOP = 2;
     public static final byte PLAYER_BITE = 0, ENDERMITE_FEED = 1;
     public static final Type<MimicPosePacket> TYPE =
@@ -32,7 +32,13 @@ public record MimicPosePacket(BlockPos flower, Vec3 target, int packedProfile,
                 boolean dead = buf.readBoolean();
                 byte kind = buf.readByte();
                 byte op = buf.readByte();
-                return new MimicPosePacket(flower, target, profile, charge, recover, dead, kind, op);
+                int length = buf.readVarInt();
+                if (length < 0 || length > MimicBranchPath.MAX_BLOCKS)
+                    throw new IllegalArgumentException("Invalid mimic branch length: "+length);
+                java.util.ArrayList<BlockPos> branch = new java.util.ArrayList<>(length);
+                for (int i=0;i<length;i++) branch.add(buf.readBlockPos());
+                return new MimicPosePacket(flower, target, profile, charge, recover, dead, kind, op,
+                    java.util.List.copyOf(branch));
             }
             @Override
             public void encode(RegistryFriendlyByteBuf buf, MimicPosePacket data) {
@@ -46,6 +52,8 @@ public record MimicPosePacket(BlockPos flower, Vec3 target, int packedProfile,
                 buf.writeBoolean(data.dead());
                 buf.writeByte(data.kind());
                 buf.writeByte(data.operation());
+                buf.writeVarInt(data.branch().size());
+                for (BlockPos segment : data.branch()) buf.writeBlockPos(segment);
             }
         };
 

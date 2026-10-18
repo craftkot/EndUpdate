@@ -361,7 +361,8 @@ public final class MimicAwakening {
         boolean dead = level.getBlockState(flower).is(Blocks.CHORUS_FLOWER)
             && level.getBlockState(flower).getValue(ChorusFlowerBlock.AGE) >= 5;
         MimicPosePacket packet = new MimicPosePacket(flower, aim,
-            profile(level, flower).packed(), duration, RECOVER_TICKS, dead, kind, operation);
+            profile(level, flower).packed(), duration, RECOVER_TICKS, dead, kind, operation,
+            MimicBranchPath.trace(level, flower));
         PacketDistributor.sendToPlayersNear(level, null,
             flower.getX() + .5, flower.getY() + .5, flower.getZ() + .5, 64, packet);
     }
@@ -419,12 +420,13 @@ public final class MimicAwakening {
         Vec3 dir = difference.normalize();
         Vec3 start = center.add(dir.scale(0.15));
 
+        java.util.List<BlockPos> owned = MimicBranchPath.trace(level, pos);
         for (int attempt = 0; attempt < 16; attempt++) {
             BlockHitResult hit = level.clip(new ClipContext(start, end,
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, target));
             if (hit.getType() == HitResult.Type.MISS) return true;
             BlockPos obstacle = hit.getBlockPos();
-            if (!onOwnChorusBranch(level, pos, obstacle)) return false;
+            if (!MimicBranchPath.owns(owned, obstacle) && !obstacle.equals(owned.get(0))) return false;
 
             Vec3 point = hit.getLocation();
             // Jump past the bounding block to avoid repeatedly striking
@@ -446,14 +448,4 @@ public final class MimicAwakening {
         return false;
     }
 
-    private static boolean onOwnChorusBranch(ServerLevel level, BlockPos flower, BlockPos collision) {
-        if (collision.equals(flower)) return true;
-        // Ignore only short, connected local segments, never a remote plant
-        // or terrain wall. Each segment must be in the flower's own column.
-        return collision.getX() == flower.getX()
-            && collision.getZ() == flower.getZ()
-            && collision.getY() >= flower.getY() - 4
-            && collision.getY() < flower.getY()
-            && level.getBlockState(collision).is(Blocks.CHORUS_PLANT);
-    }
 }

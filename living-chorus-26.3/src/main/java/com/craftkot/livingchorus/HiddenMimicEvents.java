@@ -30,11 +30,11 @@ public final class HiddenMimicEvents {
     public void playerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(player.level() instanceof ServerLevel level)) return;
-        if (level.dimension() != Level.END) return;
-        // Living Chorus-specific Endermite spawning runs independently of
-        // the vanilla Endermite teleportation mechanic.
-        EndEndermiteSpawning.tickPlayer(level, player);
+        // Manually infected plants react in any dimension (also creative test pens).
         if (player.tickCount % 10 == 0) MimicAwakening.seek(level, player);
+        // Natural infection and additional Endermite spawning remain End-only.
+        if (level.dimension() != Level.END) return;
+        EndEndermiteSpawning.tickPlayer(level, player);
         if (player.tickCount % SCAN_INTERVAL_TICKS != 0) return;
 
         MimicData data = MimicData.get(level);
@@ -62,10 +62,12 @@ public final class HiddenMimicEvents {
 
     @SubscribeEvent
     public void levelTick(LevelTickEvent.Post event) {
-        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.END) {
+        if (event.getLevel() instanceof ServerLevel level) {
             MimicAwakening.tick(level);
-            // Feeding is no longer gated by a player standing next to the plant.
-            if (level.getGameTime() % 40L == 0L) MimicAwakening.seekUnattendedEndermites(level);
+            if (level.getGameTime() % 40L == 0L)
+                MimicAwakening.seekUnattendedEndermites(level);
+            if (level.getGameTime() % 20L == 0L)
+                MimicData.get(level).spreadAcrossChorus(level);
         }
     }
 

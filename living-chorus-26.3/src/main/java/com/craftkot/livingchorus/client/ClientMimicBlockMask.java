@@ -52,30 +52,17 @@ public final class ClientMimicBlockMask {
         }
     }
 
-    /**
-     * Ends at the first junction and never masks its shared stem.
-     * Each contiguous ordinary part must have exactly 2 chorus neighbors
-     * (the preceding piece + the next piece), otherwise it is excluded.
-     */
-    public static void start(ClientLevel level, BlockPos flower) {
-        long id = flower.asLong();
+    /** Mask ONLY flower-owned blocks in the real branch, never the shared root. */
+    public static void start(ClientLevel level, BlockPos flower, List<BlockPos> rootToFlower) {
         Set<Long> part = new HashSet<>();
-        part.add(id);
-        BlockPos previous = flower;
-        BlockPos cursor = onlyAdjacentPlant(level, flower);
-        int steps = 0;
-
-        while (cursor != null && steps < MAX_TERMINAL_STEM_BLOCKS) {
-            List<BlockPos> linked = adjacentChorus(level, cursor);
-            if (linked.size() != 2 || !linked.contains(previous)) break;
-            part.add(cursor.asLong());
-            BlockPos next = linked.get(0).equals(previous) ? linked.get(1) : linked.get(0);
-            if (!level.getBlockState(next).is(Blocks.CHORUS_PLANT)) break;
-            previous = cursor;
-            cursor = next;
-            steps++;
+        part.add(flower.asLong());
+        for (int i=1;i<rootToFlower.size();i++) {
+            BlockPos piece = rootToFlower.get(i);
+            BlockState block = level.getBlockState(piece);
+            if (block.is(Blocks.CHORUS_PLANT) || block.is(Blocks.CHORUS_FLOWER))
+                part.add(piece.asLong());
         }
-        BY_FLOWER.put(id, Set.copyOf(part));
+        BY_FLOWER.put(flower.asLong(), Set.copyOf(part));
         rebuild(level);
     }
 

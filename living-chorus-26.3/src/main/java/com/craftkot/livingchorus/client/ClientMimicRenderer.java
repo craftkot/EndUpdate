@@ -58,7 +58,7 @@ public final class ClientMimicRenderer {
 
     // Pixel dimensions of rigid parts. 10px stems overlap 0.64-block joints
     // slightly without changing UV scale or elongating cuboids.
-    private static final ModelPart STEM = part("stem", -2, -5, -2, 4, 10, 4);
+    private static final ModelPart STEM = part("stem", -2, -8, -2, 4, 16, 4);
     private static final ModelPart HEAD = part("head", -7, -7, -7, 14, 14, 14);
     // Four nonoverlapping CLOSED sections of a 14x14x14 flower cube.
     // No exterior caps or cover cubes are added in the sleeping state.
@@ -86,6 +86,7 @@ public final class ClientMimicRenderer {
     private static final class ClientAttack {
         final BlockPos flower;
         final MimicProfile profile;
+        final java.util.List<BlockPos> branch;
         final long started;
         final int charge;
         final int recovery;
@@ -96,6 +97,7 @@ public final class ClientMimicRenderer {
         ClientAttack(MimicPosePacket data, long now) {
             flower = data.flower();
             profile = MimicProfile.fromPacked(data.packedProfile());
+            branch = java.util.List.copyOf(data.branch());
             started = now;
             charge = data.chargeTicks();
             recovery = data.recoverTicks();
@@ -137,7 +139,7 @@ public final class ClientMimicRenderer {
         } else if (data.operation() == MimicPosePacket.START) {
             // Never decode or reveal markers for dormant flowers.
             ACTIVE.put(key, new ClientAttack(data, level.getGameTime()));
-            ClientMimicBlockMask.start(level, data.flower());
+            ClientMimicBlockMask.start(level, data.flower(), data.branch());
             if (SMOKE) System.out.println("LC_SMOKE_MASK_STARTED flower=" + data.flower());
         }
     }
@@ -173,10 +175,9 @@ public final class ClientMimicRenderer {
             double progress = recover ? (elapsed - attack.charge) / attack.recovery
                 : elapsed / attack.charge;
 
-            Vec3 root = Vec3.atCenterOf(attack.flower.below(2));
-            Vec3 initialHead = Vec3.atCenterOf(attack.flower);
-            MimicRig.Pose pose = MimicRig.evaluate(
-                attack.profile, root, initialHead, attack.target, progress, recover);
+            java.util.List<Vec3> resting = attack.branch.stream().map(Vec3::atCenterOf).toList();
+            MimicRig.Pose pose = MimicRig.evaluateBranch(
+                attack.profile, resting, attack.target, progress, recover);
             // Light must be sampled here, on the extraction/client world pass.
             // SubmitCustomGeometryEvent must not consult the world or light engine.
             ArrayList<Integer> segmentLight = new ArrayList<>();
