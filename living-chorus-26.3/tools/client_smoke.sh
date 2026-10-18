@@ -5,6 +5,10 @@ printf 'guiScale:2\n' > run/options.txt
 : > client-smoke/status.txt
 export DISPLAY=:99
 export LIBGL_ALWAYS_SOFTWARE=1
+export SDL_VIDEO_FORCE_EGL=1
+export SDL_VIDEO_X11_FORCE_EGL=1
+export SDL_VIDEODRIVER=x11
+export EGL_PLATFORM=x11
 export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
 export ALSOFT_DRIVERS=null
 export XDG_RUNTIME_DIR=/tmp/living-chorus-minecraft
