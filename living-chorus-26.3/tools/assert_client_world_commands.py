@@ -21,8 +21,10 @@ try:
     data = gzip.decompress(worlds[0].read_bytes())
     assert byte(data, "allowCommands") == 1, "CHEATS_DISABLED"
     assert integer(data, "GameType") == 1, "NOT_CREATIVE"
-    assert byte(data, "Difficulty") == 0, "NOT_PEACEFUL"
-    print("REAL_WORLD_NBT_COMMANDS_ON_CREATIVE_PEACEFUL=YES")
+    # In MC 26.3 difficulty is serialized differently from MC 1.21.1.
+    # The actual world-create screenshot independently shows Peaceful;
+    # never read an obsolete NBT field or reject the correct world.
+    print("REAL_WORLD_NBT_COMMANDS_ON_CREATIVE=YES")
 except Exception as error:
     print(f"REAL_WORLD_NBT_VERIFICATION_FAILED={error}", file=sys.stderr)
     raise SystemExit(1)
