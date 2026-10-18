@@ -37,7 +37,7 @@ public final class MimicAwakening {
     private static final double PLAYER_WAKE_SQR = 4.5 * 4.5;
     private static final double MITE_WAKE_SQR = 5.2 * 5.2;
     private static final double PLAYER_HIT_SQR = 4.0 * 4.0;
-    private static final double MITE_HIT_SQR = 4.5 * 4.5;
+    private static final double MITE_HIT_SQR = MITE_WAKE_SQR;
     private static final int PLAYER_CHARGE_TICKS = 35;
     private static final int MITE_CHARGE_TICKS = 46;
     private static final int RECOVER_TICKS = 18;
@@ -279,7 +279,8 @@ public final class MimicAwakening {
                             SoundSource.HOSTILE, .8F, .85F);
                         level.sendParticles(ParticleTypes.CRIT, player.getX(),
                             player.getY() + 1.0, player.getZ(), 12, .2, .3, .2, .05);
-                    } else if (strike.kind() == HuntType.ENDERMITE && target instanceof Endermite mite) {
+                    } else if (strike.kind() == HuntType.ENDERMITE && target instanceof Endermite mite
+                        && mouthAtPrey(level, pos, mite)) {
                         // The feeding animation must end at endermite height, not eye height.
                         level.sendParticles(ParticleTypes.PORTAL,
                             mite.getX(), mite.getY() + .12, mite.getZ(),
@@ -347,6 +348,17 @@ public final class MimicAwakening {
             Candidate choice = options.get(level.getRandom().nextInt(options.size()));
             begin(level, choice.flower(), choice.target(), choice.type(), false);
         }
+    }
+
+    /** Do not consume prey until the articulated flower has ACTUALLY reached it. */
+    private static boolean mouthAtPrey(ServerLevel level, BlockPos flower, Endermite mite) {
+        List<Vec3> resting = MimicBranchPath.trace(level, flower).stream()
+            .map(Vec3::atCenterOf).toList();
+        Vec3 mouthTarget = MimicRig.endermiteGroundAim(
+            mite.getX(), mite.getY(), mite.getZ());
+        MimicRig.Pose contact = MimicRig.evaluateBranch(
+            profile(level, flower), resting, mouthTarget, 1.0, false);
+        return contact.mouth().distanceToSqr(mouthTarget) <= .65 * .65;
     }
 
     private static void notifyPose(ServerLevel level, BlockPos flower, Entity target,
