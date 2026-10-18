@@ -11,6 +11,8 @@ import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChorusFlowerBlock;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -84,6 +86,7 @@ public final class MimicAwakening {
         long id = flower.asLong();
         state.charging.remove(id);
         state.flowerCooldown.remove(id);
+        notifyPose(level, flower, null, (byte) 0, MimicPosePacket.STOP);
     }
 
     public static String activeAnimation(ServerLevel level, BlockPos pos) {
@@ -193,6 +196,9 @@ public final class MimicAwakening {
             now + charge + RECOVER_TICKS));
         state.flowerCooldown.put(key, now + 150 + level.getRandom().nextInt(100));
         state.targetCooldown.put(target.getUUID(), now + 95);
+        notifyPose(level, pos, target, kind == HuntType.ENDERMITE
+            ? MimicPosePacket.ENDERMITE_FEED : MimicPosePacket.PLAYER_BITE,
+            MimicPosePacket.START);
 
         level.playSound(null, pos, SoundEvents.CHORUS_FLOWER_GROW, SoundSource.BLOCKS,
             0.7F, kind == HuntType.ENDERMITE ? 0.55F : 0.8F);
@@ -216,6 +222,7 @@ public final class MimicAwakening {
             if (!data.isInfected(pos) || !level.hasChunkAt(pos)
                 || !level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
                 it.remove();
+                notifyPose(level, pos, null, (byte) 0, MimicPosePacket.STOP);
                 continue;
             }
             // Temporary in-world rig preview until the textured, client-side
@@ -281,7 +288,18 @@ public final class MimicAwakening {
                     }
                 }
             }
-            if (now >= strike.clearAt()) it.remove();
+            if (now >= strike.clearAt()) {
+                it.remove();
+                notifyPose(level, pos, null, (byte) 0, MimicPosePacket.STOP);
+            } else if (now % 7L == 0) {
+                Entity trackTarget = level.getEntity(strike.targetId());
+                if (trackTarget != null && trackTarget.isAlive()) {
+                    notifyPose(level, pos, trackTarget,
+                        strike.kind() == HuntType.ENDERMITE ? MimicPosePacket.ENDERMITE_FEED
+                            : MimicPosePacket.PLAYER_BITE,
+                        MimicPosePacket.UPDATE);
+                }
+            }
         }
 
         if (now % 2400L == 0) {
@@ -327,6 +345,25 @@ public final class MimicAwakening {
             Candidate choice = options.get(level.getRandom().nextInt(options.size()));
             begin(level, choice.flower(), choice.target(), choice.type(), false);
         }
+    }
+
+    private static void notifyPose(ServerLevel level, BlockPos flower, Entity target,
+                                   byte kind, byte operation) {
+        Vec3 aim = Vec3.atCenterOf(flower);
+        if (target != null) {
+            double y = target instanceof ServerPlayer
+                ? target.getY() + Math.min(1.55, target.getBbHeight() * .85)
+                : target.getY() + target.getBbHeight() * .45;
+            aim = new Vec3(target.getX(), y, target.getZ());
+        }
+        int duration = kind == MimicPosePacket.ENDERMITE_FEED
+            ? MITE_CHARGE_TICKS : PLAYER_CHARGE_TICKS;
+        boolean dead = level.getBlockState(flower).is(Blocks.CHORUS_FLOWER)
+            && level.getBlockState(flower).getValue(ChorusFlowerBlock.AGE) >= 5;
+        MimicPosePacket packet = new MimicPosePacket(flower, aim,
+            profile(level, flower).packed(), duration, RECOVER_TICKS, dead, kind, operation);
+        PacketDistributor.sendToPlayersNear(level, null,
+            flower.getX() + .5, flower.getY() + .5, flower.getZ() + .5, 64, packet);
     }
 
     private static boolean unobstructed(ServerLevel level, BlockPos pos, Entity target) {

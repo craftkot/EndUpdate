@@ -25,6 +25,7 @@ public final class LivingChorus {
     public LivingChorus(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
+        bus.addListener(MimicPosePacket::register);
         NeoForge.EVENT_BUS.register(new HiddenMimicEvents());
     }
 }

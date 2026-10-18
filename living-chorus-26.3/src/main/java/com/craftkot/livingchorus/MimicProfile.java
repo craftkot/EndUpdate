@@ -30,6 +30,24 @@ public record MimicProfile(
         return new MimicProfile(sections, bend1, bend2, direction, extension, mouth, timing);
     }
 
+    /** Pack all seven non-secret appearance choices into 21 bits. */
+    public int packed() {
+        return ((sectionCount - 2) & 3)
+            | ((firstBend & 15) << 2)
+            | ((secondBend & 15) << 6)
+            | ((direction & 3) << 10)
+            | (((extensionUnits - 4) & 15) << 12)
+            | ((mouthVariant & 3) << 16)
+            | ((timingVariant & 7) << 18);
+    }
+
+    public static MimicProfile fromPacked(int packed) {
+        return new MimicProfile(2 + (packed & 3), (packed >>> 2) & 15,
+            (packed >>> 6) & 15, (packed >>> 10) & 3,
+            4 + ((packed >>> 12) & 15), (packed >>> 16) & 3,
+            (packed >>> 18) & 7);
+    }
+
     private static long mix(long z) {
         z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
         z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
