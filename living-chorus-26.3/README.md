@@ -1,29 +1,39 @@
-# Living Chorus — NeoForge 26.3 (experimental)
+# Living Chorus — NeoForge 26.3 / experimental
 
-Standalone subproject of craftkot/EndUpdate, kept isolated from Forge 1.20.1.
+Standalone subproject in craftkot/EndUpdate. Does not modify the original Forge 1.20.1 EndUpdate mod.
 
-## Stage 2 — wake-up, timed attack, and recovery (v0.3.0)
+## Stage 3: target-specific behaviours and unique branch profiles (v0.4.0)
 
-- In The End, ~5% of vanilla `minecraft:chorus_flower` blocks can be silently marked infected. The world block, tooltip, selection, F3+B behavior and vanilla rendering are **unchanged while idle**.
-- Marks persist in server world SavedData. Only flowers are marked; one flower on an otherwise normal chorus plant can be a mimic.
-- Server checks nearby marked flowers twice a second, in a bounded area around survival players. Every 10 seconds the server discovers new flowers. No forced chunk loading, no fake mob entity, no constant damage.
-- A reachable flower within 4 blocks may **wake up**: a chorus sound and portal particles telegraph the attack. After 1.5 seconds it bites for 3 damage if the target is still within 2.8 blocks, alive and unobstructed. Attacks can miss, and attacking flowers have a 6.5–11.5 second cooldown.
-- When multiple reachable flowers are infected, one is selected randomly. Additional per-player cooldown avoids simultaneous attacks.
-- Removing or clearing the flower during the wind-up cancels the bite. Creative/spectator players are immune.
-- **Not yet implemented:** visible bending of stems, petal opening, full V8 animated rig, body growth/shape changes, actual invisible branch swap during attack. Those are separate milestones. All animations currently remain in Blockbench only.
-- The legacy `livingchorus:living_chorus` damaging custom block remains for backwards compatibility; it is *not* the hidden mimic.
+**V17 Blockbench model is an animation demonstration, not the final in-game mob.**
+Do not assume a uniform four-flower shape or use one universal attack animation.
 
-### Operator-only test commands
+- Dormant mimics remain **vanilla chorus_flower blocks**, with server-only infection markers. They are not separate detectable entities.
+- Infection stays at approximately 5% of eligible End chorus flowers and persists with server SavedData.
+- Players are attack targets **only while holding at least one ender pearl anywhere in their inventory**. Ender pearls are NOT removed. No pearls = no player-targeting.
+- Endermites are food. An infected flower near an endermite will preferentially target it, bend LOW, and swallow it at successful contact. Endermites are removed by successful consumption.
+- Separate action/animation identifiers:
+  - `bite_player_high`: target player eye/body height;
+  - `eat_endermite_low`: target low endermite height.
+- Both attacks have charge/telegraph/cooldown, target and distance/obstruction checks, and cancel on destruction of the vanilla flower.
+- Deterministic `MimicProfile` assigned to each flower from world seed and position: segment count (2–5), two bends, branch direction, extension units, mouth style, timing variant. Profiles are *data for the future renderer*, not visual changes to the vanilla plant yet. Distinct profiles are likely but exact uniqueness is not mathematically guaranteed.
+- A player nearby triggers lightweight server scans twice a second. No forced chunks or permanent mob entities.
+- Animation and full per-branch procedural mesh generation **are not implemented in-game yet**. No claim of in-game bending or visual swallowing at this stage.
 
-Look at a **vanilla chorus flower**, not the stem, from within six blocks:
+### Admin testing
 
-- `/livingchorus mark` — mark the targeted flower infected.
-- `/livingchorus inspect` — check whether the flower is infected.
-- `/livingchorus provoke` — force wake-up and an attempted bite, ignoring cooldown.
-- `/livingchorus clear` — clear and prevent automatic rediscovery at this position.
-- `/livingchorus stats` — count of stored infected flowers and current charging attacks.
+Target a vanilla `chorus_flower` within 6 blocks:
 
-For testing, switch to survival after marking; observe that nearby flowers wake, wind up and can miss. Normal play has no admin indicators.
+- `/livingchorus mark` — set infected
+- `/livingchorus inspect` — show marker state
+- `/livingchorus profile` — view deterministic shape blueprint and current attack identifier
+- `/livingchorus provoke` — force an attempt; prefers a nearby endermite, otherwise needs an ender pearl in your inventory
+- `/livingchorus clear` — clear marker and exclude from further infection
+- `/livingchorus stats` — infected and currently charging counts
 
-## Build
-Requires Java 25, Gradle 9.2.1 and NeoForge 26.3.0.90. GitHub Actions workflow **Build Living Chorus 26.3** builds and uploads the JAR.
+Normal play: have an ender pearl in inventory, enter Survival in The End, approach an infected flower. No pearl: it should ignore you. Spawn an endermite nearby to test the separate feeding branch. The endermite is consumed only if it remains in range and can be reached without intervening solid geometry. Collision, mini-map block appearance and vanilla item ID remain intact until attack visuals are implemented.
+
+### Compatibility
+The older test block `livingchorus:living_chorus` still damages nearby players and is NOT the hidden mimicking chorus; use vanilla chorus flowers for this stage.
+
+### Build
+GitHub Actions `Build Living Chorus 26.3` uses Java 25, Gradle 9.2.1, NeoForge 26.3.0.90.
