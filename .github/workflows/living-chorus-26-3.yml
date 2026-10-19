@@ -1,0 +1,64 @@
+name: Build Living Chorus 26.3
+on:
+  push:
+    branches: [feature/living-chorus-26-3]
+    paths: ['living-chorus-26.3/**', '.github/workflows/living-chorus-26-3.yml']
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: living-chorus-26.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - run: gradle --no-daemon build --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: living-chorus-neoforge-26.3
+          path: living-chorus-26.3/build/libs/*.jar
+          if-no-files-found: error
+
+  real-client:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: living-chorus-26.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install virtual display, X11 automation and Mesa GL
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb             xdotool x11-utils openbox mesa-utils libgl1-mesa-dri libgl1             imagemagick libasound2t64 libegl1 libegl-mesa0 libgles2
+      - name: Run actual Minecraft graphical client
+        timeout-minutes: 38
+        run: bash tools/client_smoke.sh
+      - name: Preserve GUI screenshots and crash logs on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: living-chorus-real-client-visual-evidence
+          path: |
+            living-chorus-26.3/client-smoke/
+            living-chorus-26.3/run/logs/latest.log
+          if-no-files-found: warn
+          retention-days: 14

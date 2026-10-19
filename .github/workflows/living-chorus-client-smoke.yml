@@ -1,0 +1,44 @@
+name: Real Minecraft Client Living Chorus 26.3
+
+on:
+  push:
+    branches: [feature/living-chorus-26-3]
+    paths:
+      - '.github/workflows/living-chorus-client-smoke.yml'
+      - 'living-chorus-26.3/tools/client_smoke.sh'
+  workflow_dispatch:
+
+jobs:
+  real-client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: living-chorus-26.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Install virtual display and Mesa renderer
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y             xvfb xdotool x11-utils openbox mesa-utils             libgl1-mesa-dri libgl1 imagemagick libasound2t64
+          java -version
+      - name: Launch REAL Minecraft 26.3 and capture game screens
+        timeout-minutes: 38
+        run: bash tools/client_smoke.sh
+      - name: Upload real client screenshots and logs, even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: living-chorus-26.3-real-client-proof
+          path: |
+            living-chorus-26.3/client-smoke/
+            living-chorus-26.3/run/logs/latest.log
+          if-no-files-found: warn
+          retention-days: 14
