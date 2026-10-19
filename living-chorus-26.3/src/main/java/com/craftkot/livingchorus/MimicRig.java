@@ -72,6 +72,23 @@ public final class MimicRig {
         ArrayList<Vec3> points = new ArrayList<>(resting);
         Vec3 root = resting.get(0);
         int last = resting.size() - 1;
+        // Each flower has its own bent/twisted silhouette when awake. The
+        // vanilla resting shape stays pixel-exact when the attack finishes.
+        // Internal joint offsets select different bends without moving the
+        // first shared trunk junction or changing real segment lengths.
+        Vec3 axis = target.subtract(root);
+        Vec3 lateral = new Vec3(-axis.z, 0, axis.x);
+        if (lateral.lengthSqr() < 1.0e-6) lateral = new Vec3(1, 0, 0);
+        lateral = lateral.normalize();
+        double twist = (style.firstBend() - 7.5) / 15.0;
+        double vertical = (style.secondBend() - 7.5) / 15.0;
+        for (int i = 1; i < last; i++) {
+            double w = Math.sin(Math.PI * i / last) * bend;
+            double direction = (i % 2 == 0 && style.direction() >= 2) ? -.65 : 1.0;
+            points.set(i, points.get(i)
+                .add(lateral.scale(twist * direction * .75 * w))
+                .add(0, vertical * .35 * w, 0));
+        }
         double[] lengths = new double[last];
         double total = 0;
         for (int i = 0; i < last; i++) {

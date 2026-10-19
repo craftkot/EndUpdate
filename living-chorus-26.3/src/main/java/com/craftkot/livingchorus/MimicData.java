@@ -231,6 +231,23 @@ public final class MimicData extends SavedData {
         return new java.util.ArrayList<>(infected);
     }
 
+    /**
+     * Transfer a living infection to a new, physically attached vanilla
+     * flower. The old head becomes an infected stalk; no fake flowers or
+     * untracked entities survive a save/reload.
+     */
+    public boolean transferFlower(BlockPos oldFlower, BlockPos newFlower) {
+        long oldKey = oldFlower.asLong(), nextKey = newFlower.asLong();
+        if (!infected.contains(oldKey) || infected.contains(nextKey)
+            || safe.contains(nextKey)) return false;
+        infected.remove(oldKey);
+        infected.add(nextKey);
+        infectedStems.add(oldKey);
+        growthOrigins.remove(oldKey);
+        setDirty();
+        return true;
+    }
+
     public boolean mark(ServerLevel level, BlockPos pos) {
         if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
             return false;

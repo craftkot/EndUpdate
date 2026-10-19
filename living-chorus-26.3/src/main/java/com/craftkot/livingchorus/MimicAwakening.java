@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -75,6 +77,9 @@ public final class MimicAwakening {
 
     private static final class State {
         final Map<Long, Strike> charging = new HashMap<>();
+        // Actual vanilla blocks belonging to active appendages, never shared junctions.
+        final Map<Long, Set<Long>> movingParts = new HashMap<>();
+        final Set<Long> successfulHunts = new HashSet<>();
         final Map<Long, Long> flowerCooldown = new HashMap<>();
         final Map<UUID, Long> targetCooldown = new HashMap<>();
         // Only a flower that actually swallowed a mite produces this effect.
@@ -92,6 +97,27 @@ public final class MimicAwakening {
         return state(level).charging.size();
     }
 
+    /** Used by the vanilla block-shape hook on the logical server. */
+    public static boolean isMovingPart(ServerLevel level, BlockPos pos) {
+        long key = pos.asLong();
+        for (Set<Long> parts : state(level).movingParts.values())
+            if (parts.contains(key)) return true;
+        return false;
+    }
+
+    /** The moving mask follows the same root-exclusive ownership as client rendering. */
+    private static void holdMovingParts(ServerLevel level, BlockPos flower) {
+        List<BlockPos> path = MimicBranchPath.trace(level, flower);
+        Set<Long> owned = new HashSet<>();
+        for (int i = 1; i < path.size(); i++) owned.add(path.get(i).asLong());
+        owned.add(flower.asLong());
+        state(level).movingParts.put(flower.asLong(), Set.copyOf(owned));
+    }
+
+    private static void releaseMovingParts(ServerLevel level, BlockPos flower) {
+        state(level).movingParts.remove(flower.asLong());
+    }
+
     public static boolean isSleeping(ServerLevel level, BlockPos flower) {
         // Cooldown is not an animation: dormant flowers are vulnerable between attacks.
         return !state(level).charging.containsKey(flower.asLong());
@@ -101,6 +127,8 @@ public final class MimicAwakening {
         State state = state(level);
         long id = flower.asLong();
         state.charging.remove(id);
+        state.movingParts.remove(id);
+        state.successfulHunts.remove(id);
         state.flowerCooldown.remove(id);
         state.digestingUntil.remove(id);
         notifyPose(level, flower, null, (byte) 0, MimicPosePacket.STOP);
@@ -250,6 +278,7 @@ public final class MimicAwakening {
             : PLAYER_CHARGE_TICKS;
         state.charging.put(key, new Strike(target.getUUID(), kind, now, now + charge,
             now + charge + RECOVER_TICKS));
+        holdMovingParts(level, pos);
         // A pearl carrier remains bait after one bite while pearls remain.
         // Wait for the recovery animation plus a short rearm delay rather than
         // the previous 150-249 ticks that felt like a one-shot attack.
@@ -284,6 +313,8 @@ public final class MimicAwakening {
             if (!data.isInfected(pos) || !level.hasChunkAt(pos)
                 || !level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
                 it.remove();
+                releaseMovingParts(level, pos);
+                state.successfulHunts.remove(pos.asLong());
                 notifyPose(level, pos, null, (byte) 0, MimicPosePacket.STOP);
                 continue;
             }
@@ -342,6 +373,7 @@ public final class MimicAwakening {
                         // Damage and theft are one successful contact event.
                         // Invulnerable players must not lose items on a rejected hit.
                         if (player.hurtServer(level, level.damageSources().cactus(), 3.0F)) {
+                            state.successfulHunts.add(pos.asLong());
                             int stolen = stealPlayerPearls(player);
                             level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
                                 SoundSource.HOSTILE, .8F, .85F);
@@ -364,6 +396,7 @@ public final class MimicAwakening {
                         level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
                             SoundSource.HOSTILE, .55F, .55F);
                         mite.discard(); // prey eaten; no attack on a nearby player
+                        state.successfulHunts.add(pos.asLong());
                         // Five seconds of Endermite portal motes emerge from
                         // the original infected blossom after a real swallow.
                         state.digestingUntil.put(pos.asLong(), now + DIGEST_TICKS);
@@ -372,7 +405,12 @@ public final class MimicAwakening {
             }
             if (now >= strike.clearAt()) {
                 it.remove();
+                releaseMovingParts(level, pos);
                 notifyPose(level, pos, null, (byte) 0, MimicPosePacket.STOP);
+                // Successful prey capture can cause the *real vanilla flower*
+                // to reattach elsewhere on its OWN stem once animation ends.
+                if (state.successfulHunts.remove(pos.asLong()))
+                    MimicRemodel.tryReposition(level, pos);
             } else if (now % 7L == 0) {
                 Entity trackTarget = level.getEntity(strike.targetId());
                 if (trackTarget != null && trackTarget.isAlive()) {

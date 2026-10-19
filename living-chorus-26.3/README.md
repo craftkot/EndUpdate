@@ -1,4 +1,4 @@
-# Living Chorus 0.18.5 — repeat player bites and prey reach filtering
+# Living Chorus 0.19.0 — intangible active branches and real chorus remodeling
 
 Minecraft 26.3 / NeoForge 26.3.0.90. Feature branch only; main untouched.
 
@@ -42,3 +42,11 @@ Do not equate a passing build with a proven in-world bite.
 - Looking at a flower and running `/livingchorus debug` now shows the player's remaining pearl count, eligible game mode, wake range, line-of-sight, articulated mouth reach, and flower and target cooldowns.
 - No pearls means no further player-bait attacks, by design. No sounds, render geometry, infection, or movement limits changed.
 - Manual Survival verification is still required: use 7 Ender Pearls in several stacks, verify three successive successful bites steal 3+3+1; check movement/dodging and spectator/Creative exclusions separately. A successful CI build/client smoke does not prove this scenario.
+
+## v0.19.0 — physical moving-branch collision and branch relocation
+
+- While a mimic attacks, its vanilla original flower and **owned** leaf stems have no server/client collision and no vanilla pick outline. Shared forks and dormant plants retain normal vanilla block behavior. The animated renderer already masks their original pixels; a targeted vanilla block-shape mixin now removes the previously invisible physical obstacle on both sides.
+- Successful player bites or Endermite swallows may move the real infected vanilla flower to a new safe empty position attached to a different point on its own non-shared chorus stalk. The former flower becomes vanilla chorus_plant and carries infection as a stem; no healthy branch, shared junction or unrelated block is changed. If no stable attached position exists, the plant is untouched. No extra items are dropped.
+- The articulated animation now initializes with per-flower lateral/vertical offsets, giving different bend and twist silhouettes, but still preserves actual segment lengths, the shared fixed root and <=1.5-block extension. Sleeping plants remain exactly vanilla in both appearance and selection.
+- No new sound files or audio changes. New NeoForge mixin config is bundled in the jar for targeted shape override.
+- **Manual tests mandatory**: walk through an active branch in Survival; no targeting outline while awake; vanilla hitbox returns once asleep; observe reattachment after successful bite/swallow; verify healthy adjacent branches and survival over world save/reload; verify server/client agree on collision.
