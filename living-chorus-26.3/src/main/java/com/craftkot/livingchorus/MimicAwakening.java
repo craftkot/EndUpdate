@@ -150,6 +150,7 @@ public final class MimicAwakening {
                     for (Endermite mite : mites) {
                         if (now < state.targetCooldown.getOrDefault(mite.getUUID(), 0L)) continue;
                         if (withinMiteHuntRange(flower, mite)
+                            && canReachMite(level, flower, mite)
                             && unobstructed(level, flower, mite)) {
                             miteOptions.add(new Candidate(flower, mite, HuntType.ENDERMITE));
                         }
@@ -249,7 +250,13 @@ public final class MimicAwakening {
             : PLAYER_CHARGE_TICKS;
         state.charging.put(key, new Strike(target.getUUID(), kind, now, now + charge,
             now + charge + RECOVER_TICKS));
-        state.flowerCooldown.put(key, now + 150 + level.getRandom().nextInt(100));
+        // A pearl carrier remains bait after one bite while pearls remain.
+        // Wait for the recovery animation plus a short rearm delay rather than
+        // the previous 150-249 ticks that felt like a one-shot attack.
+        long flowerDelay = kind == HuntType.PLAYER_PEARL
+            ? charge + RECOVER_TICKS + 40 + level.getRandom().nextInt(21)
+            : 150 + level.getRandom().nextInt(100);
+        state.flowerCooldown.put(key, now + flowerDelay);
         state.targetCooldown.put(target.getUUID(), now + 95);
         notifyPose(level, pos, target, kind == HuntType.ENDERMITE
             ? MimicPosePacket.ENDERMITE_FEED : MimicPosePacket.PLAYER_BITE,
@@ -437,6 +444,7 @@ public final class MimicAwakening {
             for (Endermite mite : level.getEntitiesOfClass(Endermite.class, area, Entity::isAlive)) {
                 if (now < state.targetCooldown.getOrDefault(mite.getUUID(), 0L)) continue;
                 if (!withinMiteHuntRange(pos, mite)) continue;
+                if (!canReachMite(level, pos, mite)) continue;
                 if (!unobstructed(level, pos, mite)) continue;
                 options.add(new Candidate(pos, mite, HuntType.ENDERMITE));
             }
@@ -515,7 +523,7 @@ public final class MimicAwakening {
      * Uses identical prey range and line-of-sight rules to automatic hunting.
      * The diagnosis is only exposed through the operator command.
      */
-    public static String diagnose(ServerLevel level, BlockPos flower) {
+    public static String diagnose(ServerLevel level, BlockPos flower, ServerPlayer viewer) {
         if (!MimicData.get(level).isInfected(flower)) return "not infected";
         State state = state(level);
         long now = level.getGameTime();
@@ -537,7 +545,8 @@ public final class MimicAwakening {
                 nearest = mite;
             }
         }
-        if (nearest == null) return "SLEEPING, no alive Endermites within 18 horizontal / 24 vertical blocks; flower cooldown=" + cooldown + "t";
+        if (nearest == null) return "SLEEPING, no alive Endermites within 18 horizontal / 24 vertical blocks; flower cooldown=" + cooldown + "t"
+            + diagnosePearlBait(level, flower, viewer, cooldown);
 
         long targetCooldown = Math.max(0L,
             state.targetCooldown.getOrDefault(nearest.getUUID(), 0L) - now);
@@ -548,7 +557,28 @@ public final class MimicAwakening {
             + " (horizontal " + MITE_HUNT_XZ + ", vertical " + MITE_HUNT_VERTICAL + ")"
             + ", path clear=" + unobstructed(level, flower, nearest)
             + ", flower cooldown=" + cooldown + "t"
-            + ", prey cooldown=" + targetCooldown + "t";
+            + ", prey cooldown=" + targetCooldown + "t"
+            + diagnosePearlBait(level, flower, viewer, cooldown);
+    }
+
+    /** Explain why an Ender Pearl carrier does or does not attract another bite. */
+    private static String diagnosePearlBait(ServerLevel level, BlockPos flower,
+                                           ServerPlayer viewer, long flowerCooldown) {
+        int pearls = 0;
+        for (int slot = 0; slot < viewer.getInventory().getContainerSize(); slot++) {
+            var item = viewer.getInventory().getItem(slot);
+            if (item.is(Items.ENDER_PEARL)) pearls += item.getCount();
+        }
+        long targetCooldown = Math.max(0L,
+            state(level).targetCooldown.getOrDefault(viewer.getUUID(), 0L) - level.getGameTime());
+        double distanceSq = Vec3.atCenterOf(flower).distanceToSqr(viewer.position());
+        return " | player: pearls=" + pearls
+            + ", eligible=" + canHuntPlayer(viewer)
+            + ", in wake range=" + (distanceSq <= PLAYER_WAKE_SQR)
+            + ", path clear=" + unobstructed(level, flower, viewer)
+            + ", mouth reaches=" + mouthAtPlayer(level, flower, viewer)
+            + ", flower cooldown=" + flowerCooldown + "t"
+            + ", target cooldown=" + targetCooldown + "t";
     }
 
     /**

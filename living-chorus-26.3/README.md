@@ -1,4 +1,4 @@
-# Living Chorus 0.18.4 — server-verified mouth contact for player bites
+# Living Chorus 0.18.5 — repeat player bites and prey reach filtering
 
 Minecraft 26.3 / NeoForge 26.3.0.90. Feature branch only; main untouched.
 
@@ -34,3 +34,11 @@ Do not equate a passing build with a proven in-world bite.
 - Up to 3 Ender Pearls are removed **only if the damage event succeeds**. Misses, invulnerability and lost pearls do not trigger theft.
 - No movement/animation geometry, 1.5-block extension limit, infection, Endermite digestion or sound effects changed.
 - Still needs a real in-world Survival test: try split pearl stacks, dodge just before contact, leave the original flower's 4-block radius while the moving mouth reaches you, and verify no remote theft.
+
+## v0.18.5 — repeated bites while Ender Pearls remain
+
+- A player carrying Ender Pearls can attract another bite after recovery and a short rearm delay. The flower now has 93-113 ticks from attack start to next player bite (35 tick charge + 18 tick recovery + 40-60 tick rearm), rather than 150-249 ticks; the existing target cooldown stays at 95 ticks.
+- Unreachable Endermites are filtered before taking priority over pearl carriers in player-adjacent scans. Unattended hunting also ignores unreachable Endermites, so a physically inaccessible mite cannot occupy the next-attack choice indefinitely.
+- Looking at a flower and running `/livingchorus debug` now shows the player's remaining pearl count, eligible game mode, wake range, line-of-sight, articulated mouth reach, and flower and target cooldowns.
+- No pearls means no further player-bait attacks, by design. No sounds, render geometry, infection, or movement limits changed.
+- Manual Survival verification is still required: use 7 Ender Pearls in several stacks, verify three successive successful bites steal 3+3+1; check movement/dodging and spectator/Creative exclusions separately. A successful CI build/client smoke does not prove this scenario.

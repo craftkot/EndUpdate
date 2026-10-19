@@ -161,7 +161,7 @@ public final class HiddenMimicEvents {
                     + " | state: " + MimicAwakening.activeAnimation(level, pos)), false);
             }
             case "debug" -> source.sendSuccess(() ->
-                Component.literal("Living Chorus diagnostic: " + MimicAwakening.diagnose(level, pos)), false);
+                Component.literal("Living Chorus diagnostic: " + MimicAwakening.diagnose(level, pos, player)), false);
             case "provoke" -> {
                 if (!MimicAwakening.provoke(level, pos, player)) {
                     source.sendFailure(Component.literal("Mark the flower first. Provoke requires a nearby endermite or ender pearls in your inventory; wait until any ongoing attack finishes."));
