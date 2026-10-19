@@ -9,7 +9,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +35,8 @@ public final class MimicData extends SavedData {
         ).apply(instance, MimicData::new))
     );
 
-    private static final int INFECTION_THRESHOLD = 3277; // approx. 5% of eligible flowers
+    private static final int INFECTION_THRESHOLD = 3277; // approx. 5% of eligible trees
+    private static final int MAX_COMPONENT_BLOCKS = 4096; // hard cap, never load chunks
     private final Set<Long> infected;
     private final Set<Long> safe;
     private final Set<Long> infectedStems;
@@ -87,28 +90,10 @@ public final class MimicData extends SavedData {
         if (level.getBlockState(pos).is(Blocks.CHORUS_PLANT)) {
             changed |= infectedStems.add(id);
             changed |= growthOrigins.add(id);
-            // Growing sideways buds can be adjacent on the very same tick.
-            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
-                BlockPos bud = pos.relative(direction);
-                if (level.hasChunkAt(bud)
-                    && level.getBlockState(bud).is(Blocks.CHORUS_FLOWER)
-                    && !safe.contains(bud.asLong()))
-                    changed |= infected.add(bud.asLong());
-            }
-            // Growth source is now tracked; old stem is no longer a flower.
-            if (hasInfectedAdjacentFlower(level, pos)) changed |= growthOrigins.remove(id);
+            // Do NOT infect all new buds. The next reconciliation chooses
+            // exactly ONE descendant tip from this original infected stem.
         }
         if (changed) setDirty();
-    }
-
-    private boolean hasInfectedAdjacentFlower(ServerLevel level, BlockPos stem) {
-        for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
-            BlockPos bud = stem.relative(direction);
-            if (infected.contains(bud.asLong())
-                && level.hasChunkAt(bud) && level.getBlockState(bud).is(Blocks.CHORUS_FLOWER))
-                return true;
-        }
-        return false;
     }
 
     /** Examine actual infected flowers before any other code discards them. */
@@ -120,110 +105,156 @@ public final class MimicData extends SavedData {
     }
 
     /**
-     * Saved, BLOCK-BY-BLOCK contagion rooted in infected live/dead flowers.
-     * Each 20-tick step moves through actual connected vanilla chorus_plant
-     * blocks, then can infect attached flowers. Does not alter block IDs,
-     * textures, collision or healthy unattached trees.
+     * Traverse just the contiguous vanilla chorus tree in currently loaded
+     * chunks. Adjacent touching stalks form one structure by definition.
+     * A null result means the search exceeds the safety cap; in that case
+     * never create a second infected branch by guessing.
      */
-    public void spreadAcrossChorus(ServerLevel level) {
-        reconcileAllGrowth(level);
-        // A recently grown infected flower may temporarily exist only as a
-        // living chorus_plant stem. Do not erase that source while it grows buds.
-        if (infected.isEmpty() && growthOrigins.isEmpty()) {
-            if (!infectedStems.isEmpty()) {
-                infectedStems.clear();
-                setDirty();
-            }
-            return;
-        }
-        HashSet<Long> nextStems = new HashSet<>();
-        HashSet<Long> completedOrigins = new HashSet<>();
-        HashSet<Long> newFlowers = new HashSet<>();
-        int seedBudget = 256;
-        for (Long flowerKey : new ArrayList<>(infected)) {
-            if (--seedBudget < 0) break;
-            BlockPos flower = BlockPos.of(flowerKey);
-            if (!level.hasChunkAt(flower) || !level.getBlockState(flower).is(Blocks.CHORUS_FLOWER))
-                continue;
-            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
-                BlockPos adjacent = flower.relative(dir);
-                if (level.hasChunkAt(adjacent)
-                    && level.getBlockState(adjacent).is(Blocks.CHORUS_PLANT))
-                    nextStems.add(adjacent.asLong());
-            }
-        }
-
-        int spreadBudget = 256;
-        for (Long stemKey : new ArrayList<>(infectedStems)) {
-            if (--spreadBudget < 0) break;
-            BlockPos stem = BlockPos.of(stemKey);
-            if (!level.hasChunkAt(stem) || !level.getBlockState(stem).is(Blocks.CHORUS_PLANT))
-                continue;
-            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
-                BlockPos adjacent = stem.relative(dir);
-                if (!level.hasChunkAt(adjacent)) continue;
-                if (level.getBlockState(adjacent).is(Blocks.CHORUS_PLANT)) {
-                    nextStems.add(adjacent.asLong());
-                } else if (level.getBlockState(adjacent).is(Blocks.CHORUS_FLOWER)
-                    && !safe.contains(adjacent.asLong())
-                    && (growthOrigins.contains(stemKey) || level.getRandom().nextInt(8) == 0)) {
-                    // Direct children of a former infected flower inherit the
-                    // infection immediately. Other buds are infected gradually.
-                    newFlowers.add(adjacent.asLong());
-                    if (growthOrigins.contains(stemKey)) completedOrigins.add(stemKey);
-                }
-            }
-        }
-
-        boolean changed = infectedStems.addAll(nextStems) | infected.addAll(newFlowers);
-        changed |= growthOrigins.removeAll(completedOrigins);
-        // A growing origin can be removed naturally if the infected block is
-        // broken; do not leave a phantom source in saved world data.
-        changed |= growthOrigins.removeIf(id -> {
-            BlockPos pos = BlockPos.of(id);
-            return level.hasChunkAt(pos) && !level.getBlockState(pos).is(Blocks.CHORUS_PLANT);
-        });
-        if (changed) setDirty();
-        // Cleanup happens only in loaded components; never load chunks to spread.
-        if (level.getGameTime() % 200L == 0L) pruneDisconnectedStems(level);
-    }
-
-    private void pruneDisconnectedStems(ServerLevel level) {
-        HashSet<Long> reachable = new HashSet<>();
-        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
-        for (Long seedKey : growthOrigins) {
-            BlockPos seed = BlockPos.of(seedKey);
-            if (level.hasChunkAt(seed)
-                && level.getBlockState(seed).is(Blocks.CHORUS_PLANT)
-                && reachable.add(seedKey)) queue.add(seed);
-        }
-        for (Long flowerKey : infected) {
-            BlockPos flower = BlockPos.of(flowerKey);
-            if (!level.hasChunkAt(flower)) continue;
-            for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
-                BlockPos stem = flower.relative(direction);
-                if (infectedStems.contains(stem.asLong())
-                    && level.hasChunkAt(stem) && reachable.add(stem.asLong()))
-                    queue.add(stem);
-            }
-        }
-        int budget = 8192;
-        while (!queue.isEmpty() && --budget >= 0) {
+    private static Set<Long> connectedChorus(ServerLevel level, BlockPos start) {
+        if (!level.hasChunkAt(start) || !isChorusBlock(level, start)) return Set.of();
+        HashSet<Long> seen = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        seen.add(start.asLong());
+        queue.addLast(start.immutable());
+        while (!queue.isEmpty()) {
             BlockPos at = queue.removeFirst();
             for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
                 BlockPos next = at.relative(direction);
-                if (infectedStems.contains(next.asLong())
-                    && level.hasChunkAt(next) && reachable.add(next.asLong()))
-                    queue.addLast(next);
+                long key = next.asLong();
+                if (seen.contains(key) || !level.hasChunkAt(next)
+                    || !isChorusBlock(level, next)) continue;
+                if (seen.size() >= MAX_COMPONENT_BLOCKS) return null;
+                seen.add(key);
+                queue.addLast(next.immutable());
             }
         }
-        // Keep unloaded-stem records; they may still be connected in an
-        // unloaded area and deleting them here would corrupt saved spread.
-        boolean changed = infectedStems.removeIf(id -> {
-            BlockPos pos = BlockPos.of(id);
-            return level.hasChunkAt(pos) && !reachable.contains(id);
-        });
-        if (changed) setDirty();
+        return seen;
+    }
+
+    private static boolean isChorusBlock(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).is(Blocks.CHORUS_PLANT)
+            || level.getBlockState(pos).is(Blocks.CHORUS_FLOWER);
+    }
+
+    /** Choose one actual child of a grown infected stem; other buds stay normal. */
+    private BlockPos singleChild(ServerLevel level, long origin) {
+        BlockPos stem = BlockPos.of(origin);
+        if (!level.hasChunkAt(stem)
+            || !level.getBlockState(stem).is(Blocks.CHORUS_PLANT)) return null;
+        ArrayList<BlockPos> buds = new ArrayList<>();
+        for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.values()) {
+            BlockPos child = stem.relative(direction);
+            if (level.hasChunkAt(child) && !safe.contains(child.asLong())
+                && level.getBlockState(child).is(Blocks.CHORUS_FLOWER))
+                buds.add(child.immutable());
+        }
+        if (buds.isEmpty()) return null;
+        buds.sort((a, b) -> Long.compare(a.asLong(), b.asLong()));
+        int index = (int) Math.floorMod(mix64(level.getSeed() ^ origin), buds.size());
+        return buds.get(index);
+    }
+
+    /**
+     * ONE infection source / terminal branch per physically connected tree.
+     * Previous save files can contain many infected flowers and entire
+     * infected trunks: collapse them deterministically to a single tip.
+     *
+     * The only infected stems we retain are the REAL movable leaf path from
+     * the chosen tip to (but excluding) its first shared/root junction.
+     * An old tip which is growing becomes one temporary growth origin; only
+     * one daughter inherits infection when vanilla growth produces flowers.
+     *
+     * Never touch unrelated vanilla blocks or load chunks. Unloaded records
+     * survive until their chunks can be reconciled.
+     */
+    public void spreadAcrossChorus(ServerLevel level) {
+        reconcileAllGrowth(level);
+        List<Long> seeds = new ArrayList<>(infected);
+        seeds.addAll(growthOrigins);
+        Collections.sort(seeds);
+        HashSet<Long> visited = new HashSet<>();
+        HashSet<Long> keepFlowers = new HashSet<>();
+        HashSet<Long> keepOrigins = new HashSet<>();
+        HashSet<Long> keepStems = new HashSet<>();
+
+        for (long seed : seeds) {
+            if (visited.contains(seed)) continue;
+            BlockPos position = BlockPos.of(seed);
+            if (!level.hasChunkAt(position)) {
+                // Never delete infection because its chunk is unloaded.
+                if (infected.contains(seed)) keepFlowers.add(seed);
+                if (growthOrigins.contains(seed)) keepOrigins.add(seed);
+                continue;
+            }
+            Set<Long> component = connectedChorus(level, position);
+            if (component == null) {
+                // Abnormally large modded tree: do not guess or expand.
+                for (long key : infected) if (key == seed) keepFlowers.add(key);
+                for (long key : growthOrigins) if (key == seed) keepOrigins.add(key);
+                continue;
+            }
+            if (component.isEmpty()) continue;
+            visited.addAll(component);
+
+            ArrayList<Long> existingTips = new ArrayList<>();
+            ArrayList<Long> pendingOrigins = new ArrayList<>();
+            for (long key : component) {
+                BlockPos at = BlockPos.of(key);
+                if (infected.contains(key)
+                    && level.getBlockState(at).is(Blocks.CHORUS_FLOWER))
+                    existingTips.add(key);
+                if (growthOrigins.contains(key)
+                    && level.getBlockState(at).is(Blocks.CHORUS_PLANT))
+                    pendingOrigins.add(key);
+            }
+            Collections.sort(existingTips);
+            Collections.sort(pendingOrigins);
+
+            BlockPos chosen = null;
+            if (!existingTips.isEmpty()) {
+                chosen = BlockPos.of(existingTips.get(0));
+            } else if (!pendingOrigins.isEmpty()) {
+                // All other growth directions remain healthy.
+                long source = pendingOrigins.get(0);
+                chosen = singleChild(level, source);
+                if (chosen == null) keepOrigins.add(source);
+            }
+            if (chosen != null) {
+                keepFlowers.add(chosen.asLong());
+                List<BlockPos> branch = MimicBranchPath.trace(level, chosen);
+                for (int i = 1; i < branch.size(); i++) {
+                    BlockPos member = branch.get(i);
+                    if (level.getBlockState(member).is(Blocks.CHORUS_PLANT))
+                        keepStems.add(member.asLong());
+                }
+            } else if (!pendingOrigins.isEmpty()) {
+                // Keep the pre-growth chain, but never extend infection
+                // into sibling stalks while the tip has yet to appear.
+                for (long key : component)
+                    if (infectedStems.contains(key)) keepStems.add(key);
+            }
+        }
+        // Retain records in unloaded chunks instead of turning distant
+        // branches into permanently cleared healthy structures.
+        for (long key : infected)
+            if (!level.hasChunkAt(BlockPos.of(key))) keepFlowers.add(key);
+        for (long key : growthOrigins)
+            if (!level.hasChunkAt(BlockPos.of(key))) keepOrigins.add(key);
+        for (long key : infectedStems)
+            if (!level.hasChunkAt(BlockPos.of(key))) keepStems.add(key);
+
+        boolean changed = !infected.equals(keepFlowers)
+            || !growthOrigins.equals(keepOrigins)
+            || !infectedStems.equals(keepStems);
+        if (changed) {
+            infected.clear();
+            infected.addAll(keepFlowers);
+            growthOrigins.clear();
+            growthOrigins.addAll(keepOrigins);
+            infectedStems.clear();
+            infectedStems.addAll(keepStems);
+            setDirty();
+        }
     }
 
     /** Copy ids so event handlers may prune invalid flowers during iteration. */
@@ -248,12 +279,19 @@ public final class MimicData extends SavedData {
         return true;
     }
 
+    /** Explicit operator mark: transfer the one infection to this branch. */
     public boolean mark(ServerLevel level, BlockPos pos) {
-        if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) {
-            return false;
+        if (!level.getBlockState(pos).is(Blocks.CHORUS_FLOWER)) return false;
+        Set<Long> component = connectedChorus(level, pos);
+        if (component == null || component.isEmpty()) return false;
+        boolean changed = false;
+        for (long key : component) {
+            if (key != pos.asLong()) changed |= infected.remove(key);
+            changed |= growthOrigins.remove(key);
+            changed |= infectedStems.remove(key);
         }
-        long key = pos.asLong();
-        boolean changed = safe.remove(key) | infected.add(key);
+        changed |= safe.remove(pos.asLong());
+        changed |= infected.add(pos.asLong());
         if (changed) setDirty();
         return true;
     }
@@ -295,11 +333,20 @@ public final class MimicData extends SavedData {
             return;
         }
         if (infected.contains(key) || safe.contains(key)) return;
-
+        // Lottery is deterministic, so ordinary flowers do not repeatedly
+        // gain new chances on every scan.
         long hash = mix64(level.getSeed() ^ key ^ 0x4D494D494343484FL);
-        if ((hash & 0xFFFFL) < INFECTION_THRESHOLD && infected.add(key)) {
-            setDirty();
+        if ((hash & 0xFFFFL) >= INFECTION_THRESHOLD) return;
+
+        Set<Long> component = connectedChorus(level, pos);
+        if (component == null || component.isEmpty()) return;
+        // NO spread from an existing mimic to sibling flowers: the whole
+        // connected chorus can have only one living infected branch.
+        for (long member : component) {
+            if (infected.contains(member) || growthOrigins.contains(member))
+                return;
         }
+        if (infected.add(key)) setDirty();
     }
 
     private static long mix64(long z) {

@@ -1,4 +1,4 @@
-# Living Chorus 0.19.0 — intangible active branches and real chorus remodeling
+# Living Chorus 0.19.1 — only one infected branch per chorus tree
 
 Minecraft 26.3 / NeoForge 26.3.0.90. Feature branch only; main untouched.
 
@@ -50,3 +50,12 @@ Do not equate a passing build with a proven in-world bite.
 - The articulated animation now initializes with per-flower lateral/vertical offsets, giving different bend and twist silhouettes, but still preserves actual segment lengths, the shared fixed root and <=1.5-block extension. Sleeping plants remain exactly vanilla in both appearance and selection.
 - No new sound files or audio changes. New NeoForge mixin config is bundled in the jar for targeted shape override.
 - **Manual tests mandatory**: walk through an active branch in Survival; no targeting outline while awake; vanilla hitbox returns once asleep; observe reattachment after successful bite/swallow; verify healthy adjacent branches and survival over world save/reload; verify server/client agree on collision.
+
+## v0.19.1 — exactly one infected leaf branch per chorus structure
+
+- Natural infection selects at most ONE flower per connected vanilla chorus tree; all other flowers, stems and branches remain healthy. If a candidate flower shares a connected plant with an infected tip or an infected growing origin, it cannot also become a mimic.
+- Infection no longer spreads to all touching chorus_plant blocks or adjacent chorus_flower buds. Only the selected flower and its terminal root-exclusive movable stalk path are tracked as infected.
+- When an infected flower grows into a vanilla stem and forms multiple children, exactly ONE daughter inherits infection; sibling flowers remain normal. If no daughter has formed, the one growth origin is retained until it does.
+- Existing worlds that have multiple infected buds/branches on one *loaded* connected tree are automatically reconciled to the lowest-position-key surviving tip; former redundant infections are removed without breaking any world blocks. Operator `/livingchorus mark` explicitly transfers ownership to the marked tip within the same loaded tree.
+- Reattachment after a successful bite transfers the same single active tip without creating additional infected branches. Unloaded chunks are not force-loaded; cross-unloaded-boundary reconciliation happens once relevant chunks are present, so that edge case needs manual verification.
+- No sound, animation, collision or client render changes in this patch. Manual tests: mark one branch of a multi-bud chorus; verify other buds remain inert, including after growth, saves, reloads and relocation.
