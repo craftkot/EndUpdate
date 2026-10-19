@@ -1,4 +1,4 @@
-# Living Chorus 0.18.3 — stealing Ender Pearls from players
+# Living Chorus 0.18.4 — server-verified mouth contact for player bites
 
 Minecraft 26.3 / NeoForge 26.3.0.90. Feature branch only; main untouched.
 
@@ -26,3 +26,11 @@ approach a marked flower at <4 blocks and wait for bite. Expected first
 successful bite: 3 pearls removed, second successful bite: 3 removed,
 third successful bite: last pearl removed. No further pearl-bait attacks.
 Do not equate a passing build with a proven in-world bite.
+
+## v0.18.4 — bite contact correction
+
+- Player bites now use the actual server-evaluated articulated flower mouth at the hit tick; the former 4-block radius around the stationary flower no longer decides whether the player is hit.
+- Contact requires the mouth to intersect the player hitbox (with a small 0.35-block allowance for the flower head), plus the existing line-of-sight and Survival/Adventure pearl checks.
+- Up to 3 Ender Pearls are removed **only if the damage event succeeds**. Misses, invulnerability and lost pearls do not trigger theft.
+- No movement/animation geometry, 1.5-block extension limit, infection, Endermite digestion or sound effects changed.
+- Still needs a real in-world Survival test: try split pearl stacks, dodge just before contact, leave the original flower's 4-block radius while the moving mouth reaches you, and verify no remote theft.

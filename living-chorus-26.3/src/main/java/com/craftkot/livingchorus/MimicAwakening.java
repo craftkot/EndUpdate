@@ -40,7 +40,6 @@ public final class MimicAwakening {
     public static final double MITE_HUNT_XZ = 18.0;
     public static final double MITE_HUNT_VERTICAL = 24.0;
     private static final double MITE_HUNT_RADIUS_SQR = 30.0 * 30.0;
-    private static final double PLAYER_HIT_SQR = 4.0 * 4.0;
 
     private static boolean withinMiteHuntRange(BlockPos flower, Entity mite) {
         Vec3 at = Vec3.atCenterOf(flower);
@@ -327,25 +326,27 @@ public final class MimicAwakening {
                 if (target != null && target.isAlive()
                     && (strike.kind() == HuntType.ENDERMITE
                         ? withinMiteHuntRange(pos, target)
-                        : Vec3.atCenterOf(pos).distanceToSqr(target.position()) <= PLAYER_HIT_SQR)
+                        : target instanceof ServerPlayer player && mouthAtPlayer(level, pos, player))
                     && unobstructed(level, pos, target)) {
                     if (strike.kind() == HuntType.PLAYER_PEARL && target instanceof ServerPlayer player
                         && canHuntPlayer(player) && hasEnderPearl(player)) {
                         // Pearls are stolen at the hit tick, never when the
                         // mimic merely detects a carrier or starts charging.
-                        player.hurtServer(level, level.damageSources().cactus(), 3.0F);
-                        int stolen = stealPlayerPearls(player);
-                        level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
-                            SoundSource.HOSTILE, .8F, .85F);
-                        level.sendParticles(ParticleTypes.CRIT, player.getX(),
-                            player.getY() + 1.0, player.getZ(), 12, .2, .3, .2, .05);
-                        if (stolen > 0) {
-                            // Ender motes make the stolen items visible as a
-                            // short magical gulp; not the Endermite-only
-                            // five-second digestion timer.
-                            level.sendParticles(ParticleTypes.REVERSE_PORTAL,
-                                pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5,
-                                stolen * 5, .24, .28, .24, .04);
+                        // Damage and theft are one successful contact event.
+                        // Invulnerable players must not lose items on a rejected hit.
+                        if (player.hurtServer(level, level.damageSources().cactus(), 3.0F)) {
+                            int stolen = stealPlayerPearls(player);
+                            level.playSound(null, pos, SoundEvents.SHULKER_BULLET_HIT,
+                                SoundSource.HOSTILE, .8F, .85F);
+                            level.sendParticles(ParticleTypes.CRIT, player.getX(),
+                                player.getY() + 1.0, player.getZ(), 12, .2, .3, .2, .05);
+                            if (stolen > 0) {
+                                // A successful theft has its own brief effect,
+                                // separate from the Endermite digestion timer.
+                                level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                                    pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5,
+                                    stolen * 5, .24, .28, .24, .04);
+                            }
                         }
                     } else if (strike.kind() == HuntType.ENDERMITE && target instanceof Endermite mite
                         && mouthAtPrey(level, pos, mite)) {
@@ -452,6 +453,24 @@ public final class MimicAwakening {
             .map(Vec3::atCenterOf).toList();
         Vec3 aim = MimicRig.endermiteGroundAim(mite.getX(), mite.getY(), mite.getZ());
         return MimicRig.canReach(resting, aim);
+    }
+
+    /**
+     * A player can be bitten only where the server-side articulated mouth
+     * actually meets their hitbox. Checking distance from the resting flower
+     * would both miss legitimate long-branch contacts and permit remote theft.
+     * Keep the aim identical to notifyPose() and the animation preview.
+     */
+    private static boolean mouthAtPlayer(ServerLevel level, BlockPos flower, ServerPlayer player) {
+        List<Vec3> resting = MimicBranchPath.trace(level, flower).stream()
+            .map(Vec3::atCenterOf).toList();
+        if (resting.size() < 2) return false;
+        Vec3 aim = new Vec3(player.getX(),
+            player.getY() + Math.min(1.55, player.getBbHeight() * .85), player.getZ());
+        Vec3 mouth = MimicRig.evaluateBranch(
+            profile(level, flower), resting, aim, 1.0, false).mouth();
+        // Small contact allowance for a 14px-wide head, not a 4-block radius.
+        return player.getBoundingBox().inflate(.35).contains(mouth);
     }
 
     /** Do not consume prey until the articulated flower has ACTUALLY reached it. */
