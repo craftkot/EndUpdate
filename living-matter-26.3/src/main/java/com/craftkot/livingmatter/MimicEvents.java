@@ -72,6 +72,11 @@ public final class MimicEvents {
         }
 
         if (player.isCreative() || player.tickCount % BEHAVIOUR_SCAN_INTERVAL != 0) return;
+        // A concealed floor mimic is only triggered by someone actually
+        // stepping directly on its face, never by distant approach.
+        BlockPos footFloor = BlockPos.containing(player.getX(), player.getY() - .12, player.getZ()).below();
+        if (data.isInfected(footFloor) && level.getRandom().nextInt(5) == 0
+            && FloorMawTrap.tryOpen(level, footFloor, player)) return;
         for (int x = center.getX() - 3; x <= center.getX() + 3; x++) {
             for (int z = center.getZ() - 3; z <= center.getZ() + 3; z++) {
                 if (!level.hasChunk(x >> 4, z >> 4)) continue;
@@ -112,6 +117,7 @@ public final class MimicEvents {
     @SubscribeEvent
     public void levelTick(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        FloorMawTrap.tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -234,6 +240,13 @@ public final class MimicEvents {
             .then(Commands.literal("cure").executes(ctx -> doAction(ctx.getSource(), "cure")))
             .then(Commands.literal("inspect").executes(ctx -> doAction(ctx.getSource(), "inspect")))
             .then(Commands.literal("awaken").executes(ctx -> doAction(ctx.getSource(), "awaken")))
+            .then(Commands.literal("floor").executes(ctx -> {
+                ServerPlayer player = ctx.getSource().getPlayerOrException();
+                BlockPos ground = player.blockPosition().below();
+                boolean opened = FloorMawTrap.tryOpen(ctx.getSource().getLevel(), ground, player);
+                ctx.getSource().sendSuccess(() -> Component.literal("Floor maw: " + (opened ? "opened" : "requires infected solid floor above a two-block air cavity, Survival and centered player")), false);
+                return opened ? 1 : 0;
+            }))
             .then(Commands.literal("stats").executes(ctx -> {
                 int count = MimicData.get(ctx.getSource().getLevel()).count();
                 ctx.getSource().sendSuccess(() -> Component.literal("Living Matter infected positions: " + count), false);
