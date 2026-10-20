@@ -1,6 +1,6 @@
 {
   "meta": {
-    "format_version": "4.10",
+    "format_version": "5.1",
     "model_format": "free",
     "box_uv": false
   },
@@ -38,8 +38,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            5
           ],
           "texture": 0
         },
@@ -47,8 +47,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            5
           ],
           "texture": 0
         },
@@ -56,8 +56,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            5
           ],
           "texture": 0
         },
@@ -65,8 +65,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            5
           ],
           "texture": 0
         },
@@ -74,8 +74,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            10
           ],
           "texture": 0
         },
@@ -83,8 +83,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            10
           ],
           "texture": 0
         }
@@ -100,7 +100,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "needle",
@@ -124,8 +125,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            12
           ],
           "texture": 1
         },
@@ -133,8 +134,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            12
           ],
           "texture": 1
         },
@@ -142,8 +143,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            12
           ],
           "texture": 1
         },
@@ -151,8 +152,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            12
           ],
           "texture": 1
         },
@@ -160,8 +161,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            2
           ],
           "texture": 1
         },
@@ -169,8 +170,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            2
           ],
           "texture": 1
         }
@@ -186,7 +187,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "barb_l",
@@ -210,8 +212,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            8
           ],
           "texture": 0
         },
@@ -219,8 +221,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            8
           ],
           "texture": 0
         },
@@ -228,8 +230,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            8
           ],
           "texture": 0
         },
@@ -237,8 +239,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            8
           ],
           "texture": 0
         },
@@ -246,8 +248,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            3
           ],
           "texture": 0
         },
@@ -255,8 +257,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            3
           ],
           "texture": 0
         }
@@ -272,7 +274,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "barb_r",
@@ -296,8 +299,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            8
           ],
           "texture": 0
         },
@@ -305,8 +308,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            8
           ],
           "texture": 0
         },
@@ -314,8 +317,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            8
           ],
           "texture": 0
         },
@@ -323,8 +326,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            8
           ],
           "texture": 0
         },
@@ -332,8 +335,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            3
           ],
           "texture": 0
         },
@@ -341,8 +344,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            5,
+            3
           ],
           "texture": 0
         }
@@ -358,7 +361,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "ore_glow",
@@ -382,8 +386,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            2
           ],
           "texture": 1
         },
@@ -391,8 +395,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            2
           ],
           "texture": 1
         },
@@ -400,8 +404,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            2
           ],
           "texture": 1
         },
@@ -409,8 +413,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            2
           ],
           "texture": 1
         },
@@ -418,8 +422,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            6
           ],
           "texture": 1
         },
@@ -427,8 +431,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            6,
+            6
           ],
           "texture": 1
         }
@@ -444,7 +448,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     }
   ],
   "outliner": [
@@ -489,7 +494,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEXiwKrYr5OvjnePj49/f3+IdFV0dHR3Z09oaGgI1kKFAAAAfklEQVR42gVAwQ2CQBAcO0Cp4AIa3+5q/O+w8D4TKMDzcm8TrAAIZRsoPZWcBSyL6Tw5PI5D7lqiC1r25BlvKWs87wnGeDy0nwbJJNRuijxsomUhZL1uffw57BtqC6JYpHom8QxSjP3L4Ft8zOE04n4xv1WNwqZEEyUozBTnH6b0JCp9JVwWAAAAAElFTkSuQmCC"
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEXiwKrYr5OvjnePj49/f3+IdFV0dHR3Z09oaGgI1kKFAAAAfklEQVR42gVAwQ2CQBAcO0Cp4AIa3+5q/O+w8D4TKMDzcm8TrAAIZRsoPZWcBSyL6Tw5PI5D7lqiC1r25BlvKWs87wnGeDy0nwbJJNRuijxsomUhZL1uffw57BtqC6JYpHom8QxSjP3L4Ft8zOE04n4xv1WNwqZEEyUozBTnH6b0JCp9JVwWAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
     },
     {
       "uuid": "9b8f6c32-3229-448e-bfb3-294e9b83921b",
@@ -506,7 +512,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEXmIAi9IAikGAiUFABzDABFTPGwAAAAWklEQVR42l3FsWHDABDEMNx7/40jMYU7syD8NtOMNDrY7rsxs86ke2tss7r0MtsG+Ls6roA+Y24GKO/RG5DlJHkTcfiYe0wys1kTe5qNgfCemieWZMaXIAAA/7Y+Nw+vnOTbAAAAAElFTkSuQmCC"
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEXmIAi9IAikGAiUFABzDABFTPGwAAAAWklEQVR42l3FsWHDABDEMNx7/40jMYU7syD8NtOMNDrY7rsxs86ke2tss7r0MtsG+Ls6roA+Y24GKO/RG5DlJHkTcfiYe0wys1kTe5qNgfCemieWZMaXIAAA/7Y+Nw+vnOTbAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
     }
   ],
   "animations": [],
