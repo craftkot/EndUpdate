@@ -131,9 +131,16 @@ public final class MimicEvents {
         if (!data.isInfected(pos)) return;
         // The first mining attempt exposes the impostor. Once it has recoiled
         // it can be killed with a normal block break (original vanilla loot).
-        if ((level.getBlockState(pos).is(BlockTags.LEAVES)
-                && LeafAmbush.tryBegin(level, pos, player, true))
-            || awaken(level, pos, player, true)) {
+        // Real foliage never creates manifest geometry. Mining an infected
+        // leaf either wakes its attached tree or yields the ordinary block.
+        if (level.getBlockState(pos).is(BlockTags.LEAVES)) {
+            if (LeafAmbush.tryBegin(level, pos, player, true))
+                event.setCanceled(true);
+            else
+                data.cure(pos);
+            return;
+        }
+        if (awaken(level, pos, player, true)) {
             event.setCanceled(true);
         } else {
             data.cure(pos);
@@ -325,7 +332,10 @@ public final class MimicEvents {
             }
             case "cure" -> data.cure(pos);
             case "awaken" -> {
-                if (!awaken(level, pos, player, true)) {
+                boolean awake = level.getBlockState(pos).is(BlockTags.LEAVES)
+                    ? LeafAmbush.tryBegin(level, pos, player, true)
+                    : awaken(level, pos, player, true);
+                if (!awake) {
                     source.sendFailure(Component.literal("Infect first, or wait for attack cooldown."));
                     return 0;
                 }
