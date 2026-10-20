@@ -74,7 +74,7 @@ public final class MimicEvents {
         if (player.isCreative() || player.tickCount % BEHAVIOUR_SCAN_INTERVAL != 0) return;
         // A concealed floor mimic is only triggered by someone actually
         // stepping directly on its face, never by distant approach.
-        BlockPos footFloor = BlockPos.containing(player.getX(), player.getY() - .12, player.getZ()).below();
+        BlockPos footFloor = BlockPos.containing(player.getX(), player.getY() - .12, player.getZ());
         if (data.isInfected(footFloor) && level.getRandom().nextInt(5) == 0
             && FloorMawTrap.tryOpen(level, footFloor, player)) return;
         for (int x = center.getX() - 3; x <= center.getX() + 3; x++) {
