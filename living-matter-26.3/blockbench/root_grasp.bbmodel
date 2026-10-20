@@ -4,12 +4,12 @@
     "model_format": "free",
     "box_uv": false
   },
-  "name": "root_grasp_prototype",
+  "name": "root_grasp",
   "model_identifier": "root_grasp",
   "visible_box": [
     2,
     2,
-    2
+    0
   ],
   "resolution": {
     "width": 16,
@@ -28,15 +28,11 @@
         3,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -94,7 +90,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000001"
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "left_root",
@@ -108,15 +114,11 @@
         16,
         4
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -174,7 +176,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000002"
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "right_root",
@@ -188,15 +200,11 @@
         16,
         15
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -254,7 +262,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000003"
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "root_cross",
@@ -268,15 +286,11 @@
         16,
         6
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -334,7 +348,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000004"
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "root_tip",
@@ -348,15 +372,11 @@
         19,
         6
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -414,31 +434,83 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000005"
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     }
   ],
   "outliner": [
-    "00000000-0000-4000-8000-000000000001",
-    "00000000-0000-4000-8000-000000000002",
-    "00000000-0000-4000-8000-000000000003",
-    "00000000-0000-4000-8000-000000000004",
-    "00000000-0000-4000-8000-000000000005"
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "0663fa31-1557-4655-8bc7-e4aa48cefa38",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005"
+      ]
+    }
   ],
   "textures": [
     {
-      "name": "skin",
+      "uuid": "bf389006-5379-4f8d-a698-2e46e5716052",
+      "name": "oak_log.png",
       "id": "0",
-      "path": "minecraft:block/oak_log",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEWYeEmRcUJ0WjZfSitMPSY4Kxj0FtFUAAAAaklEQVR42hXGQRHDMAwEQI1VBJINwLoTgLgEaiHohD+YOPtaoaXl3BBqas6C5DeVPBkgkOXSkVDQxKpT+8kqX2ZvbrvCYcJ/XHA3iV8sdLslJhI84UnLVvIJH5qxpJXRGSG2Y5D7TXXGxgPEiBE7ybf/RAAAAABJRU5ErkJggg=="
     },
     {
-      "name": "accent",
+      "uuid": "2fe2a19e-5829-4afa-bcd9-fcfc850118cd",
+      "name": "oak_planks.png",
       "id": "1",
-      "path": "minecraft:block/mangrove_roots",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAFVBMVEXCnWK4lF+vj1WfhE2WdEF+YjdnUCyo+21oAAAAcElEQVR42g3CARXDIAwFwM/DAAk1kGQCVoKDDQeAA+JfQnvvwAV4XyD9CSk5hMS8yYUxR6wTG+WLjKQ3hFtvQgwX/RCbI9aIWHOjJMWrgonMzTqSuqt6RcwRZ+xALqkiJ0DJ7WZWWONO5o6zz3+ciAdixhUFVj2uwQAAAABJRU5ErkJggg=="
     }
   ],
   "animations": [],
   "animation_variable_placeholders": "",
-  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models."
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla texture assets (Minecraft 1.21.1), embedded as base64; source: InventivetalentDev/minecraft-assets."
 }

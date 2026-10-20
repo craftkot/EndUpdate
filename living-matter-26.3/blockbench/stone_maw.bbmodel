@@ -4,12 +4,12 @@
     "model_format": "free",
     "box_uv": false
   },
-  "name": "stone_maw_prototype",
+  "name": "stone_maw",
   "model_identifier": "stone_maw",
   "visible_box": [
     2,
     2,
-    2
+    0
   ],
   "resolution": {
     "width": 16,
@@ -28,15 +28,11 @@
         4,
         16
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -94,7 +90,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000001"
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "lower_jaw",
@@ -108,15 +114,11 @@
         6,
         15
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -174,7 +176,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000002"
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "upper_jaw",
@@ -188,15 +200,11 @@
         18,
         15
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -254,7 +262,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000003"
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "left_fang",
@@ -268,15 +286,11 @@
         15,
         5
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -334,7 +348,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000004"
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "right_fang",
@@ -348,15 +372,11 @@
         15,
         5
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -414,7 +434,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000005"
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "rear_tooth",
@@ -428,15 +458,11 @@
         15,
         13
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -494,32 +520,84 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000006"
+      "uuid": "00000000-0000-4000-8000-000000000006",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 5,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     }
   ],
   "outliner": [
-    "00000000-0000-4000-8000-000000000001",
-    "00000000-0000-4000-8000-000000000002",
-    "00000000-0000-4000-8000-000000000003",
-    "00000000-0000-4000-8000-000000000004",
-    "00000000-0000-4000-8000-000000000005",
-    "00000000-0000-4000-8000-000000000006"
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "4e94b205-4fa9-414d-a4f0-fe2ba7708b09",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005",
+        "00000000-0000-4000-8000-000000000006"
+      ]
+    }
   ],
   "textures": [
     {
-      "name": "skin",
+      "uuid": "f646bfa6-eac5-460d-a243-935b6dfe8821",
+      "name": "deepslate.png",
       "id": "0",
-      "path": "minecraft:block/deepslate",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEV5eXlkZGRRUVE9PUMvLzfdbkGmAAAAZUlEQVR42hXJQRHEMAwDQIVBLAS1FQA3VhA04Y/ppvtdjCoHVdC1syzE4LpnG005EcQpd8wQkPVGVmJwuXwbtGfoFCQ/pBu+ldX7gGztU0BoQuoB+gm6A95v6Fx/t3/MCZDriYo/+sYRXDxJGR4AAAAASUVORK5CYII="
     },
     {
-      "name": "accent",
+      "uuid": "6ab4bce0-362b-4541-8707-c1a9d4cc19ce",
+      "name": "calcite.png",
       "id": "1",
-      "path": "minecraft:block/calcite",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEX////w9fTt7ObZ29fJycSzs7Mm1OZyAAAAcklEQVR42hXNwRGDMAwEwDNpAMsNhBMFYEn5Z5DdAfTfSsJvfwux1LE2Qn36d1GDxp1v4R/zyq2KI2aySkvkZd6534B60j6JjZHqw6BH2fvLKpzrng2C5BZGcRjNhC1A7VhcB1LP8jQ4yll9Xo5Ck4jRfxoKFWVvj8dvAAAAAElFTkSuQmCC"
     }
   ],
   "animations": [],
   "animation_variable_placeholders": "",
-  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models."
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla texture assets (Minecraft 1.21.1), embedded as base64; source: InventivetalentDev/minecraft-assets."
 }

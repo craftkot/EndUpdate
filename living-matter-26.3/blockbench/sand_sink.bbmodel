@@ -4,12 +4,12 @@
     "model_format": "free",
     "box_uv": false
   },
-  "name": "sand_sink_prototype",
+  "name": "sand_sink",
   "model_identifier": "sand_sink",
   "visible_box": [
     2,
     2,
-    2
+    0
   ],
   "resolution": {
     "width": 16,
@@ -28,15 +28,11 @@
         2,
         4
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -94,7 +90,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000001"
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "south_sand",
@@ -108,15 +114,11 @@
         2,
         16
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -174,7 +176,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000002"
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "west_sand",
@@ -188,15 +200,11 @@
         2,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -254,7 +262,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000003"
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "east_sand",
@@ -268,15 +286,11 @@
         2,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -334,7 +348,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000004"
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "sinkhole",
@@ -348,15 +372,11 @@
         1,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -414,7 +434,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000005"
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "rising_spikes",
@@ -428,15 +458,11 @@
         11,
         6
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -494,7 +520,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000006"
+      "uuid": "00000000-0000-4000-8000-000000000006",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 5,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "rising_spikes_b",
@@ -508,15 +544,11 @@
         11,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -574,33 +606,85 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000007"
+      "uuid": "00000000-0000-4000-8000-000000000007",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 6,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     }
   ],
   "outliner": [
-    "00000000-0000-4000-8000-000000000001",
-    "00000000-0000-4000-8000-000000000002",
-    "00000000-0000-4000-8000-000000000003",
-    "00000000-0000-4000-8000-000000000004",
-    "00000000-0000-4000-8000-000000000005",
-    "00000000-0000-4000-8000-000000000006",
-    "00000000-0000-4000-8000-000000000007"
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "3950191c-4de5-4049-b2c2-ecce9fb32c08",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005",
+        "00000000-0000-4000-8000-000000000006",
+        "00000000-0000-4000-8000-000000000007"
+      ]
+    }
   ],
   "textures": [
     {
-      "name": "skin",
+      "uuid": "79046f71-9f39-4cf8-a5fa-c3f291f70a7e",
+      "name": "sand.png",
       "id": "0",
-      "path": "minecraft:block/sand",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEXt68vn5Lvj27Daz6PVxJbRuopf1Q47AAAAZklEQVR42gVAwQ3CMBCzQPyRukEcBqjP/dNzWAC6/ywIm0y2GrH72h47eJ1VdqDpOdqF3FuqCK7BzApOv7N+Nlyx126E+nQYbKl1uCYOWcVLWMWMlSDdfnIJ5EtSBdKN5LdADrnIP0wTGY7btIheAAAAAElFTkSuQmCC"
     },
     {
-      "name": "accent",
+      "uuid": "8dd9bea6-024f-43c1-8341-46829f106682",
+      "name": "black_concrete.png",
       "id": "1",
-      "path": "minecraft:block/black_concrete",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEUKDBEJCxAICg8HCQ5GCpt0AAAAW0lEQVR42mNpVtn+mWU9tw4HS9WGtnyWnZ1JriwtsW9VWRQ/ZPuxnHxxSozlS7dfJcvZ42LzWLwV355mKWdSymHpV0rpYWHs323IMiXeVY6FYU70TZaHZqs/AADNlR6Ejkkl5wAAAABJRU5ErkJggg=="
     }
   ],
   "animations": [],
   "animation_variable_placeholders": "",
-  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models."
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla texture assets (Minecraft 1.21.1), embedded as base64; source: InventivetalentDev/minecraft-assets."
 }
