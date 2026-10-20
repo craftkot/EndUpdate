@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -64,7 +65,7 @@ public final class MimicEvents {
                 for (int z = center.getZ() - 6; z <= center.getZ() + 6; z++) {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
                     for (int y = Math.max(level.getMinY(), center.getY() - 3);
-                        y <= Math.min(level.getMaxY() - 1, center.getY() + 3); y++) {
+                        y <= Math.min(level.getMaxY() - 1, center.getY() + 8); y++) {
                         data.discover(level, new BlockPos(x, y, z));
                     }
                 }
@@ -77,6 +78,26 @@ public final class MimicEvents {
         BlockPos footFloor = BlockPos.containing(player.getX(), player.getY() - .12, player.getZ());
         if (data.isInfected(footFloor) && level.getRandom().nextInt(5) == 0
             && FloorMawTrap.tryOpen(level, footFloor, player)) return;
+        // Trees can reach from the canopy even if no infected leaf is close
+        // enough for the ordinary short-range block attack. One hunt/player.
+        if (!LeafAmbush.isHunting(level, player)) {
+            BlockPos nearest = null;
+            double best = 81.0;
+            for (int x = center.getX() - 8; x <= center.getX() + 8; x++) {
+                for (int z = center.getZ() - 8; z <= center.getZ() + 8; z++) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = Math.max(level.getMinY(), center.getY() - 3);
+                        y <= Math.min(level.getMaxY() - 1, center.getY() + 8); y++) {
+                        BlockPos leaf = new BlockPos(x, y, z);
+                        if (!data.isInfected(leaf) || !level.getBlockState(leaf).is(BlockTags.LEAVES))
+                            continue;
+                        double d = player.distanceToSqr(x + .5, y + .5, z + .5);
+                        if (d < best) { best = d; nearest = leaf; }
+                    }
+                }
+            }
+            if (nearest != null && LeafAmbush.tryBegin(level, nearest, player, false)) return;
+        }
         for (int x = center.getX() - 3; x <= center.getX() + 3; x++) {
             for (int z = center.getZ() - 3; z <= center.getZ() + 3; z++) {
                 if (!level.hasChunk(x >> 4, z >> 4)) continue;
@@ -90,6 +111,9 @@ public final class MimicEvents {
                     }
                     double distance = player.distanceToSqr(x + .5, y + .5, z + .5);
                     MimicKind kind = MimicKind.of(level.getBlockState(spot));
+                    // Vanilla leaves use their own attached, moving canopy,
+                    // not a free-floating temporary manifest block.
+                    if (level.getBlockState(spot).is(BlockTags.LEAVES)) continue;
                     if (distance <= kind.range() * kind.range() && visible(level, spot, player)) {
                         if (awaken(level, spot, player, false)) return; // max one per 10 ticks per player
                     }
@@ -107,7 +131,9 @@ public final class MimicEvents {
         if (!data.isInfected(pos)) return;
         // The first mining attempt exposes the impostor. Once it has recoiled
         // it can be killed with a normal block break (original vanilla loot).
-        if (awaken(level, pos, player, true)) {
+        if ((level.getBlockState(pos).is(BlockTags.LEAVES)
+                && LeafAmbush.tryBegin(level, pos, player, true))
+            || awaken(level, pos, player, true)) {
             event.setCanceled(true);
         } else {
             data.cure(pos);
@@ -118,6 +144,7 @@ public final class MimicEvents {
     public void levelTick(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         FloorMawTrap.tick(level);
+        LeafAmbush.tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -240,6 +267,24 @@ public final class MimicEvents {
             .then(Commands.literal("cure").executes(ctx -> doAction(ctx.getSource(), "cure")))
             .then(Commands.literal("inspect").executes(ctx -> doAction(ctx.getSource(), "inspect")))
             .then(Commands.literal("awaken").executes(ctx -> doAction(ctx.getSource(), "awaken")))
+            .then(Commands.literal("leaf").executes(ctx -> {
+                ServerPlayer player = ctx.getSource().getPlayerOrException();
+                HitResult hit = player.pick(6.0, 1.0F, false);
+                if (!(hit instanceof BlockHitResult blockHit)
+                    || hit.getType() != HitResult.Type.BLOCK) return 0;
+                ServerLevel level = ctx.getSource().getLevel();
+                BlockPos pos = blockHit.getBlockPos();
+                if (!level.getBlockState(pos).is(BlockTags.LEAVES)) {
+                    ctx.getSource().sendFailure(Component.literal("Aim at vanilla tree leaves."));
+                    return 0;
+                }
+                boolean started = MimicData.get(level).mark(level, pos)
+                    && LeafAmbush.tryBegin(level, pos, player, true);
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                    "Leaf ambush: " + (started ? "moving existing attached leaves"
+                        : "need 10+ connected leaves and a trunk, or a hunt is active")), false);
+                return started ? 1 : 0;
+            }))
             .then(Commands.literal("floor").executes(ctx -> {
                 ServerPlayer player = ctx.getSource().getPlayerOrException();
                 BlockPos ground = player.blockPosition().below();
