@@ -240,7 +240,7 @@ public final class LeafAmbush {
         }
         // Prefer loosely attached outer leaves rather than hollowing the crown.
         candidates.sort(Comparator.<BlockPos>comparingInt(pos -> neighbours(crown, pos))
-            .thenComparing(Comparator.comparingLong((BlockPos pos) -> pos.distSqr(hunt.origin)).reversed()));
+            .thenComparing(Comparator.comparingDouble((BlockPos pos) -> pos.distSqr(hunt.origin)).reversed()));
         for (BlockPos candidate : candidates) {
             if (remainsConnected(crown, hunt.origin, candidate)) return candidate;
         }
