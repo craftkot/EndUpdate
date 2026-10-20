@@ -1,0 +1,281 @@
+{
+  "textures": {
+    "particle": "chorusplague:block/chorus_plant",
+    "plant": "chorusplague:block/chorus_plant",
+    "flower": "chorusplague:block/chorus_flower"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        7
+      ],
+      "to": [
+        10,
+        15,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            4,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "east": {
+          "uv": [
+            12,
+            1,
+            16,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "south": {
+          "uv": [
+            8.25806,
+            1,
+            12.25806,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "west": {
+          "uv": [
+            4.12903,
+            1,
+            8.12903,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#plant"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#plant"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        15,
+        7
+      ],
+      "to": [
+        10,
+        30,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            4,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            4,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "south": {
+          "uv": [
+            0,
+            1,
+            4,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            4,
+            16
+          ],
+          "texture": "#plant"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#plant"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#plant"
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        14,
+        5
+      ],
+      "to": [
+        6,
+        25,
+        17
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            9.29032,
+            14.19355,
+            16
+          ],
+          "texture": "#flower"
+        },
+        "east": {
+          "uv": [
+            8.09677,
+            0.03226,
+            15.83871,
+            6.74194
+          ],
+          "texture": "#flower"
+        },
+        "south": {
+          "uv": [
+            0,
+            0.03226,
+            6.19355,
+            6.74194
+          ],
+          "texture": "#flower"
+        },
+        "west": {
+          "uv": [
+            0,
+            9.03226,
+            7.74194,
+            15.74194
+          ],
+          "texture": "#flower"
+        },
+        "up": {
+          "uv": [
+            5,
+            3,
+            11.19355,
+            10.74194
+          ],
+          "texture": "#flower"
+        },
+        "down": {
+          "uv": [
+            9.80645,
+            8.09677,
+            16,
+            15.83871
+          ],
+          "texture": "#flower"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        19,
+        5
+      ],
+      "to": [
+        22,
+        30,
+        17
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.19355,
+            1.03226,
+            0,
+            7.74194
+          ],
+          "texture": "#flower"
+        },
+        "east": {
+          "uv": [
+            7.74194,
+            1.03226,
+            0,
+            7.74194
+          ],
+          "texture": "#flower"
+        },
+        "south": {
+          "uv": [
+            6.19355,
+            1.03226,
+            0,
+            7.74194
+          ],
+          "texture": "#flower"
+        },
+        "west": {
+          "uv": [
+            10.83871,
+            1.03226,
+            3.09677,
+            7.74194
+          ],
+          "texture": "#flower"
+        },
+        "up": {
+          "uv": [
+            6.19355,
+            0,
+            0,
+            7.74194
+          ],
+          "texture": "#flower"
+        },
+        "down": {
+          "uv": [
+            6.19355,
+            3.09677,
+            0,
+            10.83871
+          ],
+          "texture": "#flower"
+        }
+      }
+    }
+  ]
+}
