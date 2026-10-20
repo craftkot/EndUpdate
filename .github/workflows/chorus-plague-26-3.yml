@@ -1,0 +1,30 @@
+name: Build Chorus Plague 26.3
+on:
+  push:
+    branches: [feature/chorus-plague-26-3]
+    paths:
+      - 'chorus-plague-26.3/**'
+      - '.github/workflows/chorus-plague-26-3.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: chorus-plague-26.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - run: gradle --no-daemon build --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chorus-plague-neoforge-26.3
+          path: chorus-plague-26.3/build/libs/*.jar
+          if-no-files-found: error
