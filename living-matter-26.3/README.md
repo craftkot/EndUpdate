@@ -27,6 +27,7 @@ Ordinary world blocks conceal autonomous predators. Their dormant block state re
 
 - A deterministic rare infection seed is assigned near players (roughly 0.09% per eligible coordinate). The same location does not reroll randomly each scan.
 - The infection survives world saves and reloads and works in vanilla dimensions.
+- A successful strike can propagate infection to one directly adjacent compatible block (50% chance), with a 12-infected-position cap in an 8-block neighbourhood. Logs can infect leaves, stone can infect ore, spores can infect leaves.
 - Player proximity or the *first attempt* to mine an infected block can wake it; a second mining attempt during cooldown can defeat it and obtain normal original loot.
 - Only the original block's existing adjacent air spaces receive the temporary jaw/roots; nearby original blocks are not destroyed or modified.
 - No forced chunk loading or persistent extra hostile entities.
@@ -42,6 +43,7 @@ Look at any eligible block from within 6 blocks.
 - `/livingmatter infect` — infect target block, no visible change yet
 - `/livingmatter inspect` — show infected/clean and behavior classification
 - `/livingmatter awaken` — force a reveal animation targeting yourself (can be used in Creative for visual tests; Creative will not receive damage)
+- `/livingmatter spread` — force propagation into one compatible adjacent block from the targeted infected source
 - `/livingmatter cure` — remove infection and make the coordinate safe
 - `/livingmatter stats` — display infected block count
 

@@ -78,6 +78,44 @@ public final class MimicData extends SavedData {
         return true;
     }
 
+    /**
+     * A predator that successfully feeds can infect one neighbouring block.
+     * The infection spreads within compatible materials (tree logs -> leaves,
+     * stone -> nearby stone/ore); each local colony has a hard density cap.
+     * No block states change, and only loaded chunks may be inspected.
+     */
+    public boolean spreadAfterHunt(ServerLevel level, BlockPos origin, MimicKind kind, boolean forced) {
+        if (!isInfected(origin) || !level.hasChunkAt(origin)) return false;
+        if (!forced && level.getRandom().nextInt(2) != 0) return false;
+        int local = 0;
+        for (long id : infected) {
+            BlockPos other = BlockPos.of(id);
+            long dx = (long) other.getX() - origin.getX();
+            long dy = (long) other.getY() - origin.getY();
+            long dz = (long) other.getZ() - origin.getZ();
+            if (dx * dx + dy * dy + dz * dz <= 64L) local++;
+        }
+        if (local >= 12) return false;
+        net.minecraft.core.Direction[] directions = net.minecraft.core.Direction.values();
+        int offset = level.getRandom().nextInt(directions.length);
+        for (int i = 0; i < directions.length; i++) {
+            BlockPos next = origin.relative(directions[(i + offset) % directions.length]);
+            if (!eligible(level, next) || isInfected(next) || cleared.contains(next.asLong())) continue;
+            MimicKind target = MimicKind.of(level.getBlockState(next));
+            boolean compatible = kind == target
+                || (kind == MimicKind.WOOD && target == MimicKind.LEAF)
+                || (kind == MimicKind.LEAF && target == MimicKind.WOOD)
+                || (kind == MimicKind.STONE && target == MimicKind.ORE)
+                || (kind == MimicKind.SPORE && target == MimicKind.LEAF);
+            if (!compatible) continue;
+            if (infected.add(next.asLong())) {
+                setDirty();
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static long mix64(long z) {
         z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
         z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;

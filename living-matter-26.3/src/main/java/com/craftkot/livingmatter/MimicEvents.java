@@ -134,6 +134,7 @@ public final class MimicEvents {
             if (kind == MimicKind.STONE) damage += Math.min(6.0F, countAdjacentStone(level, strike.origin()) * 1.5F);
             boolean hit = player.hurtServer(level, level.damageSources().cactus(), damage);
             if (!hit) continue;
+            MimicData.get(level).spreadAfterHunt(level, strike.origin(), kind, false);
             switch (kind) {
                 case WOOD -> player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 2));
                 case SAND -> {
@@ -229,6 +230,7 @@ public final class MimicEvents {
         event.getDispatcher().register(Commands.literal("livingmatter")
             .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(Commands.literal("infect").executes(ctx -> doAction(ctx.getSource(), "infect")))
+            .then(Commands.literal("spread").executes(ctx -> doAction(ctx.getSource(), "spread")))
             .then(Commands.literal("cure").executes(ctx -> doAction(ctx.getSource(), "cure")))
             .then(Commands.literal("inspect").executes(ctx -> doAction(ctx.getSource(), "inspect")))
             .then(Commands.literal("awaken").executes(ctx -> doAction(ctx.getSource(), "awaken")))
@@ -254,6 +256,12 @@ public final class MimicEvents {
             case "infect" -> {
                 if (!data.mark(level, pos)) {
                     source.sendFailure(Component.literal("Block is not eligible (fluid, block entity, unbreakable, or unloaded)."));
+                    return 0;
+                }
+            }
+            case "spread" -> {
+                if (!data.spreadAfterHunt(level, pos, MimicKind.of(level.getBlockState(pos)), true)) {
+                    source.sendFailure(Component.literal("Infect first. Neighbour must be compatible, loaded and free; local cap 12."));
                     return 0;
                 }
             }
