@@ -69,6 +69,7 @@ public final class MimicData extends SavedData {
     public static boolean eligible(ServerLevel level, BlockPos pos) {
         if (!level.hasChunkAt(pos)) return false;
         BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof MimicManifestBlock) return false;
         if (state.isAir() || !state.getFluidState().isEmpty()
             || state.hasBlockEntity() || state.getDestroySpeed(level, pos) < 0) return false;
         // Avoid gameplay-critical, moving or unbreakable technical blocks.

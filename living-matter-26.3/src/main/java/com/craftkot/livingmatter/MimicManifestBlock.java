@@ -23,6 +23,14 @@ public final class MimicManifestBlock extends Block {
         registerDefaultState(stateDefinition.any().setValue(PHASE, 0));
     }
 
+    /** The visible tentacles and jaws do not block mining, movement or aiming. */
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(
+        BlockState state, net.minecraft.world.level.BlockGetter level,
+        BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        return net.minecraft.world.phys.shapes.Shapes.empty();
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(PHASE);
