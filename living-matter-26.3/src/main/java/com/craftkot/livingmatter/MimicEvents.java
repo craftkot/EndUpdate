@@ -202,10 +202,13 @@ public final class MimicEvents {
     private static void reveal(ServerLevel level, BlockPos source, ServerPlayer player, MimicKind kind) {
         // STONE moves several connected-looking jaw pieces; other materials
         // exhibit unique morphologies. No existing world block is overwritten.
-        Direction towards = Direction.getNearest(player.getX() - source.getX(),
-            player.getY() - source.getY(), player.getZ() - source.getZ());
-        Direction[] order = {towards, Direction.UP, towards.getClockWise(), towards.getCounterClockWise(),
-            Direction.DOWN};
+        double dx = player.getX() - source.getX();
+        double dz = player.getZ() - source.getZ();
+        Direction towards = Math.abs(dx) > Math.abs(dz)
+            ? (dx >= 0 ? Direction.EAST : Direction.WEST)
+            : (dz >= 0 ? Direction.SOUTH : Direction.NORTH);
+        Direction[] order = {towards, Direction.UP, towards.getClockWise(),
+            towards.getCounterClockWise(), Direction.DOWN};
         int pieces = kind == MimicKind.STONE ? 3 : kind == MimicKind.WOOD ? 2 : 1;
         int placed = 0;
         for (Direction direction : order) {
