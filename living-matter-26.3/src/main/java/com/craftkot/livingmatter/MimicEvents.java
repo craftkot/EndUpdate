@@ -149,7 +149,7 @@ public final class MimicEvents {
                 }
                 case STONE -> {
                     Vec3 push = player.position().subtract(Vec3.atCenterOf(strike.origin()));
-                    player.knockback(1.25D, -push.x, -push.z);
+                    player.knockback(1.25D, -push.x, -push.z, level.damageSources().cactus(), 0.0F);
                 }
                 case WILD -> player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0));
             }

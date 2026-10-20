@@ -20,7 +20,7 @@ public final class LivingMatter {
         for (MimicKind kind : MimicKind.values()) {
             MANIFESTS.put(kind, BLOCKS.registerBlock(kind.modelId(),
                 MimicManifestBlock::new, properties ->
-                    properties.noCollission().noOcclusion().noLootTable().strength(0.0F)));
+                    properties.noCollision().noOcclusion().noLootTable().strength(0.0F)));
         }
     }
 
