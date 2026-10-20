@@ -96,7 +96,11 @@ public final class LeafAmbush {
 
     public static void tick(ServerLevel level) {
         Map<Long, Hunt> hunts = HUNTS.get(level);
-        if (hunts == null || hunts.isEmpty()) return;
+        if (hunts == null || hunts.isEmpty()) {
+            LeafRecoveryData.get(level).recoverOrphans(level, Set.of());
+            return;
+        }
+        LeafRecoveryData.get(level).recoverOrphans(level, hunts.keySet());
         long now = level.getGameTime();
         Iterator<Hunt> iterator = hunts.values().iterator();
         while (iterator.hasNext()) {
@@ -164,9 +168,15 @@ public final class LeafAmbush {
 
             // Destination is verified first; no existing terrain is overwritten.
             if (!level.getBlockState(next).isAir()) continue;
-            if (!level.setBlock(donor, Blocks.AIR.defaultBlockState(), 3)) continue;
+            LeafRecoveryData journal = LeafRecoveryData.get(level);
+            journal.beforeMove(hunt.origin, donor, next, original, moving);
+            if (!level.setBlock(donor, Blocks.AIR.defaultBlockState(), 3)) {
+                journal.undoPending(hunt.origin, donor, next);
+                continue;
+            }
             if (!level.setBlock(next, moving, 3)) {
                 if (level.getBlockState(donor).isAir()) level.setBlock(donor, original, 3);
+                journal.undoPending(hunt.origin, donor, next);
                 continue;
             }
             hunt.moved.add(new Move(donor.immutable(), next.immutable(), original, moving));
@@ -197,6 +207,7 @@ public final class LeafAmbush {
             if (level.getBlockState(move.from).isAir())
                 level.setBlock(move.from, move.original, 3);
         }
+        LeafRecoveryData.get(level).finish(hunt.origin);
     }
 
     private static BlockPos findNext(ServerLevel level, Hunt hunt, ServerPlayer target) {
@@ -207,6 +218,8 @@ public final class LeafAmbush {
             BlockPos next = hunt.tip.relative(direction);
             if (!level.hasChunkAt(next) || !level.getBlockState(next).isAir()) continue;
             if (next.distSqr(hunt.origin) > (long) MAX_REACH * MAX_REACH) continue;
+            if (hunt.moved.stream().anyMatch(m -> m.from.equals(next) || m.to.equals(next)))
+                continue;
             if (target.getBoundingBox().intersects(new AABB(next))) continue;
             // The new leaf must actually get closer; it always shares a full
             // block face with the previously existing tip.
@@ -220,12 +233,23 @@ public final class LeafAmbush {
 
     private static BlockPos findSafeDonor(ServerLevel level, Hunt hunt) {
         Set<BlockPos> extensions = new HashSet<>();
-        for (Move move : hunt.moved) extensions.add(move.to);
+        for (Map.Entry<Long, Hunt> entry : HUNTS.getOrDefault(level, Map.of()).entrySet()) {
+            Hunt active = entry.getValue();
+            for (Move move : active.moved) extensions.add(move.to);
+        }
         Set<BlockPos> crown = collectLeaves(level, hunt.origin, extensions);
         if (crown.size() < 9 || !hasTrunk(level, crown)) return null;
         List<BlockPos> candidates = new ArrayList<>();
         for (BlockPos leaf : crown) {
             if (leaf.equals(hunt.origin) || MimicData.get(level).isInfected(leaf)) continue;
+            boolean occupied = false;
+            for (Hunt active : HUNTS.getOrDefault(level, Map.of()).values()) {
+                if (active != hunt && active.origin.equals(leaf)) occupied = true;
+                for (Move move : active.moved) {
+                    if (move.from.equals(leaf) || move.to.equals(leaf)) occupied = true;
+                }
+            }
+            if (occupied) continue;
             if (leaf.distSqr(hunt.origin) < 4L) continue;
             boolean used = false;
             for (Move move : hunt.moved) {
@@ -242,7 +266,11 @@ public final class LeafAmbush {
         candidates.sort(Comparator.<BlockPos>comparingInt(pos -> neighbours(crown, pos))
             .thenComparing(Comparator.comparingDouble((BlockPos pos) -> pos.distSqr(hunt.origin)).reversed()));
         for (BlockPos candidate : candidates) {
-            if (remainsConnected(crown, hunt.origin, candidate)) return candidate;
+            if (remainsConnected(crown, hunt.origin, candidate)) {
+                Set<BlockPos> remainder = new HashSet<>(crown);
+                remainder.remove(candidate);
+                if (hasTrunk(level, remainder)) return candidate;
+            }
         }
         return null;
     }
@@ -287,13 +315,14 @@ public final class LeafAmbush {
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(origin);
         result.add(origin);
+        var leafType = level.getBlockState(origin).getBlock();
         while (!queue.isEmpty() && result.size() < MAX_TREE_LEAVES) {
             BlockPos current = queue.removeFirst();
             for (Direction direction : Direction.values()) {
                 BlockPos next = current.relative(direction);
                 if (exclude.contains(next) || result.contains(next)
                     || next.distSqr(origin) > 80L || !level.hasChunkAt(next)
-                    || !level.getBlockState(next).is(BlockTags.LEAVES)) continue;
+                    || level.getBlockState(next).getBlock() != leafType) continue;
                 result.add(next);
                 queue.addLast(next);
                 if (result.size() >= MAX_TREE_LEAVES) break;
