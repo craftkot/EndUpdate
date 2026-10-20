@@ -1,6 +1,6 @@
 {
   "meta": {
-    "format_version": "4.10",
+    "format_version": "5.1",
     "model_format": "free",
     "box_uv": false
   },
@@ -38,8 +38,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            4
           ],
           "texture": 0
         },
@@ -47,8 +47,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            4
           ],
           "texture": 0
         },
@@ -56,8 +56,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            4
           ],
           "texture": 0
         },
@@ -65,8 +65,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            4
           ],
           "texture": 0
         },
@@ -74,8 +74,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            10
           ],
           "texture": 0
         },
@@ -83,8 +83,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            10,
+            10
           ],
           "texture": 0
         }
@@ -100,7 +100,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "upper_shell",
@@ -124,8 +125,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            4
           ],
           "texture": 0
         },
@@ -133,8 +134,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            4
           ],
           "texture": 0
         },
@@ -142,8 +143,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            4
           ],
           "texture": 0
         },
@@ -151,8 +152,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            4
           ],
           "texture": 0
         },
@@ -160,8 +161,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            12
           ],
           "texture": 0
         },
@@ -169,8 +170,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            12
           ],
           "texture": 0
         }
@@ -186,7 +187,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "lower_shell",
@@ -210,8 +212,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            2
           ],
           "texture": 0
         },
@@ -219,8 +221,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            2
           ],
           "texture": 0
         },
@@ -228,8 +230,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            2
           ],
           "texture": 0
         },
@@ -237,8 +239,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            2
           ],
           "texture": 0
         },
@@ -246,8 +248,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            12
           ],
           "texture": 0
         },
@@ -255,8 +257,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            14,
+            12
           ],
           "texture": 0
         }
@@ -272,7 +274,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "iris",
@@ -296,8 +299,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 1
         },
@@ -305,8 +308,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         },
@@ -314,8 +317,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 1
         },
@@ -323,8 +326,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         },
@@ -332,8 +335,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": 1
         },
@@ -341,8 +344,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": 1
         }
@@ -358,7 +361,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "fang_l",
@@ -382,8 +386,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            9
           ],
           "texture": 1
         },
@@ -391,8 +395,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            9
           ],
           "texture": 1
         },
@@ -400,8 +404,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            9
           ],
           "texture": 1
         },
@@ -409,8 +413,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            9
           ],
           "texture": 1
         },
@@ -418,8 +422,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         },
@@ -427,8 +431,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         }
@@ -444,7 +448,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "fang_r",
@@ -468,8 +473,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            9
           ],
           "texture": 1
         },
@@ -477,8 +482,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            9
           ],
           "texture": 1
         },
@@ -486,8 +491,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            9
           ],
           "texture": 1
         },
@@ -495,8 +500,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            9
           ],
           "texture": 1
         },
@@ -504,8 +509,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         },
@@ -513,8 +518,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            2,
+            4
           ],
           "texture": 1
         }
@@ -530,7 +535,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     }
   ],
   "outliner": [
@@ -576,7 +582,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEU7J1QnHj0QDBwGAwsAAAFbDTSxAAAAaUlEQVR42gVAARGAMAj8mUA3AzhYAOUJoED/TB68Ut/xNLiFb9wVhfPpaybePs3KHJ+sqmRCVpCNBbG9+ekJvySq3hPVZI7qgl56aBihTmPph+Cyu4ng3kJ2vRSHMoQ+8FGHLU9o5FwkfyEoFb7iY82bAAAAAElFTkSuQmCC"
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEU7J1QnHj0QDBwGAwsAAAFbDTSxAAAAaUlEQVR42gVAARGAMAj8mUA3AzhYAOUJoED/TB68Ut/xNLiFb9wVhfPpaybePs3KHJ+sqmRCVpCNBbG9+ekJvySq3hPVZI7qgl56aBihTmPph+Cyu4ng3kJ2vRSHMoQ+8FGHLU9o5FwkfyEoFb7iY82bAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
     },
     {
       "uuid": "d6878a83-8e62-46da-8975-2f443fc6b40c",
@@ -593,7 +600,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEWDCORgBqs7J1QnHj0rAXgQDBwGAwsAAAGmUsK4AAAAhklEQVR42gVAuxaCIBj+XGqtk5c98gUsda2OxqohfzMqMHsBXr8DGz60VhOD1TvPVUEI13oqO+HxLkWij4pja5szvEkhI2cUMxwnXdxsne2wXxnxZa0R2FM8slKizboLJTrG8DrMJvQb3NzrkckGY77LIh0Id0qdjHmFTVGlftyDFi8GM5s/YNgljucAtu4AAAAASUVORK5CYII="
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEWDCORgBqs7J1QnHj0rAXgQDBwGAwsAAAGmUsK4AAAAhklEQVR42gVAuxaCIBj+XGqtk5c98gUsda2OxqohfzMqMHsBXr8DGz60VhOD1TvPVUEI13oqO+HxLkWij4pja5szvEkhI2cUMxwnXdxsne2wXxnxZa0R2FM8slKizboLJTrG8DrMJvQb3NzrkckGY77LIh0Id0qdjHmFTVGlftyDFi8GM5s/YNgljucAtu4AAAAASUVORK5CYII=",
+      "wrap_mode": "repeat"
     }
   ],
   "animations": [],

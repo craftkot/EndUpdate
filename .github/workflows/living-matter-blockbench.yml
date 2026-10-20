@@ -30,6 +30,12 @@ jobs:
                   children.update(c for c in group.get('children',[]) if isinstance(c,str))
               assert refs==children, (path,'outliner missing geometry')
               for cube in cuboids:
+                  assert cube.get('autouv') == 1 and cube.get('box_uv') is False, (path, cube['name'], 'AutoUV disabled')
+                  dx,dy,dz=[round(b-a,5) for a,b in zip(cube['from'],cube['to'])]
+                  spans={'north':(dx,dy),'south':(dx,dy),'east':(dz,dy),'west':(dz,dy),'up':(dx,dz),'down':(dx,dz)}
+                  for direction,face in cube['faces'].items():
+                      if direction in spans:
+                          assert face['uv']==[0,0,*spans[direction]], (path, cube['name'], direction, face['uv'], 'stretched UV')
                   assert cube['type']=='cube'
                   assert len(cube['rotation'])==3 and len(cube['origin'])==3
                   assert all(a<b for a,b in zip(cube['from'],cube['to']))
@@ -39,6 +45,7 @@ jobs:
                       assert 0<=face['texture']<len(model['textures'])
               assert len(model['textures'])>=2
               for texture in model['textures']:
+                  assert texture.get('wrap_mode')=='repeat', (path, texture['name'], 'tiling disabled')
                   value=texture['source']
                   assert value.startswith('data:image/png;base64,')
                   png=base64.b64decode(value.split(',',1)[1],validate=True)
@@ -49,7 +56,7 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: LivingMatter_Blockbench_FIXED
+          name: LivingMatter_Blockbench_TILED_UV
           path: |
             living-matter-26.3/blockbench/*.bbmodel
             living-matter-26.3/blockbench/README.md

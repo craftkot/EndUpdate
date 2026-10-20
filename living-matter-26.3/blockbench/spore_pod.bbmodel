@@ -1,6 +1,6 @@
 {
   "meta": {
-    "format_version": "4.10",
+    "format_version": "5.1",
     "model_format": "free",
     "box_uv": false
   },
@@ -38,8 +38,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            8
           ],
           "texture": 0
         },
@@ -47,8 +47,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            8
           ],
           "texture": 0
         },
@@ -56,8 +56,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            8
           ],
           "texture": 0
         },
@@ -65,8 +65,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            8
           ],
           "texture": 0
         },
@@ -74,8 +74,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 0
         },
@@ -83,8 +83,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 0
         }
@@ -100,7 +100,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "left_bulb",
@@ -124,8 +125,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            6
           ],
           "texture": 1
         },
@@ -133,8 +134,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            8,
+            6
           ],
           "texture": 1
         },
@@ -142,8 +143,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            6
           ],
           "texture": 1
         },
@@ -151,8 +152,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            8,
+            6
           ],
           "texture": 1
         },
@@ -160,8 +161,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            8
           ],
           "texture": 1
         },
@@ -169,8 +170,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            8
           ],
           "texture": 1
         }
@@ -186,7 +187,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "right_bulb",
@@ -210,8 +212,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            6
           ],
           "texture": 1
         },
@@ -219,8 +221,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            8,
+            6
           ],
           "texture": 1
         },
@@ -228,8 +230,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            6
           ],
           "texture": 1
         },
@@ -237,8 +239,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            8,
+            6
           ],
           "texture": 1
         },
@@ -246,8 +248,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            8
           ],
           "texture": 1
         },
@@ -255,8 +257,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            7,
+            8
           ],
           "texture": 1
         }
@@ -272,7 +274,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "pollen_core",
@@ -296,8 +299,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            11
           ],
           "texture": 0
         },
@@ -305,8 +308,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            11
           ],
           "texture": 0
         },
@@ -314,8 +317,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            11
           ],
           "texture": 0
         },
@@ -323,8 +326,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            11
           ],
           "texture": 0
         },
@@ -332,8 +335,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 0
         },
@@ -341,8 +344,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            4
           ],
           "texture": 0
         }
@@ -358,7 +361,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     }
   ],
   "outliner": [
@@ -402,7 +406,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEXTzMTNxr3HwbTCvKw/fD7aAAAAWUlEQVR42mNgmMDAwODmwODIIBXAwMJkEykixMLq6MrIsP//uv1MhvWC1xkcxHY6MjAwAKWjvh1hZLJmcTzPlCIqJcrw79f/f4yvRFezMj9973GPoYHtJSMA83QXnuyzeq4AAAAASUVORK5CYII="
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEXTzMTNxr3HwbTCvKw/fD7aAAAAWUlEQVR42mNgmMDAwODmwODIIBXAwMJkEykixMLq6MrIsP//uv1MhvWC1xkcxHY6MjAwAKWjvh1hZLJmcTzPlCIqJcrw79f/f4yvRFezMj9973GPoYHtJSMA83QXnuyzeq4AAAAASUVORK5CYII=",
+      "wrap_mode": "repeat"
     },
     {
       "uuid": "38a47074-3ffe-4a63-af4f-953c59a110ad",
@@ -419,7 +424,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEX/v7//mJjOLSvJKynDKCa+IyHk6O27AAAAZklEQVR42g3MSw3EUAxDUU8RjIqgn1cEDoLEQdCEP5VGsqyzusgOy6KhNZ8Uym9yCB17jAbnpqYI+srIDrCCVpeQJNN/D4JU+X/htaFdAkscEaL5GoM2ySzCss4trKFOX6TQ0izsAzsvHS3ka32iAAAAAElFTkSuQmCC"
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEX/v7//mJjOLSvJKynDKCa+IyHk6O27AAAAZklEQVR42g3MSw3EUAxDUU8RjIqgn1cEDoLEQdCEP5VGsqyzusgOy6KhNZ8Uym9yCB17jAbnpqYI+srIDrCCVpeQJNN/D4JU+X/htaFdAkscEaL5GoM2ySzCss4trKFOX6TQ0izsAzsvHS3ka32iAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
     }
   ],
   "animations": [],

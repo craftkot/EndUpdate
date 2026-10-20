@@ -1,6 +1,6 @@
 {
   "meta": {
-    "format_version": "4.10",
+    "format_version": "5.1",
     "model_format": "free",
     "box_uv": false
   },
@@ -38,8 +38,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            5
           ],
           "texture": 0
         },
@@ -47,8 +47,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            5
           ],
           "texture": 0
         },
@@ -56,8 +56,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            5
           ],
           "texture": 0
         },
@@ -65,8 +65,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            5
           ],
           "texture": 0
         },
@@ -74,8 +74,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            12
           ],
           "texture": 0
         },
@@ -83,8 +83,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            12,
+            12
           ],
           "texture": 0
         }
@@ -100,7 +100,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "tendril_l",
@@ -124,8 +125,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -133,8 +134,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -142,8 +143,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -151,8 +152,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -160,8 +161,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            3
           ],
           "texture": 1
         },
@@ -169,8 +170,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            3
           ],
           "texture": 1
         }
@@ -186,7 +187,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "tendril_r",
@@ -210,8 +212,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -219,8 +221,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -228,8 +230,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -237,8 +239,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 1
         },
@@ -246,8 +248,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            3
           ],
           "texture": 1
         },
@@ -255,8 +257,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            3
           ],
           "texture": 1
         }
@@ -272,7 +274,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "leaf_fang",
@@ -296,8 +299,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 0
         },
@@ -305,8 +308,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            13
           ],
           "texture": 0
         },
@@ -314,8 +317,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 0
         },
@@ -323,8 +326,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            13
           ],
           "texture": 0
         },
@@ -332,8 +335,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            4
           ],
           "texture": 0
         },
@@ -341,8 +344,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            4
           ],
           "texture": 0
         }
@@ -358,7 +361,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     },
     {
       "name": "leaf_fang_2",
@@ -382,8 +386,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 0
         },
@@ -391,8 +395,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            13
           ],
           "texture": 0
         },
@@ -400,8 +404,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            13
           ],
           "texture": 0
         },
@@ -409,8 +413,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            13
           ],
           "texture": 0
         },
@@ -418,8 +422,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            4
           ],
           "texture": 0
         },
@@ -427,8 +431,8 @@
           "uv": [
             0,
             0,
-            16,
-            16
+            3,
+            4
           ],
           "texture": 0
         }
@@ -444,7 +448,8 @@
       "visibility": true,
       "export": true,
       "locked": false,
-      "autouv": 0
+      "autouv": 1,
+      "box_uv": false
     }
   ],
   "outliner": [
@@ -489,7 +494,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEUAAAC5vLmYmZh3dXdoZGjJX6haAAAAAXRSTlMAQObYZgAAAGlJREFUeNoFgAERwyAMAD8pAtJ0AgIYaAEBbI1/TTtSNOaPiyCHDqkwtVvIia7tHzB6p1IatFtW8gazuB93e1j7tBwy8PJtR4+OkW+0cDR2exThSqQeASMalo9QZe2iV8XcmbgRp5W8Rf/WMg1MmmHulQAAAABJRU5ErkJggg=="
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEUAAAC5vLmYmZh3dXdoZGjJX6haAAAAAXRSTlMAQObYZgAAAGlJREFUeNoFgAERwyAMAD8pAtJ0AgIYaAEBbI1/TTtSNOaPiyCHDqkwtVvIia7tHzB6p1IatFtW8gazuB93e1j7tBwy8PJtR4+OkW+0cDR2exThSqQeASMalo9QZe2iV8XcmbgRp5W8Rf/WMg1MmmHulQAAAABJRU5ErkJggg==",
+      "wrap_mode": "repeat"
     },
     {
       "uuid": "98966e25-ba25-4a83-a28f-854df6888172",
@@ -506,7 +512,8 @@
       "mode": "bitmap",
       "internal": true,
       "saved": false,
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVVOh9NMxc7JxMxHgsuHAouFghYuIiyAAAAaklEQVR42hXGwRHDIAwEQA1RBUIUgO70D+rATArIuP9ijPe1AkvLuSjQ1JxFyV8qcDIIMsulM6mEiVWH9pNdvs3e3HaF0wT/uOhuEt/Y7HZLTCZxgpOWreQTPjRjSyuDI0JsxQDWm+qIxQe5ohDitQJk1AAAAABJRU5ErkJggg=="
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVVOh9NMxc7JxMxHgsuHAouFghYuIiyAAAAaklEQVR42hXGwRHDIAwEQA1RBUIUgO70D+rATArIuP9ijPe1AkvLuSjQ1JxFyV8qcDIIMsulM6mEiVWH9pNdvs3e3HaF0wT/uOhuEt/Y7HZLTCZxgpOWreQTPjRjSyuDI0JsxQDWm+qIxQe5ohDitQJk1AAAAABJRU5ErkJggg==",
+      "wrap_mode": "repeat"
     }
   ],
   "animations": [],
