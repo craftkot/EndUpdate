@@ -4,12 +4,12 @@
     "model_format": "free",
     "box_uv": false
   },
-  "name": "wild_bite_prototype",
+  "name": "wild_bite",
   "model_identifier": "wild_bite",
   "visible_box": [
     2,
     2,
-    2
+    0
   ],
   "resolution": {
     "width": 16,
@@ -28,15 +28,11 @@
         4,
         13
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -94,7 +90,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000001"
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "upper_shell",
@@ -108,15 +114,11 @@
         18,
         14
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -174,7 +176,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000002"
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "lower_shell",
@@ -188,15 +200,11 @@
         5,
         14
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -254,7 +262,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000003"
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "iris",
@@ -268,15 +286,11 @@
         9,
         3
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -334,7 +348,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000004"
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "fang_l",
@@ -348,15 +372,11 @@
         14,
         7
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -414,7 +434,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000005"
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "fang_r",
@@ -428,15 +458,11 @@
         14,
         7
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -494,29 +520,80 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000006"
+      "uuid": "00000000-0000-4000-8000-000000000006",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 5,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     }
   ],
   "outliner": [
-    "00000000-0000-4000-8000-000000000001",
-    "00000000-0000-4000-8000-000000000002",
-    "00000000-0000-4000-8000-000000000003",
-    "00000000-0000-4000-8000-000000000004",
-    "00000000-0000-4000-8000-000000000005",
-    "00000000-0000-4000-8000-000000000006"
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "ac5d1ad1-ac17-464b-b3b3-7ecd62d00d5e",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005",
+        "00000000-0000-4000-8000-000000000006"
+      ]
+    }
   ],
   "textures": [
     {
-      "name": "skin",
+      "uuid": "0736ff9d-416e-4691-aaf3-c8a61939366f",
+      "name": "obsidian.png",
       "id": "0",
-      "path": "minecraft:block/obsidian",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEU7J1QnHj0QDBwGAwsAAAFbDTSxAAAAaUlEQVR42gVAARGAMAj8mUA3AzhYAOUJoED/TB68Ut/xNLiFb9wVhfPpaybePs3KHJ+sqmRCVpCNBbG9+ekJvySq3hPVZI7qgl56aBihTmPph+Cyu4ng3kJ2vRSHMoQ+8FGHLU9o5FwkfyEoFb7iY82bAAAAAElFTkSuQmCC"
     },
     {
-      "name": "accent",
+      "uuid": "d6878a83-8e62-46da-8975-2f443fc6b40c",
+      "name": "crying_obsidian.png",
       "id": "1",
-      "path": "minecraft:block/crying_obsidian",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEWDCORgBqs7J1QnHj0rAXgQDBwGAwsAAAGmUsK4AAAAhklEQVR42gVAuxaCIBj+XGqtk5c98gUsda2OxqohfzMqMHsBXr8DGz60VhOD1TvPVUEI13oqO+HxLkWij4pja5szvEkhI2cUMxwnXdxsne2wXxnxZa0R2FM8slKizboLJTrG8DrMJvQb3NzrkckGY77LIh0Id0qdjHmFTVGlftyDFi8GM5s/YNgljucAtu4AAAAASUVORK5CYII="
     }
   ],
   "animations": [],
