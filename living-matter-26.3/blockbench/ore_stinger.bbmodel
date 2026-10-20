@@ -4,12 +4,12 @@
     "model_format": "free",
     "box_uv": false
   },
-  "name": "ore_stinger_prototype",
+  "name": "ore_stinger",
   "model_identifier": "ore_stinger",
   "visible_box": [
     2,
     2,
-    2
+    0
   ],
   "resolution": {
     "width": 16,
@@ -28,15 +28,11 @@
         5,
         13
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -94,7 +90,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000001"
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "needle",
@@ -108,15 +114,11 @@
         17,
         9
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -174,7 +176,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000002"
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "barb_l",
@@ -188,15 +200,11 @@
         15,
         7
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -254,7 +262,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000003"
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "barb_r",
@@ -268,15 +286,11 @@
         15,
         12
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -334,7 +348,17 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000004"
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     },
     {
       "name": "ore_glow",
@@ -348,15 +372,11 @@
         18,
         11
       ],
-      "rotation": {
-        "angle": 0,
-        "axis": "y",
-        "origin": [
-          8,
-          8,
-          8
-        ]
-      },
+      "rotation": [
+        0,
+        0,
+        0
+      ],
       "faces": {
         "north": {
           "uv": [
@@ -414,31 +434,83 @@
         }
       },
       "type": "cube",
-      "uuid": "00000000-0000-4000-8000-000000000005"
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 0
     }
   ],
   "outliner": [
-    "00000000-0000-4000-8000-000000000001",
-    "00000000-0000-4000-8000-000000000002",
-    "00000000-0000-4000-8000-000000000003",
-    "00000000-0000-4000-8000-000000000004",
-    "00000000-0000-4000-8000-000000000005"
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "f989c0a8-b7e4-417d-85d1-c94eb5660f36",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005"
+      ]
+    }
   ],
   "textures": [
     {
-      "name": "skin",
+      "uuid": "352f6e33-a335-47a1-a7d0-f1b071244e92",
+      "name": "iron_ore.png",
       "id": "0",
-      "path": "minecraft:block/iron_ore",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEXiwKrYr5OvjnePj49/f3+IdFV0dHR3Z09oaGgI1kKFAAAAfklEQVR42gVAwQ2CQBAcO0Cp4AIa3+5q/O+w8D4TKMDzcm8TrAAIZRsoPZWcBSyL6Tw5PI5D7lqiC1r25BlvKWs87wnGeDy0nwbJJNRuijxsomUhZL1uffw57BtqC6JYpHom8QxSjP3L4Ft8zOE04n4xv1WNwqZEEyUozBTnH6b0JCp9JVwWAAAAAElFTkSuQmCC"
     },
     {
-      "name": "accent",
+      "uuid": "9b8f6c32-3229-448e-bfb3-294e9b83921b",
+      "name": "redstone_block.png",
       "id": "1",
-      "path": "minecraft:block/redstone_block",
-      "visible": true
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEXmIAi9IAikGAiUFABzDABFTPGwAAAAWklEQVR42l3FsWHDABDEMNx7/40jMYU7syD8NtOMNDrY7rsxs86ke2tss7r0MtsG+Ls6roA+Y24GKO/RG5DlJHkTcfiYe0wys1kTe5qNgfCemieWZMaXIAAA/7Y+Nw+vnOTbAAAAAElFTkSuQmCC"
     }
   ],
   "animations": [],
   "animation_variable_placeholders": "",
-  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models."
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla textures of Minecraft 1.21.1; sources InventivetalentDev/minecraft-assets."
 }
