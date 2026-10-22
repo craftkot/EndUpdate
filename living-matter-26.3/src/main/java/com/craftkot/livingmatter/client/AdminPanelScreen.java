@@ -32,7 +32,7 @@ public final class AdminPanelScreen extends Screen {
     @Override public boolean isInGameUi() { return true; }
 
     @Override protected void init() {
-        panelWidth=Math.min(444,width-16);
+        panelWidth=Math.min(520,width-16);
         panelHeight=Math.min(314,height-14);
         left=(width-panelWidth)/2;
         top=(height-panelHeight)/2;
@@ -135,11 +135,11 @@ public final class AdminPanelScreen extends Screen {
         g.text(font,"Стр. "+(page+1)+" / "+Math.max(1,(positions.size()+9)/10),
             right+102,top+panelHeight-33,muted);
         String warning=confirmation.equals("purgearea")
-            ?"ВНИМАНИЕ: удалить заражение в радиусе 12. Нажми ещё раз!"
+            ?"ВНИМАНИЕ: очистить заражение рядом? Нажми ещё раз."
             : confirmation.equals("chthontest")
-            ?"ВНИМАНИЕ: блоки исчезнут навсегда. Нажми ещё раз!"
+            ?"ВНИМАНИЕ: исходные блоки исчезнут! Нажми ещё раз."
             :confirmation.equals("chthon")
-            ?"ВНИМАНИЕ: монстр поглотит блоки. Нажми ещё раз!"
+            ?"ВНИМАНИЕ: монстр поглотит блоки! Нажми ещё раз."
             :"Наведи прицел на блок до открытия панели. Кнопка F8 — открыть снова.";
         g.text(font,warning,left+11,top+panelHeight-52,
             confirmation.isEmpty()?muted:red);
