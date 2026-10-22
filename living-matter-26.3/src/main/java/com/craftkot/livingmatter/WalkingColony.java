@@ -1,6 +1,8 @@
 package com.craftkot.livingmatter;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -207,6 +209,19 @@ public final class WalkingColony {
         }
         MimicData.get(level).transferBody(motion);
         BrainData.get(level).transferBody(motion);
+        // The world moves atomically one grid step; render interpolation uses
+        // the original block materials and the exact same transform for every
+        // existing part. No separate particles/entities represent the body.
+        List<BlockPos> before = new ArrayList<>(originals.keySet());
+        List<String> textures = new ArrayList<>();
+        for (BlockState state : originals.values()) {
+            textures.add(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+        }
+        Vec3 origin = walker.center();
+        PacketDistributor.sendToPlayersNear(level, null,
+            origin.x,origin.y,origin.z,64,
+            new MatterWalkPacket(List.copyOf(before),List.copyOf(textures),
+                (byte)dir.getStepX(),(byte)dir.getStepZ(),STEP_TICKS));
         List<Piece> shifted = new ArrayList<>();
         for (Piece part : walker.pieces) shifted.add(new Piece(motion.get(part.pos), part.state));
         walker.pieces.clear();
