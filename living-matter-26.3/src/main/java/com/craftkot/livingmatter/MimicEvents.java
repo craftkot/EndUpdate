@@ -80,7 +80,7 @@ public final class MimicEvents {
             && FloorMawTrap.tryOpen(level, footFloor, player)) return;
         // Trees can reach from the canopy even if no infected leaf is close
         // enough for the ordinary short-range block attack. One hunt/player.
-        if (!LeafAmbush.isHunting(level, player)) {
+        if (!LeafRigAttack.isHunting(level, player)) {
             BlockPos nearest = null;
             double best = 81.0;
             for (int x = center.getX() - 8; x <= center.getX() + 8; x++) {
@@ -96,7 +96,7 @@ public final class MimicEvents {
                     }
                 }
             }
-            if (nearest != null && LeafAmbush.tryBegin(level, nearest, player, false)) return;
+            if (nearest != null && LeafRigAttack.tryBegin(level, nearest, player, false)) return;
         }
         for (int x = center.getX() - 3; x <= center.getX() + 3; x++) {
             for (int z = center.getZ() - 3; z <= center.getZ() + 3; z++) {
@@ -136,7 +136,7 @@ public final class MimicEvents {
         // Real foliage never creates manifest geometry. Mining an infected
         // leaf either wakes its attached tree or yields the ordinary block.
         if (level.getBlockState(pos).is(BlockTags.LEAVES)) {
-            if (LeafAmbush.tryBegin(level, pos, player, true))
+            if (LeafRigAttack.tryBegin(level, pos, player, true))
                 event.setCanceled(true);
             else
                 data.cure(pos);
@@ -153,7 +153,7 @@ public final class MimicEvents {
     public void levelTick(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         FloorMawTrap.tick(level);
-        LeafAmbush.tick(level);
+        LeafRigAttack.tick(level);
         BrainData.get(level).tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;

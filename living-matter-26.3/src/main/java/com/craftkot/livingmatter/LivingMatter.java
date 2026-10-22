@@ -30,6 +30,7 @@ public final class LivingMatter {
 
     public LivingMatter(IEventBus modBus) {
         BLOCKS.register(modBus);
+        modBus.addListener(MatterPosePacket::register);
         NeoForge.EVENT_BUS.register(new MimicEvents());
     }
 }

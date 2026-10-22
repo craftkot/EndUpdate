@@ -15,7 +15,7 @@ import java.util.List;
 public final class MatterRig {
     public record Pose(List<Vec3> joints, Vec3 mouth, double opening, double attackProgress) {}
 
-    private static final double EXTENSION_LIMIT = 1.5;
+    private static final double EXTENSION_LIMIT = 0.0; // No new leaf segments: only existing leaves move.
     private static final double EXTENSION_STEP = .75;
 
     private MatterRig() {}
