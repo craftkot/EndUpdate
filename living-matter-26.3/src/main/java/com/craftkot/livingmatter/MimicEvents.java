@@ -66,7 +66,7 @@ public final class MimicEvents {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
                     for (int y = Math.max(level.getMinY(), center.getY() - 3);
                         y <= Math.min(level.getMaxY() - 1, center.getY() + 8); y++) {
-                        data.discover(level, new BlockPos(x, y, z));
+                        BrainData.get(level).discover(level, new BlockPos(x, y, z));
                     }
                 }
             }
@@ -128,6 +128,8 @@ public final class MimicEvents {
         if (!(event.getPlayer() instanceof ServerPlayer player) || player.isCreative()) return;
         BlockPos pos = event.getPos();
         MimicData data = MimicData.get(level);
+        // The living host is a real vanilla block: breaking it stops growth.
+        BrainData.get(level).remove(pos);
         if (!data.isInfected(pos)) return;
         // The first mining attempt exposes the impostor. Once it has recoiled
         // it can be killed with a normal block break (original vanilla loot).
@@ -152,6 +154,7 @@ public final class MimicEvents {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         FloorMawTrap.tick(level);
         LeafAmbush.tick(level);
+        BrainData.get(level).tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -299,6 +302,16 @@ public final class MimicEvents {
                 ctx.getSource().sendSuccess(() -> Component.literal("Floor maw: " + (opened ? "opened" : "requires infected solid floor above a two-block air cavity, Survival and centered player")), false);
                 return opened ? 1 : 0;
             }))
+            .then(Commands.literal("brain").executes(ctx -> doAction(ctx.getSource(), "brain")))
+            .then(Commands.literal("unbrain").executes(ctx -> doAction(ctx.getSource(), "unbrain")))
+            .then(Commands.literal("colony").executes(ctx -> doAction(ctx.getSource(), "colony")))
+            .then(Commands.literal("brains").executes(ctx -> {
+                BrainData brains = BrainData.get(ctx.getSource().getLevel());
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                    "Living Matter brains: " + brains.brainCount()
+                    + ", grown infected cells: " + brains.memberCount()), false);
+                return brains.brainCount();
+            }))
             .then(Commands.literal("stats").executes(ctx -> {
                 int count = MimicData.get(ctx.getSource().getLevel()).count();
                 ctx.getSource().sendSuccess(() -> Component.literal("Living Matter infected positions: " + count), false);
@@ -318,6 +331,26 @@ public final class MimicEvents {
         BlockPos pos = blockHit.getBlockPos();
         MimicData data = MimicData.get(level);
         switch (action) {
+            case "brain" -> {
+                if (!BrainData.get(level).seed(level, pos)) {
+                    source.sendFailure(Component.literal(
+                        "Cannot seed brain: target not eligible, another brain within 14 blocks, or colony cap reached."));
+                    return 0;
+                }
+            }
+            case "unbrain" -> {
+                if (!BrainData.get(level).remove(pos)) {
+                    source.sendFailure(Component.literal("Target block is not a brain."));
+                    return 0;
+                }
+            }
+            case "colony" -> {
+                int cells = BrainData.get(level).localCount(pos, 12);
+                var body = BrainData.get(level).bodyAt(level, pos, 20);
+                source.sendSuccess(() -> Component.literal(
+                    "Colony: " + cells + " infected brain-connected cells nearby, "
+                    + body.size() + " connected same-material body cells"), false);
+            }
             case "infect" -> {
                 if (!data.mark(level, pos)) {
                     source.sendFailure(Component.literal("Block is not eligible (fluid, block entity, unbreakable, or unloaded)."));
