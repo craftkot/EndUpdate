@@ -44,6 +44,19 @@ public final class MimicData extends SavedData {
 
     public boolean isInfected(BlockPos pos) { return infected.contains(pos.asLong()); }
     public int count() { return infected.size(); }
+    /** Bounded, chunk-safe read of hidden markers for operator inspections. */
+    public List<BlockPos> nearby(BlockPos center, int radius, int limit) {
+        List<BlockPos> result=new ArrayList<>();
+        long square=(long)radius*radius;
+        for(long packed:infected) {
+            BlockPos pos=BlockPos.of(packed);
+            if(pos.distSqr(center)<=square) {
+                result.add(pos);
+                if(result.size()>=limit) break;
+            }
+        }
+        return result;
+    }
 
     public boolean mark(ServerLevel level, BlockPos pos) {
         if (!eligible(level, pos)) return false;
