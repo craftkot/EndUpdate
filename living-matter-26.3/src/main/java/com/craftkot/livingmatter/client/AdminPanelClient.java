@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 @EventBusSubscriber(modid=LivingMatter.MOD_ID,value=Dist.CLIENT)
 public final class AdminPanelClient {
     private static final KeyMapping.Category CATEGORY =
-        KeyMapping.Category.register(Identifier.fromNamespaceAndPath(
+        new KeyMapping.Category(Identifier.fromNamespaceAndPath(
             LivingMatter.MOD_ID,"admin"));
     public static final KeyMapping PANEL_KEY=new KeyMapping(
         "key.livingmatter.admin_panel",InputConstants.Type.KEYBOARD,
