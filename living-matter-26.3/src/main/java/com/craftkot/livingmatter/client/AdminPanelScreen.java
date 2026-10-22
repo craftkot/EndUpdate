@@ -99,7 +99,7 @@ public final class AdminPanelScreen extends Screen {
     }
 
     @Override
-    protected void extractBackground(GuiGraphicsExtractor g,int mouseX,int mouseY,float delta) {
+    public void extractBackground(GuiGraphicsExtractor g,int mouseX,int mouseY,float delta) {
         super.extractBackground(g,mouseX,mouseY,delta);
         g.fill(left,top,left+panelWidth,top+panelHeight,0xF20D1117);
         g.fill(left,top,left+panelWidth,top+3,0xFF9B3945);
