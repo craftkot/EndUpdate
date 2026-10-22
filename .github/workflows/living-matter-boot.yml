@@ -100,6 +100,33 @@ jobs:
               meta,mob=response()
               print('RCON chthonic entity:', mob)
               assert 'entity.livingmatter.chthonic_mass' in mob and '17.8' in mob, 'Chthonic mob spawn/attributes failed'
+              # True in-world transformation: consume ACTUAL vanilla
+              # blocks, create a real hostile mob, verify its tier and source
+              # blocks disappearing. No fake player or graphical test needed.
+              for i,(count,sx,sy,sz,tier) in enumerate((
+                  (8,2,2,2,'LARVA'),
+                  (16,4,2,2,'HORROR'),
+                  (32,4,4,2,'ABOMINATION'),
+                  (64,4,4,4,'COLOSSUS'),
+              )):
+                  x,z=200+i*20,200
+                  def cmd(raw):
+                      send(2,'execute in minecraft:overworld run '+raw,10+i*10+cmd.index)
+                      cmd.index+=1
+                      _,reply=response()
+                      print('RCON:',raw,'->',reply)
+                      return reply
+                  cmd.index=0
+                  cmd(f'forceload add {x} {z}')
+                  cmd(f'fill {x-2} 89 {z-2} {x+6} 101 {z+6} minecraft:air')
+                  cmd(f'fill {x-2} 89 {z-2} {x+6} 89 {z+6} minecraft:dirt')
+                  cmd(f'fill {x} 90 {z} {x+sx-1} {90+sy-1} {z+sz-1} minecraft:deepslate')
+                  formed=cmd(f'livingmatter chthonat {x} 90 {z}')
+                  assert ('Created '+tier+' from '+str(count)) in formed, (
+                      'True block-to-mob transformation failed', formed)
+                  removed=cmd(f'execute if block {x} 90 {z} minecraft:air run say LivingMatterSourceConsumed')
+                  assert 'LivingMatterSourceConsumed' in removed, (
+                      'Source blocks not consumed',removed)
               send(2,'livingmatter stats',5)
               meta,answer=response()
               print('RCON stats:',answer)
