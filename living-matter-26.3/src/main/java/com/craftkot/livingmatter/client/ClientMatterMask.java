@@ -35,6 +35,7 @@ import java.util.Set;
 public final class ClientMatterMask {
     private static final int MAX_TERMINAL_STEM_BLOCKS = 4;
     private static final Map<Long, Set<Long>> BY_TIP = new HashMap<>();
+    private static final Map<Long, Set<Long>> BY_WALK = new HashMap<>();
 
     // Chunk meshing runs asynchronously; readers need an immutable snapshot.
     private static volatile Set<Long> hidden = Set.of();
@@ -46,12 +47,10 @@ public final class ClientMatterMask {
     public static void wrapVanillaModels(ModelEvent.ModifyBakingResult event) {
         Map<BlockState, BlockStateModel> models =
             event.getBakingResult().blockStateModels();
-        for (Block block : BuiltInRegistries.BLOCK) {
-            if (!(block instanceof LeavesBlock)) continue;
-            for (BlockState state : block.getStateDefinition().getPossibleStates()) {
-                models.computeIfPresent(state, (ignored, model) -> new MaskableModel(model));
-            }
-        }
+        // The same invisible-awake-block technique as Living Chorus.
+        // Only a handful of positions are hidden at a time, but any
+        // original vanilla block model may be the material of a walker.
+        models.replaceAll((state, model) -> new MaskableModel(model));
     }
 
     /** Mask ONLY tip-owned blocks in the real branch, never the shared root. */
@@ -74,6 +73,7 @@ public final class ClientMatterMask {
     public static void reset(ClientLevel level) {
         Set<Long> was = hidden;
         BY_TIP.clear();
+        BY_WALK.clear();
         hidden = Set.of();
         if (level != null) dirty(level, was);
     }
@@ -82,10 +82,26 @@ public final class ClientMatterMask {
         return hidden.contains(pos.asLong());
     }
 
+    public static void startWalk(ClientLevel level, BlockPos marker,
+                                 java.util.List<BlockPos> from, int dx, int dz) {
+        Set<Long> parts = new HashSet<>();
+        for (BlockPos p : from) {
+            parts.add(p.asLong());
+            parts.add(p.offset(dx, 0, dz).asLong());
+        }
+        BY_WALK.put(marker.asLong(), Set.copyOf(parts));
+        rebuild(level);
+    }
+
+    public static void stopWalk(ClientLevel level, BlockPos marker) {
+        if (BY_WALK.remove(marker.asLong()) != null) rebuild(level);
+    }
+
     private static void rebuild(ClientLevel level) {
         Set<Long> before = hidden;
         Set<Long> union = new HashSet<>();
         for (Set<Long> mask : BY_TIP.values()) union.addAll(mask);
+        for (Set<Long> mask : BY_WALK.values()) union.addAll(mask);
         hidden = Set.copyOf(union);
         Set<Long> changed = new HashSet<>(before);
         changed.addAll(union);
