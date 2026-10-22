@@ -91,12 +91,16 @@ jobs:
               send(2,'livingmatter version',2)
               meta,answer=response()
               print('RCON version:', answer)
-              assert '0.2.1-walkfix-diagnostic' in answer, 'Wrong version loaded by server'
+              assert '0.3.0-chthonic-mass' in answer, 'Wrong version loaded by server'
               send(2,'livingmatter brains',3)
               meta,answer=response()
               print('RCON brains:',answer)
               assert 'Living Matter brains:' in answer, 'Brain command not registered'
-              send(2,'livingmatter stats',4)
+              send(2,'execute in minecraft:overworld positioned 0 120 0 summon livingmatter:chthonic_mass run attribute @s minecraft:generic.max_health get',4)
+              meta,mob=response()
+              print('RCON chthonic entity:', mob)
+              assert ('110' in mob or '110.0' in mob), 'Chthonic hostile entity registration/attributes failed'
+              send(2,'livingmatter stats',5)
               meta,answer=response()
               print('RCON stats:',answer)
               assert 'Living Matter infected positions:' in answer, 'Stats command missing'
