@@ -73,6 +73,22 @@ public final class MimicEvents {
         }
 
         if (player.isCreative() || player.tickCount % BEHAVIOUR_SCAN_INTERVAL != 0) return;
+        // Rare natural awakening of an ALREADY INFECTED, isolated 3-8-block
+        // cluster. Ordinary trees/walls/houses are never eligible walkers.
+        if (player.tickCount % 120 == 0 && level.getRandom().nextInt(5) == 0) {
+            boolean awakened = false;
+            for (int x = center.getX()-3; x <= center.getX()+3 && !awakened; x++)
+                for (int z=center.getZ()-3; z<=center.getZ()+3 && !awakened; z++) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y=center.getY()-1; y<=center.getY()+2; y++) {
+                        BlockPos p = new BlockPos(x,y,z);
+                        if (data.isInfected(p) && WalkingColony.tryStart(level,p,player)) {
+                            awakened=true; break;
+                        }
+                    }
+                }
+            if (awakened) return;
+        }
         // A concealed floor mimic is only triggered by someone actually
         // stepping directly on its face, never by distant approach.
         BlockPos footFloor = BlockPos.containing(player.getX(), player.getY() - .12, player.getZ());
@@ -155,6 +171,7 @@ public final class MimicEvents {
         FloorMawTrap.tick(level);
         LeafRigAttack.tick(level);
         BrainData.get(level).tick(level);
+        WalkingColony.tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -305,6 +322,7 @@ public final class MimicEvents {
             .then(Commands.literal("brain").executes(ctx -> doAction(ctx.getSource(), "brain")))
             .then(Commands.literal("unbrain").executes(ctx -> doAction(ctx.getSource(), "unbrain")))
             .then(Commands.literal("colony").executes(ctx -> doAction(ctx.getSource(), "colony")))
+            .then(Commands.literal("walk").executes(ctx -> doAction(ctx.getSource(), "walk")))
             .then(Commands.literal("brains").executes(ctx -> {
                 BrainData brains = BrainData.get(ctx.getSource().getLevel());
                 ctx.getSource().sendSuccess(() -> Component.literal(
@@ -331,6 +349,14 @@ public final class MimicEvents {
         BlockPos pos = blockHit.getBlockPos();
         MimicData data = MimicData.get(level);
         switch (action) {
+            case "walk" -> {
+                if (!WalkingColony.tryStart(level, pos, player)) {
+                    source.sendFailure(Component.literal(
+                        "Walking creature needs 3-8 isolated, face-connected infected sturdy blocks; "
+                        + "air around every side except supporting ground, and no brain inside."));
+                    return 0;
+                }
+            }
             case "brain" -> {
                 if (!BrainData.get(level).seed(level, pos)) {
                     source.sendFailure(Component.literal(
