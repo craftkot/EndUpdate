@@ -1,0 +1,107 @@
+name: Living Matter Dedicated Server Boot
+on:
+  push:
+    branches: [feature/living-matter-26-3]
+    paths:
+      - '.github/workflows/living-matter-boot.yml'
+      - 'living-matter-26.3/src/main/java/**'
+      - 'living-matter-26.3/src/main/resources/**'
+  workflow_dispatch:
+jobs:
+  boot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: living-matter-26.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Configure offline temporary test server
+        run: |
+          mkdir -p run
+          echo 'eula=true' > run/eula.txt
+          cat > run/server.properties <<'EOF'
+          online-mode=false
+          difficulty=normal
+          spawn-protection=0
+          max-players=1
+          view-distance=3
+          simulation-distance=3
+          enable-rcon=true
+          rcon.password=livingmatter-ci
+          rcon.port=25575
+          EOF
+      - name: Boot server and verify commands
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon runServer > livingmatter-server.log 2>&1 &
+          PID=$!
+          cleanup() {
+            kill "$PID" 2>/dev/null || true
+            wait "$PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          started=0
+          for i in $(seq 1 200); do
+            if grep -Eq 'Done \([0-9.]+s\)!' livingmatter-server.log; then
+              started=1
+              echo 'Living Matter server booted successfully'
+              break
+            fi
+            if ! kill -0 "$PID" 2>/dev/null; then
+              tail -n 150 livingmatter-server.log
+              echo 'Server terminated during startup'
+              exit 1
+            fi
+            sleep 1
+          done
+          if [ "$started" -ne 1 ]; then
+            tail -n 150 livingmatter-server.log
+            echo 'Server did not reach ready state'
+            exit 1
+          fi
+          python3 - <<'PY'
+          import socket,struct
+          with socket.create_connection(("127.0.0.1",25575),timeout=15) as s:
+              def send(typ,payload,rid):
+                  body=payload.encode()+b'\x00\x00'
+                  s.sendall(struct.pack('<iii',8+len(body),rid,typ)+body)
+              def recvn(n):
+                  out=b''
+                  while len(out)<n:
+                      b=s.recv(n-len(out))
+                      if not b: raise RuntimeError('RCON connection ended')
+                      out+=b
+                  return out
+              def response():
+                  length=struct.unpack('<i',recvn(4))[0]
+                  p=recvn(length)
+                  return struct.unpack('<ii',p[:8]),p[8:-2].decode(errors='replace')
+              send(3,'livingmatter-ci',1)
+              auth,answer=response()
+              assert auth[0]!=-1, 'RCON authentication failed'
+              send(2,'livingmatter brains',2)
+              meta,answer=response()
+              print('RCON brains:',answer)
+              assert 'Living Matter brains:' in answer, 'Brain command not registered'
+              send(2,'livingmatter stats',3)
+              meta,answer=response()
+              print('RCON stats:',answer)
+              assert 'Living Matter infected positions:' in answer, 'Stats command missing'
+          print('DEDICATED SERVER SMOKE TEST PASSED')
+          PY
+      - name: Upload startup log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: living-matter-server-log
+          path: living-matter-26.3/livingmatter-server.log
+          if-no-files-found: ignore
