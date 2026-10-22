@@ -143,8 +143,9 @@ public final class WalkingColony {
             walker.nextStep = level.getGameTime() + STEP_TICKS;
             List<Direction> directions = new ArrayList<>(List.of(
                 Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST));
+            final ServerPlayer destinationTarget = target;
             directions.sort(Comparator.comparingDouble(d -> middle.add(d.getStepX(), 0, d.getStepZ())
-                .distanceToSqr(target.position())));
+                .distanceToSqr(destinationTarget.position())));
             boolean moved = false;
             for (Direction dir : directions) {
                 Vec3 destination = middle.add(dir.getStepX(), 0, dir.getStepZ());
