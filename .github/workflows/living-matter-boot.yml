@@ -124,8 +124,10 @@ jobs:
                   formed=cmd(f'livingmatter chthonat {x} 90 {z}')
                   assert ('Created '+tier+' from '+str(count)) in formed, (
                       'True block-to-mob transformation failed', formed)
-                  removed=cmd(f'execute if block {x} 90 {z} minecraft:air run say LivingMatterSourceConsumed')
-                  assert 'LivingMatterSourceConsumed' in removed, (
+                  # A conditional setblock returns a robust command result,
+                  # unlike /say (which intentionally returns empty via RCON).
+                  removed=cmd(f'execute if block {x} 90 {z} minecraft:air run setblock {x} 90 {z} minecraft:gold_block')
+                  assert 'Changed the block' in removed or 'changed the block' in removed.lower(), (
                       'Source blocks not consumed',removed)
               send(2,'livingmatter stats',5)
               meta,answer=response()
