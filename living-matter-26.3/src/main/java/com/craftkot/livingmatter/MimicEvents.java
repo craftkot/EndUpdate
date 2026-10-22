@@ -144,9 +144,12 @@ public final class MimicEvents {
         if (!(event.getPlayer() instanceof ServerPlayer player) || player.isCreative()) return;
         BlockPos pos = event.getPos();
         MimicData data = MimicData.get(level);
-        // The living host is a real vanilla block: breaking it stops growth.
-        BrainData.get(level).remove(pos);
-        if (!data.isInfected(pos)) return;
+        // The first mining attempt can be cancelled by an ambush. Never
+        // kill the brain until the real vanilla block is actually breakable.
+        if (!data.isInfected(pos)) {
+            BrainData.get(level).remove(pos);
+            return;
+        }
         // The first mining attempt exposes the impostor. Once it has recoiled
         // it can be killed with a normal block break (original vanilla loot).
         // Real foliage never creates manifest geometry. Mining an infected
@@ -154,14 +157,17 @@ public final class MimicEvents {
         if (level.getBlockState(pos).is(BlockTags.LEAVES)) {
             if (LeafRigAttack.tryBegin(level, pos, player, true))
                 event.setCanceled(true);
-            else
+            else {
                 data.cure(pos);
+                BrainData.get(level).remove(pos);
+            }
             return;
         }
         if (awaken(level, pos, player, true)) {
             event.setCanceled(true);
         } else {
             data.cure(pos);
+            BrainData.get(level).remove(pos);
         }
     }
 
