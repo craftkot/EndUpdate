@@ -248,50 +248,18 @@ public final class MimicEvents {
         return count;
     }
 
-    private static boolean awaken(ServerLevel level, BlockPos pos, ServerPlayer target, boolean force) {
-        MimicData data = MimicData.get(level);
-        if (!data.isInfected(pos) || !MimicData.eligible(level, pos)) return false;
-        long time = level.getGameTime(), key = pos.asLong();
-        Map<Long, Long> cooldown = COOLDOWNS.computeIfAbsent(level, ignored -> new HashMap<>());
-        if (time < cooldown.getOrDefault(key, 0L)) return false;
-        MimicKind kind = MimicKind.of(level.getBlockState(pos));
-        // All material families now animate their ORIGINAL connected body.
-        // The old adjacent-air manifest prototype is never invoked.
-        if (kind != MimicKind.LEAF)
-            return MatterVisualAttack.start(level, pos, target, force);
-        return false;
-        if (cooldown.size() > 8192) cooldown.entrySet().removeIf(e -> e.getValue() < time);
-
-        ACTIVE.computeIfAbsent(level, ignored -> new ArrayList<>())
-            .add(new Strike(pos.immutable(), level.getBlockState(pos).getBlock(),
-                target.getUUID(), kind, time + ATTACK_WINDUP));
-        reveal(level, pos, target, kind);
-        return true;
-    }
-
-    private static void reveal(ServerLevel level, BlockPos source, ServerPlayer player, MimicKind kind) {
-        // STONE moves several connected-looking jaw pieces; other materials
-        // exhibit unique morphologies. No existing world block is overwritten.
-        double dx = player.getX() - source.getX();
-        double dz = player.getZ() - source.getZ();
-        Direction towards = Math.abs(dx) > Math.abs(dz)
-            ? (dx >= 0 ? Direction.EAST : Direction.WEST)
-            : (dz >= 0 ? Direction.SOUTH : Direction.NORTH);
-        Direction[] order = {towards, Direction.UP, towards.getClockWise(),
-            towards.getCounterClockWise(), Direction.DOWN};
-        int pieces = kind == MimicKind.STONE ? 3 : kind == MimicKind.WOOD ? 2 : 1;
-        int placed = 0;
-        for (Direction direction : order) {
-            BlockPos target = source.relative(direction);
-            if (!level.hasChunkAt(target) || !level.getBlockState(target).isAir()) continue;
-            level.setBlock(target, LivingMatter.manifest(kind).defaultBlockState(), 3);
-            if (++placed >= pieces) break;
-        }
-        level.sendParticles(kind == MimicKind.SPORE ? ParticleTypes.PORTAL : ParticleTypes.SMOKE,
-            source.getX() + .5, source.getY() + .5, source.getZ() + .5,
-            kind == MimicKind.SAND ? 32 : 14, .45, .45, .45, .04);
-        level.playSound(null, source, SoundEvents.CHORUS_FLOWER_GROW,
-            SoundSource.HOSTILE, .75F, kind == MimicKind.STONE ? .55F : 1.15F);
+    /**
+     * The old fake-block reveal has been replaced by the real chorus-style
+     * pose renderer. All displayed pieces are original connected vanilla
+     * material. There is no new block in neighboring air and no entity.
+     */
+    private static boolean awaken(ServerLevel level, BlockPos pos, ServerPlayer target,
+                                  boolean force) {
+        if (!MimicData.get(level).isInfected(pos)
+            || !MimicData.eligible(level,pos)) return false;
+        if (level.getBlockState(pos).is(BlockTags.LEAVES))
+            return LeafRigAttack.tryBegin(level,pos,target,force);
+        return MatterVisualAttack.start(level,pos,target,force);
     }
 
     @SubscribeEvent
