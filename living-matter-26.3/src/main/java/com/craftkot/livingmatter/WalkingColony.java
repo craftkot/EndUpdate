@@ -66,8 +66,126 @@ public final class WalkingColony {
         return ACTIVE.getOrDefault(level, List.of()).size();
     }
 
+    /**
+     * Detailed operator-facing failure report. Unlike the previous single
+     * generic error, this names the first violated constraint and its location.
+     * A null result means the shape is ready to walk.
+     */
+    public static String diagnose(ServerLevel level, BlockPos origin) {
+        if (activeCount(level) >= 4) return "Already 4 walking creatures in this dimension.";
+        if (!level.hasChunkAt(origin)) return "Target chunk is not loaded.";
+        MimicData infected = MimicData.get(level);
+        if (!infected.isInfected(origin))
+            return "Target is not infected. Use /livingmatter infect or /livingmatter walktest.";
+        if (!MimicData.eligible(level, origin)) return "Target block cannot be infected.";
+        MimicKind kind = MimicKind.of(level.getBlockState(origin));
+        if (kind != MimicKind.STONE && kind != MimicKind.WOOD
+            && kind != MimicKind.ORE && kind != MimicKind.WILD)
+            return "This material (" + kind.name() + ") cannot walk yet. Use stone, wood or ore.";
+        List<BlockPos> body = BrainData.get(level).bodyAt(level, origin, MAX_PARTS + 1);
+        if (body.size() < 3)
+            return "Only " + body.size() + " connected infected " + kind.name()
+                + " blocks found; need at least 3. Aim at an isolated 2x2 structure.";
+        if (body.size() > MAX_PARTS)
+            return "Detected 9+ connected infected blocks; the prototype supports at most 8.";
+        for (Walk walking : ACTIVE.getOrDefault(level, List.of()))
+            for (Piece piece : walking.pieces)
+                if (body.contains(piece.pos)) return "Those blocks are already walking.";
+        Set<BlockPos> own = new HashSet<>(body);
+        for (BlockPos pos : body) {
+            if (BrainData.get(level).isBrain(pos))
+                return "The organism contains the brain at " + pos.toShortString()
+                    + ". Build its body away from the brain.";
+            BlockState state = level.getBlockState(pos);
+            if (!state.isCollisionShapeFullBlock(level, pos)
+                || state.hasBlockEntity() || !state.getFluidState().isEmpty())
+                return "Body block " + pos.toShortString()
+                    + " is not a solid full cube (or has inventory/fluid).";
+            for (Direction direction : Direction.values()) {
+                if (direction == Direction.DOWN) continue;
+                BlockPos adjacent = pos.relative(direction);
+                if (!own.contains(adjacent) && (!level.hasChunkAt(adjacent)
+                    || !level.getBlockState(adjacent).isAir()))
+                    return "Body touches other blocks at " + adjacent.toShortString()
+                        + " (" + direction.name() + "). Clear the sides and top; keep only supporting ground.";
+            }
+            BlockPos below = pos.below();
+            if (!own.contains(below)
+                && (!level.hasChunkAt(below)
+                    || !level.getBlockState(below).isCollisionShapeFullBlock(level, below)))
+                return "No solid supporting ground under " + pos.toShortString() + ".";
+        }
+        return null;
+    }
+
+    /**
+     * Explicit creative/admin test: choose an isolated existing 3-8 block
+     * structure and infect it automatically. Does NOT spawn blocks, remove
+     * structures or seize terrain attached to a wall or tree.
+     */
+    public static String prepareAndWalk(ServerLevel level, BlockPos origin, ServerPlayer target) {
+        if (!level.hasChunkAt(origin) || !MimicData.eligible(level, origin))
+            return "Look at an existing sturdy block in a loaded chunk.";
+        if (BrainData.get(level).isBrain(origin))
+            return "The selected block is a brain; point to a separate structure instead.";
+        BlockState first = level.getBlockState(origin);
+        MimicKind kind = MimicKind.of(first);
+        if (kind != MimicKind.STONE && kind != MimicKind.WOOD
+            && kind != MimicKind.ORE && kind != MimicKind.WILD)
+            return "Walktest currently supports solid stone, wood, ore and fallback materials.";
+        Set<BlockPos> found = new HashSet<>();
+        java.util.ArrayDeque<BlockPos> pending = new java.util.ArrayDeque<>();
+        found.add(origin.immutable());
+        pending.add(origin.immutable());
+        while (!pending.isEmpty() && found.size() <= MAX_PARTS) {
+            BlockPos position = pending.removeFirst();
+            for (Direction direction : Direction.values()) {
+                BlockPos next = position.relative(direction);
+                if (found.contains(next) || !level.hasChunkAt(next)) continue;
+                if (level.getBlockState(next).getBlock() == first.getBlock()) {
+                    found.add(next.immutable());
+                    pending.addLast(next.immutable());
+                }
+            }
+        }
+        if (found.size() < 3)
+            return "Only " + found.size() + " matching blocks connected. Build a 2x2 shape (4 blocks).";
+        if (found.size() > MAX_PARTS)
+            return "Structure joins 9+ blocks of the same material. Use a freestanding 2x2 shape on a DIFFERENT ground material.";
+        for (BlockPos pos : found) {
+            if (BrainData.get(level).isBrain(pos))
+                return "The structure contains a brain at " + pos.toShortString() + ".";
+            BlockState state = level.getBlockState(pos);
+            if (!MimicData.eligible(level, pos)
+                || !state.isCollisionShapeFullBlock(level, pos))
+                return "Unsafe/non-full block at " + pos.toShortString() + ".";
+            for (Direction direction : Direction.values()) {
+                if (direction == Direction.DOWN) continue;
+                BlockPos adjacent = pos.relative(direction);
+                if (!found.contains(adjacent)
+                    && (!level.hasChunkAt(adjacent)
+                        || !level.getBlockState(adjacent).isAir()))
+                    return "Structure is still attached at " + adjacent.toShortString()
+                        + ". Clear its sides and top.";
+            }
+            BlockPos below = pos.below();
+            if (!found.contains(below)
+                && (!level.hasChunkAt(below)
+                    || !level.getBlockState(below).isCollisionShapeFullBlock(level, below)))
+                return "The shape needs solid ground below " + pos.toShortString() + ".";
+        }
+        MimicData data = MimicData.get(level);
+        // All world/structure checks passed before changing infection markers.
+        for (BlockPos pos : found) {
+            if (!data.mark(level, pos)) return "Failed to infect " + pos.toShortString() + ".";
+        }
+        if (tryStart(level, origin, target)) return null;
+        String cause = diagnose(level, origin);
+        return cause == null ? "Could not start (another walking organism may be active)." : cause;
+    }
+
     public static boolean tryStart(ServerLevel level, BlockPos origin, ServerPlayer target) {
-        if (activeCount(level) >= 4 || !level.hasChunkAt(origin)) return false;
+        if (diagnose(level, origin) != null) return false;
         MimicData infection = MimicData.get(level);
         if (!infection.isInfected(origin) || !MimicData.eligible(level, origin)) return false;
         MimicKind kind = MimicKind.of(level.getBlockState(origin));
