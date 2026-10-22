@@ -178,6 +178,7 @@ public final class MimicEvents {
         LeafRigAttack.tick(level);
         BrainData.get(level).tick(level);
         WalkingColony.tick(level);
+        MatterVisualAttack.tick(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -254,9 +255,11 @@ public final class MimicEvents {
         Map<Long, Long> cooldown = COOLDOWNS.computeIfAbsent(level, ignored -> new HashMap<>());
         if (time < cooldown.getOrDefault(key, 0L)) return false;
         MimicKind kind = MimicKind.of(level.getBlockState(pos));
-        if (!force && target.distanceToSqr(Vec3.atCenterOf(pos)) > kind.range() * kind.range())
-            return false;
-        cooldown.put(key, time + COOLDOWN);
+        // All material families now animate their ORIGINAL connected body.
+        // The old adjacent-air manifest prototype is never invoked.
+        if (kind != MimicKind.LEAF)
+            return MatterVisualAttack.start(level, pos, target, force);
+        return false;
         if (cooldown.size() > 8192) cooldown.entrySet().removeIf(e -> e.getValue() < time);
 
         ACTIVE.computeIfAbsent(level, ignored -> new ArrayList<>())

@@ -60,7 +60,7 @@ public final class ClientMatterMask {
         for (int i=1;i<rootToFlower.size();i++) {
             BlockPos piece = rootToFlower.get(i);
             BlockState block = level.getBlockState(piece);
-            if (block.getBlock() instanceof LeavesBlock) part.add(piece.asLong());
+            if (!block.isAir() && !block.hasBlockEntity()) part.add(piece.asLong());
         }
         BY_TIP.put(tip.asLong(), Set.copyOf(part));
         rebuild(level);

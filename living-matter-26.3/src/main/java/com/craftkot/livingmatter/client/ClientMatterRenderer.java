@@ -81,7 +81,7 @@ public final class ClientMatterRenderer {
     private static net.minecraft.client.multiplayer.ClientLevel previousLevel;
 
     private record RenderSnapshot(MatterRig.Pose pose, Vec3 target,
-                                  boolean dead, int variant,
+                                  byte kind, boolean dead, int variant,
                                   List<Integer> segmentLight, int mouthLight) { }
 
     private static final class ClientAttack {
@@ -203,7 +203,8 @@ public final class ClientMatterRenderer {
             }
             int mouthLight = sampleWorldLight(level, pose.mouth());
             snapshots.add(new RenderSnapshot(pose, attack.smoothedTarget,
-                attack.dead, attack.profile.mouthVariant(), List.copyOf(segmentLight), mouthLight));
+                attack.kind, attack.dead, attack.profile.mouthVariant(),
+                List.copyOf(segmentLight), mouthLight));
         }
         event.getRenderState().setRenderData(RENDER_DATA, List.copyOf(snapshots));
         if (SMOKE && !snapshots.isEmpty() && level.getGameTime() != lastExtractLog) {
@@ -246,7 +247,7 @@ public final class ClientMatterRenderer {
                 matrices.translate(middle.x - camera.x, middle.y - camera.y, middle.z - camera.z);
                 matrices.mulPose(new Matrix4f().rotation(new Quaternionf().rotationTo(0, 1, 0,
                     (float)d.x, (float)d.y, (float)d.z)));
-                collector.submitModelPart(STEM, matrices, RenderTypes.entityCutout(PLANT_TEXTURE),
+                collector.submitModelPart(STEM, matrices, RenderTypes.entityCutout(textureFor(render.kind())),
                     render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                 matrices.popPose();
 
@@ -261,7 +262,7 @@ public final class ClientMatterRenderer {
                     matrices.pushPose();
                     matrices.translate(b.x - camera.x, b.y - camera.y, b.z - camera.z);
                     collector.submitModelPart(JOINT, matrices,
-                        RenderTypes.entityCutout(PLANT_TEXTURE),
+                        RenderTypes.entityCutout(textureFor(render.kind())),
                         render.segmentLight().get(i - 1), OverlayTexture.NO_OVERLAY, null);
                     matrices.popPose();
                     distanceSinceCollar = 0.0;
@@ -277,7 +278,7 @@ public final class ClientMatterRenderer {
                 float facing = (float) Math.atan2(-toPrey.x, -toPrey.z);
                 matrices.mulPose(new Matrix4f().rotationY(facing));
             }
-            var flower = RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE);
+            var flower = RenderTypes.entityCutout(textureFor(render.kind()));
             float opening = (float) render.pose.opening();
             int light = render.mouthLight();
             if (opening < .04F) {
@@ -302,20 +303,37 @@ public final class ClientMatterRenderer {
                 // This uses the original vanilla plant pixels for the interior,
                 // never a newly painted texture or an extra cosmetic overlay.
                 collector.submitModelPart(CORE, matrices,
-                    RenderTypes.entityCutout(PLANT_TEXTURE), light,
+                    RenderTypes.entityCutout(textureFor(render.kind())), light,
                     OverlayTexture.NO_OVERLAY, null);
                 // Small internal teeth are submitted ONLY after jaws visibly open.
                 if (opening > .23F) {
                     collector.submitModelPart(TOP_TEETH, matrices,
-                        RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE),
+                        RenderTypes.entityCutout(textureFor(render.kind())),
                         light, OverlayTexture.NO_OVERLAY, null);
                     collector.submitModelPart(BOTTOM_TEETH, matrices,
-                        RenderTypes.entityCutout(render.dead ? DEAD_TEXTURE : FLOWER_TEXTURE),
+                        RenderTypes.entityCutout(textureFor(render.kind())),
                         light, OverlayTexture.NO_OVERLAY, null);
                 }
             }
             matrices.popPose();
         }
+    }
+
+    /** Original vanilla 16px textures. The material is the original body,
+     * never a new skinned creature/entity. Byte 0 is living vanilla leaves;
+     * material profiles are 20 + MimicKind ordinal. */
+    private static Identifier textureFor(byte kind) {
+        String path = switch (kind) {
+            case 20 -> "stone";
+            case 21 -> "oak_log";
+            case 22 -> "sand";
+            case 23 -> "iron_ore";
+            case 24 -> "oak_leaves";
+            case 25 -> "mushroom_stem";
+            case 26 -> "obsidian";
+            default -> "oak_leaves";
+        };
+        return Identifier.fromNamespaceAndPath("minecraft","textures/block/"+path+".png");
     }
 
     private static int sampleWorldLight(net.minecraft.client.multiplayer.ClientLevel level,
