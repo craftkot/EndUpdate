@@ -179,6 +179,7 @@ public final class MimicEvents {
         BrainData.get(level).tick(level);
         WalkingColony.tick(level);
         MatterVisualAttack.tick(level);
+        ChthonicAwakening.natural(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
         Iterator<Strike> it = active.iterator();
@@ -302,9 +303,12 @@ public final class MimicEvents {
             .then(Commands.literal("version").executes(ctx -> {
                 ctx.getSource().sendSuccess(() -> Component.literal(
                     "Living Matter " + LivingMatter.BUILD_ID
-                    + " | walktest available | old 0.1.0 JAR must be removed"), false);
+                    + " | chthon, chthontest, mass; remove previous Living Matter JARs"), false);
                 return Command.SINGLE_SUCCESS;
             }))
+            .then(Commands.literal("chthon").executes(ctx -> doAction(ctx.getSource(), "chthon")))
+            .then(Commands.literal("chthontest").executes(ctx -> doAction(ctx.getSource(), "chthontest")))
+            .then(Commands.literal("mass").executes(ctx -> doAction(ctx.getSource(), "mass")))
             .then(Commands.literal("walk").executes(ctx -> doAction(ctx.getSource(), "walk")))
             .then(Commands.literal("walktest").executes(ctx -> doAction(ctx.getSource(), "walktest")))
             .then(Commands.literal("brains").executes(ctx -> {
@@ -333,6 +337,23 @@ public final class MimicEvents {
         BlockPos pos = blockHit.getBlockPos();
         MimicData data = MimicData.get(level);
         switch (action) {
+            case "mass" -> {
+                int infected = ChthonicAwakening.preview(level,pos,true);
+                int structure = ChthonicAwakening.preview(level,pos,false);
+                source.sendSuccess(() -> Component.literal(
+                    "Chthonic body: " + infected + " already infected blocks; "
+                    + structure + " matching existing blocks for test."
+                    + " Tiers: 4 / 12 / 32 / 64. Hard limit 96."),false);
+            }
+            case "chthon", "chthontest" -> {
+                String result = ChthonicAwakening.awaken(level,pos,action.equals("chthontest"));
+                if (!result.startsWith("Created")) {
+                    source.sendFailure(Component.literal("Chthonic mutation: "+result));
+                    return 0;
+                }
+                source.sendSuccess(() -> Component.literal(result),false);
+                return Command.SINGLE_SUCCESS;
+            }
             case "walk" -> {
                 if (!data.isInfected(pos)) {
                     String problem = WalkingColony.prepareAndWalk(level, pos, player);

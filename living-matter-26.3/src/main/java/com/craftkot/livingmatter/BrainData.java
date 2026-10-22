@@ -73,6 +73,9 @@ public final class BrainData extends SavedData {
         return level.getDataStorage().computeIfAbsent(TYPE);
     }
     public int brainCount() { return colonies.size(); }
+    public java.util.List<BlockPos> brains() {
+        return colonies.stream().map(c -> BlockPos.of(c.origin)).toList();
+    }
     public int memberCount() { return colonies.stream().mapToInt(c -> c.cells.size()).sum(); }
     public boolean isBrain(BlockPos pos) {
         for (MutableColony c : colonies) if (c.origin == pos.asLong()) return true;

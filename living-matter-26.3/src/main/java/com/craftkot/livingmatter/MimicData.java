@@ -52,6 +52,15 @@ public final class MimicData extends SavedData {
         return true;
     }
 
+    /**
+     * A block incorporated into a chthonic creature is permanently removed
+     * from its original coordinate. Clear its hidden infection marker too.
+     */
+    public void consume(BlockPos pos) {
+        long key=pos.asLong();
+        if (infected.remove(key) | cleared.add(key)) setDirty();
+    }
+
     public void cure(BlockPos pos) {
         boolean changed = infected.remove(pos.asLong()) | cleared.add(pos.asLong());
         if (changed) setDirty();
