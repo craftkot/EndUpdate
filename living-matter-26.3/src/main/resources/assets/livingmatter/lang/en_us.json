@@ -1,9 +1,4 @@
 {
-  "block.livingmatter.stone_maw": "stone maw",
-  "block.livingmatter.root_grasp": "root grasp",
-  "block.livingmatter.sand_sink": "sand sink",
-  "block.livingmatter.ore_stinger": "ore stinger",
-  "block.livingmatter.leaf_tendril": "leaf tendril",
-  "block.livingmatter.spore_pod": "spore pod",
-  "block.livingmatter.wild_bite": "wild bite"
+  "key.livingmatter.admin_panel": "Living Matter admin panel",
+  "key.category.livingmatter.admin": "Living Matter controls"
 }

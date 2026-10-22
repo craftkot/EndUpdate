@@ -17,7 +17,7 @@ import java.util.Map;
 @Mod(LivingMatter.MOD_ID)
 public final class LivingMatter {
     public static final String MOD_ID = "livingmatter";
-    public static final String BUILD_ID = "0.3.0-chthonic-mass";
+    public static final String BUILD_ID = "0.4.0-admin-panel";
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
     private static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(MOD_ID);
     public static final DeferredHolder<EntityType<?>, EntityType<ChthonicMassEntity>> CHTHONIC_MASS =
@@ -44,6 +44,7 @@ public final class LivingMatter {
             event.put(CHTHONIC_MASS.get(),ChthonicMassEntity.createAttributes().build()));
         modBus.addListener(MatterPosePacket::register);
         modBus.addListener(MatterWalkPacket::register);
+        modBus.addListener(AdminPanelPacket::register);
         NeoForge.EVENT_BUS.register(new MimicEvents());
     }
 }

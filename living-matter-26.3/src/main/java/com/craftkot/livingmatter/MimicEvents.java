@@ -180,6 +180,7 @@ public final class MimicEvents {
         BrainData.get(level).tick(level);
         WalkingColony.tick(level);
         MatterVisualAttack.tick(level);
+        AdminPanelService.tick(level);
         ChthonicAwakening.natural(level);
         List<Strike> active = ACTIVE.get(level);
         if (active == null || active.isEmpty()) return;
@@ -268,6 +269,24 @@ public final class MimicEvents {
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("livingmatter")
             .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(Commands.literal("panel").executes(ctx -> {
+                AdminPanelService.send(ctx.getSource().getPlayerOrException());
+                return Command.SINGLE_SUCCESS;
+            }))
+            .then(Commands.literal("vision").executes(ctx -> {
+                ServerPlayer p=ctx.getSource().getPlayerOrException();
+                boolean enabled=AdminPanelService.toggle(p);
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                    enabled?"Подсветка заражённых блоков включена.":"Подсветка заражённых блоков выключена."),false);
+                return Command.SINGLE_SUCCESS;
+            }))
+            .then(Commands.literal("purgearea").executes(ctx -> {
+                ServerPlayer p=ctx.getSource().getPlayerOrException();
+                int cleaned=AdminPanelService.purgeNearby(p);
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                    "Заражение очищено в радиусе 12 блоков: "+cleaned+" блоков."),false);
+                return Command.SINGLE_SUCCESS;
+            }))
             .then(Commands.literal("infect").executes(ctx -> doAction(ctx.getSource(), "infect")))
             .then(Commands.literal("spread").executes(ctx -> doAction(ctx.getSource(), "spread")))
             .then(Commands.literal("cure").executes(ctx -> doAction(ctx.getSource(), "cure")))
