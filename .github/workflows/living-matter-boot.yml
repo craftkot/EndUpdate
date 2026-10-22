@@ -88,11 +88,15 @@ jobs:
               send(3,'livingmatter-ci',1)
               auth,answer=response()
               assert auth[0]!=-1, 'RCON authentication failed'
-              send(2,'livingmatter brains',2)
+              send(2,'livingmatter version',2)
+              meta,answer=response()
+              print('RCON version:', answer)
+              assert '0.2.1-walkfix-diagnostic' in answer, 'Wrong version loaded by server'
+              send(2,'livingmatter brains',3)
               meta,answer=response()
               print('RCON brains:',answer)
               assert 'Living Matter brains:' in answer, 'Brain command not registered'
-              send(2,'livingmatter stats',3)
+              send(2,'livingmatter stats',4)
               meta,answer=response()
               print('RCON stats:',answer)
               assert 'Living Matter infected positions:' in answer, 'Stats command missing'
