@@ -1,8 +1,8 @@
 package com.craftkot.livingmatter;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.ValueInput;
-import net.minecraft.nbt.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -71,7 +71,7 @@ public final class ChthonicMassEntity extends Monster {
     }
 
     @Override
-    public EntityDimensions getDimensions(Pose pose) {
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
         float width = switch (tier()) {
             case 4 -> 4.2f; case 3 -> 3.2f; case 2 -> 2.2f; default -> 1.2f;
         };
