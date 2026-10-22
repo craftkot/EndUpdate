@@ -300,6 +300,7 @@ public final class MimicEvents {
             .then(Commands.literal("unbrain").executes(ctx -> doAction(ctx.getSource(), "unbrain")))
             .then(Commands.literal("colony").executes(ctx -> doAction(ctx.getSource(), "colony")))
             .then(Commands.literal("walk").executes(ctx -> doAction(ctx.getSource(), "walk")))
+            .then(Commands.literal("walktest").executes(ctx -> doAction(ctx.getSource(), "walktest")))
             .then(Commands.literal("brains").executes(ctx -> {
                 BrainData brains = BrainData.get(ctx.getSource().getLevel());
                 ctx.getSource().sendSuccess(() -> Component.literal(
@@ -327,10 +328,20 @@ public final class MimicEvents {
         MimicData data = MimicData.get(level);
         switch (action) {
             case "walk" -> {
+                String problem = WalkingColony.diagnose(level, pos);
+                if (problem != null) {
+                    source.sendFailure(Component.literal("Walking creature: " + problem));
+                    return 0;
+                }
                 if (!WalkingColony.tryStart(level, pos, player)) {
-                    source.sendFailure(Component.literal(
-                        "Walking creature needs 3-8 isolated, face-connected infected sturdy blocks; "
-                        + "air around every side except supporting ground, and no brain inside."));
+                    source.sendFailure(Component.literal("Walking creature cannot start now (try again)."));
+                    return 0;
+                }
+            }
+            case "walktest" -> {
+                String problem = WalkingColony.prepareAndWalk(level, pos, player);
+                if (problem != null) {
+                    source.sendFailure(Component.literal("Walking test: " + problem));
                     return 0;
                 }
             }
