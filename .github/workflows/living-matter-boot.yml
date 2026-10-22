@@ -91,7 +91,7 @@ jobs:
               send(2,'livingmatter version',2)
               meta,answer=response()
               print('RCON version:', answer)
-              assert '0.3.0-chthonic-mass' in answer, 'Wrong version loaded by server'
+              assert '0.4.0-admin-panel' in answer, 'Wrong version loaded by server'
               send(2,'livingmatter brains',3)
               meta,answer=response()
               print('RCON brains:',answer)
