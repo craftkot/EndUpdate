@@ -202,6 +202,22 @@ public final class BrainData extends SavedData {
         return List.copyOf(body);
     }
 
+    /** Keep persistent brain-colony membership consistent with walking blocks. */
+    public void transferBody(java.util.Map<BlockPos, BlockPos> motion) {
+        java.util.Map<Long,Long> ids = new java.util.HashMap<>();
+        for (var e : motion.entrySet()) ids.put(e.getKey().asLong(),e.getValue().asLong());
+        boolean changed = false;
+        for (MutableColony colony : colonies) {
+            java.util.Set<Long> shift = new java.util.HashSet<>();
+            for (long old : ids.keySet()) if (colony.cells.remove(old)) shift.add(ids.get(old));
+            if (!shift.isEmpty()) {
+                colony.cells.addAll(shift);
+                changed = true;
+            }
+        }
+        if (changed) setDirty();
+    }
+
     private static long mix64(long z) {
         z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
         z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;

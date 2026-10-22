@@ -117,6 +117,23 @@ public final class MimicData extends SavedData {
         return false;
     }
 
+    /** Move a complete, already-connected infected body without duplication. */
+    public void transferBody(java.util.Map<BlockPos, BlockPos> motion) {
+        java.util.Set<Long> old = new java.util.HashSet<>();
+        java.util.Set<Long> dest = new java.util.HashSet<>();
+        for (var entry : motion.entrySet()) {
+            if (infected.contains(entry.getKey().asLong())) {
+                old.add(entry.getKey().asLong());
+                dest.add(entry.getValue().asLong());
+            }
+        }
+        if (old.isEmpty()) return;
+        infected.removeAll(old);
+        infected.addAll(dest);
+        cleared.removeAll(dest);
+        setDirty();
+    }
+
     private static long mix64(long z) {
         z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
         z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
