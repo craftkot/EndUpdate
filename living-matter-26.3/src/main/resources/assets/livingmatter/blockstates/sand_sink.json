@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "phase=0": {
+      "model": "livingmatter:block/sand_sink_0"
+    },
+    "phase=1": {
+      "model": "livingmatter:block/sand_sink_1"
+    },
+    "phase=2": {
+      "model": "livingmatter:block/sand_sink_2"
+    }
+  }
+}

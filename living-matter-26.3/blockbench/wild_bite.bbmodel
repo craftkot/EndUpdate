@@ -1,0 +1,610 @@
+{
+  "meta": {
+    "format_version": "5.1",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "wild_bite",
+  "model_identifier": "wild_bite",
+  "visible_box": [
+    2,
+    2,
+    0
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "shadow_base",
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        4,
+        13
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            4
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            10,
+            4
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            4
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            10,
+            4
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "upper_shell",
+      "from": [
+        1,
+        14,
+        2
+      ],
+      "to": [
+        15,
+        18,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            4
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            4
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            4
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            12,
+            4
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "lower_shell",
+      "from": [
+        1,
+        3,
+        2
+      ],
+      "to": [
+        15,
+        5,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            2
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            2
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            12,
+            2
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            12
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "iris",
+      "from": [
+        6,
+        5,
+        1
+      ],
+      "to": [
+        10,
+        9,
+        3
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "fang_l",
+      "from": [
+        3,
+        5,
+        3
+      ],
+      "to": [
+        5,
+        14,
+        7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            9
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            9
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            9
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            9
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "fang_r",
+      "from": [
+        11,
+        5,
+        3
+      ],
+      "to": [
+        13,
+        14,
+        7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            9
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            9
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            9
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            9
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000006",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 5,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    }
+  ],
+  "outliner": [
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "ac5d1ad1-ac17-464b-b3b3-7ecd62d00d5e",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005",
+        "00000000-0000-4000-8000-000000000006"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "uuid": "0736ff9d-416e-4691-aaf3-c8a61939366f",
+      "name": "obsidian.png",
+      "id": "0",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEU7J1QnHj0QDBwGAwsAAAFbDTSxAAAAaUlEQVR42gVAARGAMAj8mUA3AzhYAOUJoED/TB68Ut/xNLiFb9wVhfPpaybePs3KHJ+sqmRCVpCNBbG9+ekJvySq3hPVZI7qgl56aBihTmPph+Cyu4ng3kJ2vRSHMoQ+8FGHLU9o5FwkfyEoFb7iY82bAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
+    },
+    {
+      "uuid": "d6878a83-8e62-46da-8975-2f443fc6b40c",
+      "name": "crying_obsidian.png",
+      "id": "1",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEWDCORgBqs7J1QnHj0rAXgQDBwGAwsAAAGmUsK4AAAAhklEQVR42gVAuxaCIBj+XGqtk5c98gUsda2OxqohfzMqMHsBXr8DGz60VhOD1TvPVUEI13oqO+HxLkWij4pja5szvEkhI2cUMxwnXdxsne2wXxnxZa0R2FM8slKizboLJTrG8DrMJvQb3NzrkckGY77LIh0Id0qdjHmFTVGlftyDFi8GM5s/YNgljucAtu4AAAAASUVORK5CYII=",
+      "wrap_mode": "repeat"
+    }
+  ],
+  "animations": [],
+  "animation_variable_placeholders": "",
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models."
+}

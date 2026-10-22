@@ -1,0 +1,435 @@
+{
+  "meta": {
+    "format_version": "5.1",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "spore_pod",
+  "model_identifier": "spore_pod",
+  "visible_box": [
+    2,
+    2,
+    0
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "stalk",
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        8,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "left_bulb",
+      "from": [
+        1,
+        12,
+        3
+      ],
+      "to": [
+        8,
+        18,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            6
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            6
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            7,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            7,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "right_bulb",
+      "from": [
+        8,
+        12,
+        5
+      ],
+      "to": [
+        15,
+        18,
+        13
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            6
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            7,
+            6
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            6
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            7,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            7,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "pollen_core",
+      "from": [
+        6,
+        8,
+        6
+      ],
+      "to": [
+        10,
+        19,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            11
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            11
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            11
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            11
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    }
+  ],
+  "outliner": [
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "7b1c39b9-9d51-4750-a022-25b0b69ff00f",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "uuid": "3712f07c-7a18-4912-9d72-c29c8f5c6fea",
+      "name": "mushroom_stem.png",
+      "id": "0",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEXTzMTNxr3HwbTCvKw/fD7aAAAAWUlEQVR42mNgmMDAwODmwODIIBXAwMJkEykixMLq6MrIsP//uv1MhvWC1xkcxHY6MjAwAKWjvh1hZLJmcTzPlCIqJcrw79f/f4yvRFezMj9973GPoYHtJSMA83QXnuyzeq4AAAAASUVORK5CYII=",
+      "wrap_mode": "repeat"
+    },
+    {
+      "uuid": "38a47074-3ffe-4a63-af4f-953c59a110ad",
+      "name": "red_mushroom_block.png",
+      "id": "1",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEX/v7//mJjOLSvJKynDKCa+IyHk6O27AAAAZklEQVR42g3MSw3EUAxDUU8RjIqgn1cEDoLEQdCEP5VGsqyzusgOy6KhNZ8Uym9yCB17jAbnpqYI+srIDrCCVpeQJNN/D4JU+X/htaFdAkscEaL5GoM2ySzCss4trKFOX6TQ0izsAzsvHS3ka32iAAAAAElFTkSuQmCC",
+      "wrap_mode": "repeat"
+    }
+  ],
+  "animations": [],
+  "animation_variable_placeholders": "",
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla textures of Minecraft 1.21.1; sources InventivetalentDev/minecraft-assets."
+}

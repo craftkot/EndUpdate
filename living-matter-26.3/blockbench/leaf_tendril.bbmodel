@@ -1,0 +1,523 @@
+{
+  "meta": {
+    "format_version": "5.1",
+    "model_format": "free",
+    "box_uv": false
+  },
+  "name": "leaf_tendril",
+  "model_identifier": "leaf_tendril",
+  "visible_box": [
+    2,
+    2,
+    0
+  ],
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "leaf_crown",
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        5,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            12,
+            5
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            5
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            12,
+            5
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            12,
+            5
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            12,
+            12
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "tendril_l",
+      "from": [
+        1,
+        5,
+        2
+      ],
+      "to": [
+        4,
+        18,
+        5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "tendril_r",
+      "from": [
+        12,
+        5,
+        10
+      ],
+      "to": [
+        15,
+        18,
+        13
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 2,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "leaf_fang",
+      "from": [
+        4,
+        6,
+        5
+      ],
+      "to": [
+        7,
+        19,
+        9
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            13
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            13
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            4
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            4
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 3,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    },
+    {
+      "name": "leaf_fang_2",
+      "from": [
+        9,
+        6,
+        6
+      ],
+      "to": [
+        12,
+        19,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            13
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            13
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            13
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            4
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            4
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 4,
+      "visibility": true,
+      "export": true,
+      "locked": false,
+      "autouv": 1,
+      "box_uv": false
+    }
+  ],
+  "outliner": [
+    {
+      "name": "BODY - visible cubes",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "uuid": "29817fb9-c279-446f-b0b4-9e74b39addb0",
+      "export": true,
+      "isOpen": true,
+      "visibility": true,
+      "children": [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+        "00000000-0000-4000-8000-000000000005"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "uuid": "33224305-ab59-4168-8a69-31a65cc821e1",
+      "name": "oak_leaves.png",
+      "id": "0",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEUAAAC5vLmYmZh3dXdoZGjJX6haAAAAAXRSTlMAQObYZgAAAGlJREFUeNoFgAERwyAMAD8pAtJ0AgIYaAEBbI1/TTtSNOaPiyCHDqkwtVvIia7tHzB6p1IatFtW8gazuB93e1j7tBwy8PJtR4+OkW+0cDR2exThSqQeASMalo9QZe2iV8XcmbgRp5W8Rf/WMg1MmmHulQAAAABJRU5ErkJggg==",
+      "wrap_mode": "repeat"
+    },
+    {
+      "uuid": "98966e25-ba25-4a83-a28f-854df6888172",
+      "name": "spruce_log.png",
+      "id": "1",
+      "path": "",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "render_mode": "default",
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": false,
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVVOh9NMxc7JxMxHgsuHAouFghYuIiyAAAAaklEQVR42hXGwRHDIAwEQA1RBUIUgO70D+rATArIuP9ijPe1AkvLuSjQ1JxFyV8qcDIIMsulM6mEiVWH9pNdvs3e3HaF0wT/uOhuEt/Y7HZLTCZxgpOWreQTPjRjSyuDI0JsxQDWm+qIxQe5ohDitQJk1AAAAABJRU5ErkJggg==",
+      "wrap_mode": "repeat"
+    }
+  ],
+  "animations": [],
+  "animation_variable_placeholders": "",
+  "credits": "Living Matter: independently editable Blockbench geometry; in-game animation uses three keyframe block models.",
+  "credit": "Unmodified vanilla textures of Minecraft 1.21.1; sources InventivetalentDev/minecraft-assets."
+}

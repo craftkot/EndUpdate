@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "phase=0": {
+      "model": "livingmatter:block/root_grasp_0"
+    },
+    "phase=1": {
+      "model": "livingmatter:block/root_grasp_1"
+    },
+    "phase=2": {
+      "model": "livingmatter:block/root_grasp_2"
+    }
+  }
+}

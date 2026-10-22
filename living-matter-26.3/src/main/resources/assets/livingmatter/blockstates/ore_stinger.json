@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "phase=0": {
+      "model": "livingmatter:block/ore_stinger_0"
+    },
+    "phase=1": {
+      "model": "livingmatter:block/ore_stinger_1"
+    },
+    "phase=2": {
+      "model": "livingmatter:block/ore_stinger_2"
+    }
+  }
+}
