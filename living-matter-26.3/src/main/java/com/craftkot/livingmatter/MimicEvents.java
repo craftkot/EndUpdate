@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -308,6 +309,19 @@ public final class MimicEvents {
             }))
             .then(Commands.literal("chthon").executes(ctx -> doAction(ctx.getSource(), "chthon")))
             .then(Commands.literal("chthontest").executes(ctx -> doAction(ctx.getSource(), "chthontest")))
+            .then(Commands.literal("chthonat")
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                    .executes(ctx -> {
+                        ServerLevel level = ctx.getSource().getLevel();
+                        BlockPos chosen = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+                        String result = ChthonicAwakening.awaken(level,chosen,true);
+                        if (!result.startsWith("Created")) {
+                            ctx.getSource().sendFailure(Component.literal(result));
+                            return 0;
+                        }
+                        ctx.getSource().sendSuccess(() -> Component.literal(result),false);
+                        return Command.SINGLE_SUCCESS;
+                    })))
             .then(Commands.literal("mass").executes(ctx -> doAction(ctx.getSource(), "mass")))
             .then(Commands.literal("walk").executes(ctx -> doAction(ctx.getSource(), "walk")))
             .then(Commands.literal("walktest").executes(ctx -> doAction(ctx.getSource(), "walktest")))
