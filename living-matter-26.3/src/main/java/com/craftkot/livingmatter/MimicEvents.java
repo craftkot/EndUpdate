@@ -299,6 +299,12 @@ public final class MimicEvents {
             .then(Commands.literal("brain").executes(ctx -> doAction(ctx.getSource(), "brain")))
             .then(Commands.literal("unbrain").executes(ctx -> doAction(ctx.getSource(), "unbrain")))
             .then(Commands.literal("colony").executes(ctx -> doAction(ctx.getSource(), "colony")))
+            .then(Commands.literal("version").executes(ctx -> {
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                    "Living Matter " + LivingMatter.BUILD_ID
+                    + " | walktest available | old 0.1.0 JAR must be removed"), false);
+                return Command.SINGLE_SUCCESS;
+            }))
             .then(Commands.literal("walk").executes(ctx -> doAction(ctx.getSource(), "walk")))
             .then(Commands.literal("walktest").executes(ctx -> doAction(ctx.getSource(), "walktest")))
             .then(Commands.literal("brains").executes(ctx -> {
@@ -328,9 +334,18 @@ public final class MimicEvents {
         MimicData data = MimicData.get(level);
         switch (action) {
             case "walk" -> {
+                if (!data.isInfected(pos)) {
+                    String problem = WalkingColony.prepareAndWalk(level, pos, player);
+                    if (problem != null) {
+                        source.sendFailure(Component.literal("Walking creature: " + problem));
+                        return 0;
+                    }
+                    break;
+                }
                 String problem = WalkingColony.diagnose(level, pos);
                 if (problem != null) {
-                    source.sendFailure(Component.literal("Walking creature: " + problem));
+                    source.sendFailure(Component.literal("Walking creature: " + problem
+                        + " | For an isolated new group use /livingmatter walktest."));
                     return 0;
                 }
                 if (!WalkingColony.tryStart(level, pos, player)) {

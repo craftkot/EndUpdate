@@ -1,4 +1,4 @@
-# Living Matter 0.1.0 — Living Blocks / Живая материя
+# Living Matter 0.2.1 — Living Blocks / Живая материя
 
 **Standalone NeoForge mod** for Minecraft **26.3**, NeoForge **26.3.0.90**, Java 25.
 Its mod ID is `livingmatter`, with its own assets, Java sources and Gradle build. **It does not need Living Chorus or EndUpdate installed.**
@@ -65,3 +65,11 @@ Expected result: `build/libs/livingmatter-0.1.0.jar`. GitHub Actions builds this
 - Need in-world testing of survival damage, mine-wake, all seven animation sequences, safe temporary block cleanup on chunk save/reload, latency and multiplayer.
 - All visual models use curated vanilla material textures rather than copying the source block's exact texture.
 - Do not co-install with incompatible older versions unless tested.
+
+## Version check and walking test (0.2.1)
+
+Remove ALL previous `livingmatter-*.jar` and `LivingMatter_*.jar` copies from the active instance's `mods` directory first. Install just one copy of `livingmatter-0.2.1.jar` for both client and server. **Restart the game**, not merely rejoin the world. Test `/livingmatter version` and confirm it prints `0.2.1-walkfix-diagnostic` — the old 0.1.0 did not have this command.
+
+`/livingmatter walktest`: look at an isolated, pre-existing 2x2 group of stone blocks standing on dirt/grass, with air on all lateral faces and the top. The command will infect the group, then activate it. `/livingmatter walk` auto-infects the same kind of body if the targeted block is not infected; already infected bodies receive detailed failure reasons. Avoid structures, same-material floors, and brain-occupied blocks.
+
+**Known limitation:** The walker remains an experimental 3–8 block creature. Normal terrain connected to it is deliberately not eligible for detachment.

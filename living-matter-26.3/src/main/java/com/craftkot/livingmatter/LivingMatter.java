@@ -13,6 +13,7 @@ import java.util.Map;
 @Mod(LivingMatter.MOD_ID)
 public final class LivingMatter {
     public static final String MOD_ID = "livingmatter";
+    public static final String BUILD_ID = "0.2.1-walkfix-diagnostic";
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
     private static final Map<MimicKind, DeferredBlock<MimicManifestBlock>> MANIFESTS = new EnumMap<>(MimicKind.class);
 
